@@ -22,7 +22,7 @@ def callback(lcl, glb):
 def main():
     logger.configure()
     U.make_session().__enter__()
-    env = YamaXEnv(renders=True)
+    env = YamaXEnv(logfile="log.csv", renders=True)
     def policy_fn(name, ob_space, ac_space):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
             hid_size=64, num_hid_layers=2)

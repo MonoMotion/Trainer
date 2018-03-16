@@ -26,9 +26,9 @@ class YamaXEnv(gym.Env):
     'video.frames_per_second' : 50
   }
 
-  def __init__(self, renders=True, robot="yamax.urdf"):
+  def __init__(self, logfile='log.csv', renders=True, robot="yamax.urdf"):
       # start the bullet physics server
-    self._logfile = open('log.csv', 'a')
+    self._logfile = open(logfile, 'a')
     self._renders = renders
     self._robot = robot
     if (renders):
