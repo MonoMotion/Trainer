@@ -16,3 +16,12 @@ pipenv run python train.py log.csv
 # Train for while and stop with ^C
 pipenv run python plot.py log.csv
 ```
+
+if baselines installation fails, try:
+
+```
+cd baselines
+pipenv install -e .
+cd ..
+pipenv install
+```
