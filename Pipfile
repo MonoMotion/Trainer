@@ -1,0 +1,23 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+pybullet = "*"
+"9eeb991" = {path = "./baselines", editable = true}
+pyflakes = "*"
+matplotlib = "*"
+pandas = "*"
+
+
+[dev-packages]
+
+
+
+[requires]
+
+python_version = "3.5.2"
