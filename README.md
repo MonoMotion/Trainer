@@ -20,8 +20,6 @@ pipenv run python plot.py log.csv
 if baselines installation fails, try:
 
 ```
-cd baselines
-pipenv install -e .
-cd ..
+pipenv install -e baselines
 pipenv install
 ```
