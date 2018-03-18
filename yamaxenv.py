@@ -79,6 +79,10 @@ class YamaXEnv(gym.Env):
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
     done = x > self.success_x_threshold or axisAngle > self.fail_threshold
     reward = -0.01 * sum([a*a for a in euler], 1) * (y*y + 1) + (x - self._last_x)
+    if x > self.success_x_threshold:
+      reward = 1
+    elif axisAngle > self.fail_threshold:
+      reward = -1
     print(reward, file=self._logfile)
     self._last_x = x
     return np.array(self.state), reward, done, {}
