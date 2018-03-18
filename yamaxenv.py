@@ -32,7 +32,7 @@ class YamaXEnv(gym.Env):
     self._renders = renders
     self._robot = robot
     if (renders):
-	    p.connect(p.GUI)
+        p.connect(p.GUI)
     else:
     	p.connect(p.DIRECT)
 
