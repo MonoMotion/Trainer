@@ -78,8 +78,9 @@ class YamaXEnv(gym.Env):
     s = [math.sin(a / 2) for a in euler]
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
     done = x > self.success_x_threshold or axisAngle > self.fail_threshold
-    reward = -0.01 * sum([a*a for a in euler], 1) * (y*y + 1) + x
+    reward = -0.01 * sum([a*a for a in euler], 1) * (y*y + 1) + (x - self._last_x)
     print(reward, file=self._logfile)
+    self._last_x = x
     return np.array(self.state), reward, done, {}
 
   def _setJointMotorControlArrayWithLimit(self, targetPositions, maxVelocity):
@@ -106,6 +107,7 @@ class YamaXEnv(gym.Env):
 
     self._updateState()
 
+    self._last_x = 0
     return np.array(self.state)
 
   def _updateState(self):
