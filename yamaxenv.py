@@ -78,7 +78,7 @@ class YamaXEnv(gym.Env):
     s = [math.sin(a / 2) for a in euler]
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
     done = x > self.success_x_threshold or axisAngle > self.fail_threshold
-    reward = -0.01 * sum([a*a for a in euler], 1) * (y*y + 1) + (x - self._last_x)
+    reward = -0.01 * sum([a*a for a in euler], 1) * (y*y + 1) + (x - self._last_x) - 0.1 * self._checkUnpermittedContacts()
     if x > self.success_x_threshold:
       reward = 1
     elif axisAngle > self.fail_threshold:
@@ -91,11 +91,16 @@ class YamaXEnv(gym.Env):
     for (idx, pos) in enumerate(self._fixed_joints + targetPositions):
         p.setJointMotorControl2(self.yamax, idx, p.POSITION_CONTROL, targetPosition=pos, maxVelocity=maxVelocity)
 
+  def _checkUnpermittedContacts(self):
+    contacts = p.getContactPoints(bodyA=self.yamax)
+    numValid = sum(((contact[1] == self.plane and contact[3] == -1) and (contact[2] == self.yamax and (contact[4] == 19 or contact[4] == 14))) or ((contact[2] == self.plane and contact[4] == -1) and (contact[1] == self.yamax and (contact[3] == 19 or contact[3] == 14))) for contact in contacts)
+    return len(contacts) - numValid
+
   def _reset(self):
 #    print("-----------reset simulation---------------")
     p.resetSimulation()
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
-    p.loadURDF("plane.urdf")
+    self.plane = p.loadURDF("plane.urdf")
     self.yamax = p.loadURDF(self._robot, [0,0,0])
     h = p.getLinkState(self.yamax, 19)[0][2] # HARDCODED!!
     p.resetBasePositionAndOrientation(self.yamax, [0,0,-h + 0.01], [0,0,0,1]) # HARDCODED: 0.01
