@@ -36,7 +36,7 @@ class YamaXEnv(gym.Env):
     else:
     	p.connect(p.DIRECT)
 
-    self.num_joints = 20
+    self.num_joints = 12 # joint idx 8 ~ is needed
     action_high = np.array([50 * math.pi / 180] * self.num_joints)
     observation_high = np.concatenate((action_high, [np.finfo(np.float32).max] * 6))
 
@@ -88,7 +88,7 @@ class YamaXEnv(gym.Env):
     return np.array(self.state), reward, done, {}
 
   def _setJointMotorControlArrayWithLimit(self, targetPositions, maxVelocity):
-    for (idx, pos) in enumerate(targetPositions):
+    for (idx, pos) in enumerate(self._fixed_joints + targetPositions):
         p.setJointMotorControl2(self.yamax, idx, p.POSITION_CONTROL, targetPosition=pos, maxVelocity=maxVelocity)
 
   def _reset(self):
@@ -100,12 +100,13 @@ class YamaXEnv(gym.Env):
     h = p.getLinkState(self.yamax, 19)[0][2] # HARDCODED!!
     p.resetBasePositionAndOrientation(self.yamax, [0,0,-h + 0.01], [0,0,0,1]) # HARDCODED: 0.01
     self.timeStep = 0.01#0.01
-    numJoints = p.getNumJoints(self.yamax)
+    numJoints = p.getNumJoints(self.yamax) - 8
     assert numJoints == self.num_joints
     p.setGravity(0,0, -9.79)
     p.setTimeStep(self.timeStep)
     p.setRealTimeSimulation(0)
 
+    self._fixed_joints = [0] * 8
     initialJointAngles = [0] * self.num_joints # self.np_random.uniform(low=-0.5, high=0.5, size=(self.num_joints,))
     self._setJointMotorControlArrayWithLimit(targetPositions=initialJointAngles, maxVelocity=self._angular_velocity_limit)
 
@@ -115,7 +116,7 @@ class YamaXEnv(gym.Env):
     return np.array(self.state)
 
   def _updateState(self):
-      jointStates = [s[0] for s in p.getJointStates(self.yamax, range(self.num_joints))]
+      jointStates = [s[0] for s in p.getJointStates(self.yamax, range(8, self.num_joints + 8))]
       (x, y, z), orientation = p.getBasePositionAndOrientation(self.yamax)
       euler = p.getEulerFromQuaternion(orientation)
       self.state = jointStates + [x, y, z] + list(euler)
