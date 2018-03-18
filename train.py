@@ -9,8 +9,10 @@ from yamaxenv import YamaXEnv
 
 from baselines.ppo1 import mlp_policy, pposgd_simple
 from baselines.common import tf_util as U
-
+from baselines import bench
 from baselines import logger
+
+import tensorflow as tf
 
 import pybullet as p
 
@@ -21,8 +23,10 @@ def callback(lcl, glb):
 
 def main():
     logger.configure()
-    U.make_session().__enter__()
-    env = YamaXEnv(logfile="log.csv", renders=True)
+    sess = U.make_session()
+    sess.__enter__()
+    logger.configure()
+    env = bench.Monitor(YamaXEnv(logfile="log.csv", renders=False), "log/monitor.json")
     def policy_fn(name, ob_space, ac_space):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
             hid_size=64, num_hid_layers=2)
@@ -34,9 +38,9 @@ def main():
             optim_epochs=10, optim_stepsize=3e-4, optim_batchsize=64,
             gamma=0.99, lam=0.95, schedule='linear',
         )
-    print("Saving model to cartpole_model.pkl")
-    act.save("cartpole_model.pkl")
-
+    env.close()
+    saver = tf.train.Saver()
+    saver.save(sess, './model/deepl2_10000000')
 
 if __name__ == '__main__':
     main()
