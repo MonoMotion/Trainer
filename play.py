@@ -16,7 +16,7 @@ from baselines import logger
 
 import tensorflow as tf
 
-def main(iteration):
+def main(iteration, challenge, modelpath):
     logger.configure()
     sess = U.make_session()
     sess.__enter__()
@@ -26,19 +26,26 @@ def main(iteration):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
             hid_size=64, num_hid_layers=2)
 
+    obs = env.reset()
     pi = policy_fn('pi', env.observation_space, env.action_space)
-    tf.train.Saver().restore(sess, 'model/deepl2_10000000')
+    tf.train.Saver().restore(sess, modelpath)
     for i in range(iteration):
         print("Iteration {} started".format(i))
-        obs = env.reset()
+        if not challenge:
+            obs = env.reset()
         done = False
         while not done:
             action = pi.act(True, obs)[0]
             obs, reward, done, info = env.step(action)
             env.render()
+            if challenge and reward == -1:
+                break
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--iter', type=int, default=1)
-    main(parser.parse_args().iter)
+    parser.add_argument('--model', type=str, default='model/deepl2_10000000')
+    parser.add_argument("--challenge", action="store_true")
+    args = parser.parse_args()
+    main(args.iter, args.challenge, args.model)
