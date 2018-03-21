@@ -159,7 +159,7 @@ class YamaXEnv(gym.Env):
   def _updateState(self):
       jointStates = [s[0] for s in p.getJointStates(self.yamax, range(8, self.num_joints + 8))]
       (x, y, z), _ = p.getBasePositionAndOrientation(self.yamax)
-      hipState = p.getLinkState(yamax, 9)
+      hipState = p.getLinkState(self.yamax, 9)
       euler = p.getEulerFromQuaternion(hipState[1])
       self.state = jointStates + [x, y, z] + list(euler)
 
