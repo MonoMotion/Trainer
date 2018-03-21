@@ -11,7 +11,7 @@ pybullet = "*"
 pyflakes = "*"
 matplotlib = "*"
 pandas = "*"
-tensorforce = "*"
+tensorforce = {extras = ["tf"]}
 gym = "*"
 
 
