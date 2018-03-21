@@ -46,7 +46,6 @@ class YamaXEnv(gym.Env):
     servo_angular_speed = 0.14
     self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
     self.fail_threshold = 45 * math.pi / 180
-    self.success_x_threshold = 3
     self._seed()
 #    self.reset()
     self.viewer = None
@@ -77,12 +76,14 @@ class YamaXEnv(gym.Env):
     c = [math.cos(a / 2) for a in euler]
     s = [math.sin(a / 2) for a in euler]
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-    done = x > self.success_x_threshold or axisAngle > self.fail_threshold
-    reward = -0.01 * sum([a*a for a in euler], 1) * (y*y + 1) + (x - self._last_x) - 0.1 * self._checkUnpermittedContacts()
-    if x > self.success_x_threshold:
-      reward = 1
-    elif axisAngle > self.fail_threshold:
-      reward = -1
+    done = axisAngle > self.fail_threshold
+    numUnpermittedContact = self._checkUnpermittedContacts()
+    self._num_unpermitted += numUnpermittedContact
+    lr, ll = self._getLegsOrientation()
+    reward = -0.01 * sum([a*a for a in euler], 1) * (y*y + 1) - 0.1 * numUnpermittedContact - 0.1 * (lr - ll) ** 2 - 0.01 * (self._last_x - x)
+    if axisAngle > self.fail_threshold:
+      reward = -(5 ** -x) - 1
+
     print(reward, file=self._logfile)
     self._last_x = x
     return np.array(self.state), reward, done, {}
@@ -96,8 +97,16 @@ class YamaXEnv(gym.Env):
     numValid = sum(((contact[1] == self.plane and contact[3] == -1) and (contact[2] == self.yamax and (contact[4] == 19 or contact[4] == 14))) or ((contact[2] == self.plane and contact[4] == -1) and (contact[1] == self.yamax and (contact[3] == 19 or contact[3] == 14))) for contact in contacts)
     return len(contacts) - numValid
 
+  def _getLegsOrientation(self):
+    def getRoll(lidx):
+        orientation = p.getLinkState(self.yamax, lidx)[1]
+        euler = p.getEulerFromQuaternion(orientation)
+        return euler[0] # roll
+    return (getRoll(12), getRoll(17))
+
   def _reset(self):
 #    print("-----------reset simulation---------------")
+    self._num_unpermitted = 0
     p.resetSimulation()
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     self.plane = p.loadURDF("plane.urdf")
