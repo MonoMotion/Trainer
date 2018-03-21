@@ -3,7 +3,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(os.path.dirname(currentdir))
 os.sys.path.insert(0,parentdir)
 
-import logging
+import csv
 import gym
 from gym import spaces
 from gym.utils import seeding
@@ -18,19 +18,23 @@ from operator import mul
 import matplotlib.pyplot as plt
 from pkg_resources import parse_version
 
-logger = logging.getLogger(__name__)
-
 class YamaXEnv(gym.Env):
   metadata = {
     'render.modes': ['human', 'rgb_array'],
     'video.frames_per_second' : 50
   }
 
-  def __init__(self, logfile='log.csv', renders=True, robot="yamax.urdf"):
+  def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf"):
       # start the bullet physics server
-    self._logfile = open(logfile, 'a')
+    if logdir:
+        self._reward_log_file = open(os.path.join(logdir, 'log.csv'), 'wt')
+        self._logger = csv.DictWriter(self._reward_log_file, fieldnames=('time_elapsed', 'reward_sum', 'final_reward', 'maximum_leg_error', 'num_timesteps', 'distance_sum', 'final_distance'))
+    else:
+        self._reward_log_file = None
+        self._logger = None
+
     self._renders = renders
-    self._robot = robot
+    self._urdf = robotUrdf
     if (renders):
         p.connect(p.GUI)
     else:
@@ -55,6 +59,9 @@ class YamaXEnv(gym.Env):
 #    self.reset()
     self.viewer = None
     self._configure()
+
+    self._last_ep_x = 0
+    self._tstart = time.time()
 
   def _configure(self, display=None):
     self.display = display
@@ -89,7 +96,17 @@ class YamaXEnv(gym.Env):
     if axisAngle > self.fail_threshold:
       reward = -(5 ** -x) - 1
 
-    print(reward, file=self._logfile)
+    self._ep_rewards.append(reward)
+    self._ep_legs.append(lr-ll)
+    if done:
+        if self._logger:
+            eprew = sum(self._ep_rewards)
+            eplen = len(self._ep_rewards)
+            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs)}
+            self._last_ep_x = x
+            self._logger.writerow(epinfo)
+            self._reward_log_file.flush()
+
     self._last_x = x
     return np.array(self.state), reward, done, {}
 
@@ -115,7 +132,7 @@ class YamaXEnv(gym.Env):
     p.resetSimulation()
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     self.plane = p.loadURDF("plane.urdf")
-    self.yamax = p.loadURDF(self._robot, [0,0,0])
+    self.yamax = p.loadURDF(self._urdf, [0,0,0])
     h = p.getLinkState(self.yamax, 19)[0][2] # HARDCODED!!
     p.resetBasePositionAndOrientation(self.yamax, [0,0,-h + 0.01], [0,0,0,1]) # HARDCODED: 0.01
     self.timeStep = 0.01#0.01
@@ -132,6 +149,8 @@ class YamaXEnv(gym.Env):
     self._updateState()
 
     self._last_x = 0
+    self._ep_rewards = []
+    self._ep_legs = []
     return np.array(self.state)
 
   def _updateState(self):

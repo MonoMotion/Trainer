@@ -69,7 +69,7 @@ def main():
 
     environment = OpenAIGym.__new__(OpenAIGym)
     environment.gym_id = "YamaXEnv-v0"
-    environment.gym = YamaXEnv(renders=args.visualize)
+    environment.gym = YamaXEnv(renders=args.visualize, logdir=args.monitor)
     environment.visualize = args.visualize
 
     if args.monitor:
