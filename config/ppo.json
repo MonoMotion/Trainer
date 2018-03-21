@@ -27,7 +27,7 @@
     "baseline_mode": "states",
     "baseline": {
         "type": "mlp",
-        "sizes": [32, 32]
+        "sizes": [64, 64]
     },
     "baseline_optimizer": {
         "type": "multi_step",

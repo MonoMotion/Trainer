@@ -190,6 +190,8 @@ class YamaXEnv(gym.Env):
           projectionMatrix=proj_matrix,
           renderer=p.ER_BULLET_HARDWARE_OPENGL
           )
+      if len(px) != self._render_height:
+          px = np.reshape(px, (self._render_height, self._render_width, 4)).astype('uint8')
       rgb_array = np.array(px)
       rgb_array = rgb_array[:, :, :3]
       return rgb_array
