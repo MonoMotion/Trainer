@@ -8,13 +8,33 @@ DeepL2 Project: [https://blog.y-modify.org/2018/01/04/deepl2-start/](https://blo
 
 ## Try
 
+### Preparation
+
 ```
 git clone https://github.com/Y-modify/deepl2-pybullet-locomotion.git
 cd deepl2-pybullet-locomotion
 pipenv install
+```
+
+### Train
+
+```
 # Train 1000000 episodes
 python train.py -a config/ppo.json -n config/mlp2_network.json -e 1000000 --monitor monitor/ --save model/
 # If you wanna see what is going on in simulation, add --visualize flag:
 # python train.py -a config/ppo.json -n config/mlp2_network.json -e 1000000 --monitor monitor/ --save model/ --visualize
+```
+
+### Plot results
+
+*NOT IMPLEMENTED YET*
+
+```
 pipenv run python plot.py
+```
+
+### Play with trained model
+
+```
+python train.py -a config/ppo.json -n config/mlp2_network.json -e 10 --load model/ --visualize
 ```
