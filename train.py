@@ -32,6 +32,8 @@ from tensorforce.agents import Agent
 from tensorforce.execution import Runner
 from tensorforce.contrib.openai_gym import OpenAIGym
 
+import gym
+
 from yamaxenv import YamaXEnv
 # python examples/openai_gym.py Pong-ram-v0 -a examples/configs/vpg.json -n examples/configs/mlp2_network.json -e 50000 -m 2000
 
@@ -69,6 +71,13 @@ def main():
     environment.gym_id = "YamaXEnv-v0"
     environment.gym = YamaXEnv(renders=args.visualize)
     environment.visualize = args.visualize
+
+    if args.monitor:
+        if args.monitor_video == 0:
+            video_callable = False
+        else:
+            video_callable = (lambda x: x % args.monitor_video == 0)
+        environment.gym = gym.wrappers.Monitor(environment.gym, args.monitor, force=not args.monitor_safe, video_callable=video_callable)
 
     if args.agent is not None:
         with open(args.agent, 'r') as fp:
