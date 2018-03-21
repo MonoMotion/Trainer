@@ -35,6 +35,11 @@ class YamaXEnv(gym.Env):
         p.connect(p.GUI)
     else:
     	p.connect(p.DIRECT)
+    self._cam_dist = 3
+    self._cam_yaw = 0
+    self._cam_pitch = -30
+    self._render_width =320
+    self._render_height = 240
 
     self.num_joints = 12 # joint idx 8 ~ is needed
     action_high = np.array([50 * math.pi / 180] * self.num_joints)
@@ -136,7 +141,34 @@ class YamaXEnv(gym.Env):
       self.state = jointStates + [x, y, z] + list(euler)
 
   def _render(self, mode='human', close=False):
-      return
+      if mode=="human" and not self._renders:
+          raise RuntimeError("Supplied mode=='human' but connected as p.DIRECT")
+      if mode != "rgb_array":
+          return np.array([])
+
+      base_pos=[0,0,0]
+      if hasattr(self,'robot'):
+          if hasattr(self.robot,'body_xyz'):
+              base_pos = self.robot.body_xyz
+
+      view_matrix = p.computeViewMatrixFromYawPitchRoll(
+          cameraTargetPosition=base_pos,
+          distance=self._cam_dist,
+          yaw=self._cam_yaw,
+          pitch=self._cam_pitch,
+          roll=0,
+          upAxisIndex=2)
+      proj_matrix = p.computeProjectionMatrixFOV(
+          fov=60, aspect=float(self._render_width)/self._render_height,
+          nearVal=0.1, farVal=100.0)
+      (_, _, px, _, _) = p.getCameraImage(
+      width=self._render_width, height=self._render_height, viewMatrix=view_matrix,
+          projectionMatrix=proj_matrix,
+          renderer=p.ER_BULLET_HARDWARE_OPENGL
+          )
+      rgb_array = np.array(px)
+      rgb_array = rgb_array[:, :, :3]
+      return rgb_array
 
   if parse_version(gym.__version__)>=parse_version('0.9.6'):
     render = _render
