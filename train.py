@@ -35,10 +35,6 @@ from tensorforce.contrib.openai_gym import OpenAIGym
 import gym
 
 from yamaxenv import YamaXEnv
-# python examples/openai_gym.py Pong-ram-v0 -a examples/configs/vpg.json -n examples/configs/mlp2_network.json -e 50000 -m 2000
-
-# python examples/openai_gym.py CartPole-v0 -a examples/configs/vpg.json -n examples/configs/mlp2_network.json -e 2000 -m 200
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -50,11 +46,11 @@ def main():
     parser.add_argument('-m', '--max-episode-timesteps', type=int, default=None, help="Maximum number of timesteps per episode")
     parser.add_argument('-d', '--deterministic', action='store_true', default=False, help="Choose actions deterministically")
     parser.add_argument('-s', '--save', help="Save agent to this dir")
-    parser.add_argument('-se', '--save-episodes', type=int, default=100, help="Save agent every x episodes")
+    parser.add_argument('-se', '--save-episodes', type=int, default=500, help="Save agent every x episodes")
     parser.add_argument('-l', '--load', help="Load agent from this dir")
     parser.add_argument('--monitor', help="Save results to this directory")
     parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
-    parser.add_argument('--monitor-video', type=int, default=0, help="Save video every x steps (0 = disabled)")
+    parser.add_argument('--monitor-video', type=int, default=500, help="Save video every x steps (0 = disabled)")
     parser.add_argument('--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
     parser.add_argument('-D', '--debug', action='store_true', default=False, help="Show debug outputs")
     parser.add_argument('--job', type=str, default=None, help="For distributed mode: The job type of this agent.")
