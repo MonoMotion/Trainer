@@ -89,7 +89,7 @@ class YamaXEnv(gym.Env):
     c = [math.cos(a / 2) for a in euler]
     s = [math.sin(a / 2) for a in euler]
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-    done = axisAngle > self.fail_threshold
+    done = axisAngle > self.fail_threshold or x > self.success_x_threshold
     numUnpermittedContact = self._checkUnpermittedContacts()
     self._num_unpermitted += numUnpermittedContact
     lr, ll = self._getLegsOrientation()
