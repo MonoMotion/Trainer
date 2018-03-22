@@ -91,7 +91,6 @@ class YamaXEnv(gym.Env):
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
     done = axisAngle > self.fail_threshold or x > self.success_x_threshold
     numUnpermittedContact = self._checkUnpermittedContacts()
-    self._num_unpermitted += numUnpermittedContact
     lr, ll = self._getLegsOrientation()
     legError = -0.1 * (lr - ll) ** 2 if (lr - ll) > ((30 * math.pi) / 180) else 0
     Or, Op, Oy = euler
@@ -134,7 +133,6 @@ class YamaXEnv(gym.Env):
 
   def _reset(self):
 #    print("-----------reset simulation---------------")
-    self._num_unpermitted = 0
     p.resetSimulation()
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     self.plane = p.loadURDF("plane.urdf")
