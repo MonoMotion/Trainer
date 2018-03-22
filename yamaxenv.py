@@ -28,7 +28,7 @@ class YamaXEnv(gym.Env):
       # start the bullet physics server
     if logdir:
         self._reward_log_file = open(os.path.join(logdir, 'log.csv'), 'wt')
-        self._logger = csv.DictWriter(self._reward_log_file, fieldnames=('time_elapsed', 'reward_sum', 'final_reward', 'maximum_leg_error', 'num_timesteps', 'distance_sum', 'final_distance'))
+        self._logger = csv.DictWriter(self._reward_log_file, fieldnames=('time_elapsed', 'reward_sum', 'final_reward', 'maximum_leg_error', 'num_timesteps', 'distance_sum', 'final_distance', 'unperm_sum'))
     else:
         self._reward_log_file = None
         self._logger = None
@@ -103,11 +103,12 @@ class YamaXEnv(gym.Env):
 
     self._ep_rewards.append(reward)
     self._ep_legs.append(legError)
+    self._ep_unperm.append(numUnpermittedContact)
     if done:
         if self._logger:
             eprew = sum(self._ep_rewards)
             eplen = len(self._ep_rewards)
-            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs)}
+            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs), "unperm_sum": sum(self._ep_unperm)}
             self._last_ep_x = x
             self._logger.writerow(epinfo)
             self._reward_log_file.flush()
@@ -156,6 +157,7 @@ class YamaXEnv(gym.Env):
     self._last_x = 0
     self._ep_rewards = []
     self._ep_legs = []
+    self._ep_unperms = []
     return np.array(self.state)
 
   def _updateState(self):
