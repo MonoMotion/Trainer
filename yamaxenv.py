@@ -55,7 +55,7 @@ class YamaXEnv(gym.Env):
     servo_angular_speed = 0.14
     self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
     self.fail_threshold = 45 * math.pi / 180
-    self.success_x_threshold = 3
+    self.success_x_threshold = 5
     self._seed()
 #    self.reset()
     self.viewer = None
@@ -89,11 +89,12 @@ class YamaXEnv(gym.Env):
     c = [math.cos(a / 2) for a in euler]
     s = [math.sin(a / 2) for a in euler]
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-    done = axisAngle > self.fail_threshold
+    done = axisAngle > self.fail_threshold or x > self.success_x_threshold
     numUnpermittedContact = self._checkUnpermittedContacts()
     self._num_unpermitted += numUnpermittedContact
     lr, ll = self._getLegsOrientation()
-    reward = -0.01 * sum([a*a for a in euler], 1) * (y*y + 1) - 0.1 * numUnpermittedContact - 0.1 * (lr - ll) ** 2 - (self._last_x - x)
+    Or, Op, Oy = euler
+    reward = -0.01 * (Or**2 + Op**2 + Oy**3 + 1) * (y**3 + 1) - 0.1 * numUnpermittedContact - 0.1 * (lr - ll) ** 2 - (self._last_x - x)
     if axisAngle > self.fail_threshold:
       reward = -1
     elif x > self.success_x_threshold:
@@ -158,9 +159,9 @@ class YamaXEnv(gym.Env):
 
   def _updateState(self):
       jointStates = [s[0] for s in p.getJointStates(self.yamax, range(8, self.num_joints + 8))]
-      (x, y, z), _ = p.getBasePositionAndOrientation(self.yamax)
-      hipState = p.getLinkState(self.yamax, 9)
-      euler = p.getEulerFromQuaternion(hipState[1])
+      (x, y, z), orientation = p.getBasePositionAndOrientation(self.yamax)
+      # hipState = p.getLinkState(self.yamax, 9)
+      euler = p.getEulerFromQuaternion(orientation) # hipState[1])
       self.state = jointStates + [x, y, z] + list(euler)
 
   def _render(self, mode='human', close=False):
