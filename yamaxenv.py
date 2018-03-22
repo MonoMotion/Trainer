@@ -102,12 +102,12 @@ class YamaXEnv(gym.Env):
 
     self._ep_rewards.append(reward)
     self._ep_legs.append(legError)
-    self._ep_unperm.append(numUnpermittedContact)
+    self._ep_unperms.append(numUnpermittedContact)
     if done:
         if self._logger:
             eprew = sum(self._ep_rewards)
             eplen = len(self._ep_rewards)
-            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs), "unperm_sum": sum(self._ep_unperm)}
+            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs), "unperm_sum": sum(self._ep_unperms)}
             self._last_ep_x = x
             self._logger.writerow(epinfo)
             self._reward_log_file.flush()
