@@ -14,8 +14,6 @@ from baselines import logger
 
 import tensorflow as tf
 
-import pybullet as p
-
 def main():
     parser = argparse.ArgumentParser()
 
@@ -23,7 +21,6 @@ def main():
     parser.add_argument('-t', '--timesteps', type=int, default=0, help="Max Number of timesteps (0: unlimited)")
     parser.add_argument('-i', '--iteration', type=int, default=0, help="Max Number of iteration (0: unlimited)")
     parser.add_argument('-ss', '--seconds', type=int, default=0, help="Max Seconds (0: unlimited)")
-    # parser.add_argument('-m', '--max-episode-timesteps', type=int, default=None, help="Maximum number of timesteps per episode")
     parser.add_argument('-s', '--save', help="Save agent to this dir")
     parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
     parser.add_argument('-l', '--load', help="Load agent from this dir")
@@ -75,7 +72,7 @@ def main():
             if l.iters_so_far % args.save_episodes == 0:
                 saver.save(sess, "{}/afterIter_{}".format(args.save, l.iters_so_far))
 
-    act = pposgd_simple.learn(env, policy_fn,
+    pposgd_simple.learn(env, policy_fn,
             max_timesteps=args.timesteps,
             max_episodes=args.episodes,
             max_iters=args.iteration,
