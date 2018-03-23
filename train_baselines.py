@@ -20,8 +20,8 @@ import pybullet as p
 def main():
     parser = argparse.ArgumentParser()
 
-    # parser.add_argument('-e', '--episodes', type=int, default=None, help="Number of episodes")
-    parser.add_argument('-t', '--timesteps', type=int, default=None, help="Number of timesteps")
+    parser.add_argument('-e', '--episodes', type=int, default=0, help="Number of episodes (0: unlimited)")
+    parser.add_argument('-t', '--timesteps', type=int, default=0, help="Number of timesteps (0: unlimited)")
     # parser.add_argument('-m', '--max-episode-timesteps', type=int, default=None, help="Maximum number of timesteps per episode")
     parser.add_argument('-s', '--save', help="Save agent to this dir")
     # parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
@@ -47,6 +47,7 @@ def main():
 
     act = pposgd_simple.learn(env, policy_fn,
             max_timesteps=args.timesteps,
+            max_episodes=args.episodes,
             timesteps_per_actorbatch=2048,
             clip_param=0.2, entcoeff=0.0,
             optim_epochs=10, optim_stepsize=3e-4, optim_batchsize=64,
