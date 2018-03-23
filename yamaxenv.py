@@ -12,6 +12,7 @@ import math
 import time
 import subprocess
 import pybullet as p
+from statistics import stdev
 import pybullet_data
 from functools import reduce
 from operator import mul
@@ -94,7 +95,7 @@ class YamaXEnv(gym.Env):
     lr, ll = self._getLegsOrientation()
     legError = -0.1 * (lr - ll) ** 2 if (lr - ll) > ((30 * math.pi) / 180) else 0
     Or, Op, Oy = euler
-    reward = -0.01 * (Or**2 + Op**2 + 2*Oy**2 + 1) * (y**2 + 1) - 0.1 * numUnpermittedContact + legError - (self._last_x - x)
+    reward = -0.01 * (Or**2 + Op**2 + 2*Oy**2 + 1) * (y**2 + 1) - 0.1 * numUnpermittedContact + legError - (self._last_x - x) - self._getLinksXStdev()
     if axisAngle > self.fail_threshold:
       reward = -1
     elif x > self.success_x_threshold:
@@ -130,6 +131,9 @@ class YamaXEnv(gym.Env):
         euler = p.getEulerFromQuaternion(orientation)
         return euler[0] # roll
     return (getRoll(12), getRoll(17))
+
+  def _getLinksXStdev(self):
+      return stdev(p.getLinkState(self.yamax, idx)[0][0] for idx in range(20))
 
   def _reset(self):
 #    print("-----------reset simulation---------------")
