@@ -37,7 +37,10 @@ def main():
     sess = U.make_session()
     sess.__enter__()
     logger.configure()
-    env = bench.Monitor(YamaXEnv(logdir=args.monitor, renders=args.visualize), args.monitor)
+    env = YamaXEnv(logdir=args.monitor, renders=args.visualize)
+    if args.monitor:
+        env = bench.Monitor(env, args.monitor)
+
     def policy_fn(name, ob_space, ac_space):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
             hid_size=64, num_hid_layers=2)
@@ -50,8 +53,9 @@ def main():
             gamma=0.99, lam=0.95, schedule='linear',
         )
     env.close()
-    saver = tf.train.Saver()
-    saver.save(sess, args.save)
+    if args.save:
+        saver = tf.train.Saver()
+        saver.save(sess, args.save)
 
 if __name__ == '__main__':
     main()
