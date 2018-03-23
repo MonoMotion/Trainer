@@ -10,7 +10,6 @@ from yamaxenv import YamaXEnv
 
 from baselines.ppo1 import mlp_policy, pposgd_simple
 from baselines.common import tf_util as U
-from baselines import bench
 from baselines import logger
 
 import tensorflow as tf
@@ -29,8 +28,8 @@ def main():
     # parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
     parser.add_argument('-l', '--load', help="Load agent from this dir")
     parser.add_argument('--monitor', help="Save results to this directory")
-    # parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
-    # parser.add_argument('--monitor-video', type=int, default=5000, help="Save video every x steps (0 = disabled)")
+    parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
+    parser.add_argument('--monitor-video', type=int, default=5000, help="Save video every x steps (0 = disabled)")
     parser.add_argument('--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
 
     args = parser.parse_args()
@@ -42,12 +41,16 @@ def main():
 
     env = YamaXEnv(logdir=args.monitor, renders=args.visualize)
     if args.monitor:
-        env = bench.Monitor(env, args.monitor)
         if not os.path.isdir(args.monitor):
             try:
                 os.mkdir(args.monitor, 0o755)
             except OSError:
                 raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
+        if args.monitor_video == 0:
+            video_callable = False
+        else:
+            video_callable = (lambda x: x % args.monitor_video == 0)
+        env = gym.wrappers.Monitor(env, args.monitor, force=not args.monitor_safe, video_callable=video_callable)
 
     if args.load:
         load_dir = os.path.dirname(args.load)
