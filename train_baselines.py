@@ -34,15 +34,16 @@ def main():
     logger.configure()
     sess = U.make_session()
     sess.__enter__()
-    saver = tf.train.Saver()
 
-    env = YamaXEnv(logdir=args.monitor, renders=args.visualize)
     if args.monitor:
         if not os.path.isdir(args.monitor):
             try:
                 os.mkdir(args.monitor, 0o755)
             except OSError:
                 raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
+
+    env = YamaXEnv(logdir=args.monitor, renders=args.visualize)
+    if args.monitor:
         if args.monitor_video == 0:
             video_callable = False
         else:
@@ -53,24 +54,24 @@ def main():
         load_dir = os.path.dirname(args.load)
         if not os.path.isdir(load_dir):
             raise OSError("Could not load agent from {}: No such directory.".format(load_dir))
-        saver.restore(sess, args.load)
 
     if args.save:
-        save_dir = os.path.dirname(args.save)
-        if not os.path.isdir(save_dir):
+        if not os.path.isdir(args.save):
             try:
-                os.mkdir(save_dir, 0o755)
+                os.mkdir(args.save, 0o755)
             except OSError:
-                raise OSError("Cannot save agent to dir {} ()".format(save_dir))
+                raise OSError("Cannot save agent to dir {} ()".format(args.save))
 
     def policy_fn(name, ob_space, ac_space):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
             hid_size=64, num_hid_layers=2)
 
     def callback(l, g):
-        if args.save and args.save_episodes:
-            if l.iters_so_far % args.save_episodes == 0:
-                saver.save(sess, "{}/afterIter_{}".format(args.save, l.iters_so_far))
+        if l["iters_so_far"] == 0:
+            tf.train.Saver().restore(sess, args.load)
+        elif args.save and args.save_episodes:
+            if l["iters_so_far"] % args.save_episodes == 0:
+                saver.save(sess, "{}/afterIter_{}".format(args.save, l["iters_so_far"]))
 
     pposgd_simple.learn(env, policy_fn,
             max_timesteps=args.timesteps,
@@ -85,7 +86,8 @@ def main():
         )
     env.close()
     if args.save:
-        saver.save(sess, args.save)
+        saver = tf.train.Saver()
+        saver.save(sess, os.path.join(args.save, "final"))
 
 if __name__ == '__main__':
     main()
