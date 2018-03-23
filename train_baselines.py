@@ -68,11 +68,11 @@ def main():
             hid_size=64, num_hid_layers=2)
 
     def callback(l, g):
-        if l["iters_so_far"] == 0:
+        if l["iters_so_far"] == 0 and args.load:
             tf.train.Saver().restore(sess, args.load)
         elif args.save and args.save_episodes:
             if l["iters_so_far"] % args.save_episodes == 0:
-                saver.save(sess, "{}/afterIter_{}".format(args.save, l["iters_so_far"]))
+                tf.train.Saver().save(sess, "{}/afterIter_{}".format(args.save, l["iters_so_far"]))
 
     pposgd_simple.learn(env, policy_fn,
             max_timesteps=args.timesteps,
