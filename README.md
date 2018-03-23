@@ -28,10 +28,8 @@ python train.py -a config/ppo.json -n config/mlp2_network.json -e 1000000 --moni
 
 ### Plot results
 
-*NOT IMPLEMENTED YET*
-
 ```
-python plot.py
+python plot.py monitor/log.csv reward_sum final_distance 10 100
 ```
 
 ### Play with trained model
