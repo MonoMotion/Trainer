@@ -24,10 +24,11 @@ def main():
     parser.add_argument('-s', '--save', help="Save agent to this dir")
     parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
     parser.add_argument('-l', '--load', help="Load agent from this dir")
-    parser.add_argument('--monitor', help="Save results to this directory")
+    parser.add_argument('--schedule', type=str, default="linear", help="annealing for stepsize parameters ('constant' or 'linear')")
+    parser.add_argument('-m', '--monitor', help="Save results to this directory")
     parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
     parser.add_argument('--monitor-video', type=int, default=5000, help="Save video every x steps (0 = disabled)")
-    parser.add_argument('--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
+    parser.add_argument('-v', '--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
 
     args = parser.parse_args()
 
@@ -81,7 +82,7 @@ def main():
             timesteps_per_actorbatch=2048,
             clip_param=0.2, entcoeff=0.0,
             optim_epochs=10, optim_stepsize=3e-4, optim_batchsize=64,
-            gamma=0.99, lam=0.95, schedule='linear',
+            gamma=0.99, lam=0.95, schedule=args.schedule,
             callback=callback
         )
     env.close()
