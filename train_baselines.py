@@ -22,7 +22,7 @@ def main():
     parser.add_argument('-e', '--episodes', type=int, default=0, help="Max Number of episodes (0: unlimited)")
     parser.add_argument('-t', '--timesteps', type=int, default=0, help="Max Number of timesteps (0: unlimited)")
     parser.add_argument('-i', '--iteration', type=int, default=0, help="Max Number of iteration (0: unlimited)")
-    parser.add_argument('-t', '--seconds', type=int, default=0, help="Max Seconds (0: unlimited)")
+    parser.add_argument('-ss', '--seconds', type=int, default=0, help="Max Seconds (0: unlimited)")
     # parser.add_argument('-m', '--max-episode-timesteps', type=int, default=None, help="Maximum number of timesteps per episode")
     parser.add_argument('-s', '--save', help="Save agent to this dir")
     parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
