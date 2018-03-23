@@ -25,7 +25,7 @@ def main():
     parser.add_argument('-t', '--seconds', type=int, default=0, help="Max Seconds (0: unlimited)")
     # parser.add_argument('-m', '--max-episode-timesteps', type=int, default=None, help="Maximum number of timesteps per episode")
     parser.add_argument('-s', '--save', help="Save agent to this dir")
-    # parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
+    parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
     parser.add_argument('-l', '--load', help="Load agent from this dir")
     parser.add_argument('--monitor', help="Save results to this directory")
     parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
@@ -70,6 +70,11 @@ def main():
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
             hid_size=64, num_hid_layers=2)
 
+    def callback(l, g):
+        if args.save and args.save_episodes:
+            if l.iters_so_far % args.save_episodes == 0:
+                saver.save(sess, "{}/afterIter_{}".format(args.save, l.iters_so_far))
+
     act = pposgd_simple.learn(env, policy_fn,
             max_timesteps=args.timesteps,
             max_episodes=args.episodes,
@@ -79,6 +84,7 @@ def main():
             clip_param=0.2, entcoeff=0.0,
             optim_epochs=10, optim_stepsize=3e-4, optim_batchsize=64,
             gamma=0.99, lam=0.95, schedule='linear',
+            callback=callback
         )
     env.close()
     if args.save:
