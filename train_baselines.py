@@ -27,7 +27,7 @@ def main():
     # parser.add_argument('-m', '--max-episode-timesteps', type=int, default=None, help="Maximum number of timesteps per episode")
     parser.add_argument('-s', '--save', help="Save agent to this dir")
     # parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
-    # parser.add_argument('-l', '--load', help="Load agent from this dir")
+    parser.add_argument('-l', '--load', help="Load agent from this dir")
     parser.add_argument('--monitor', help="Save results to this directory")
     # parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
     # parser.add_argument('--monitor-video', type=int, default=5000, help="Save video every x steps (0 = disabled)")
@@ -38,10 +38,30 @@ def main():
     logger.configure()
     sess = U.make_session()
     sess.__enter__()
-    logger.configure()
+    saver = tf.train.Saver()
+
     env = YamaXEnv(logdir=args.monitor, renders=args.visualize)
     if args.monitor:
         env = bench.Monitor(env, args.monitor)
+        if not os.path.isdir(args.monitor):
+            try:
+                os.mkdir(args.monitor, 0o755)
+            except OSError:
+                raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
+
+    if args.load:
+        load_dir = os.path.dirname(args.load)
+        if not os.path.isdir(load_dir):
+            raise OSError("Could not load agent from {}: No such directory.".format(load_dir))
+        saver.restore(sess, args.load)
+
+    if args.save:
+        save_dir = os.path.dirname(args.save)
+        if not os.path.isdir(save_dir):
+            try:
+                os.mkdir(save_dir, 0o755)
+            except OSError:
+                raise OSError("Cannot save agent to dir {} ()".format(save_dir))
 
     def policy_fn(name, ob_space, ac_space):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
@@ -59,7 +79,6 @@ def main():
         )
     env.close()
     if args.save:
-        saver = tf.train.Saver()
         saver.save(sess, args.save)
 
 if __name__ == '__main__':
