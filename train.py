@@ -1,174 +1,88 @@
-# Copyright 2017 reinforce.io. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-"""
-OpenAI gym execution.
-"""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import argparse
-import json
-import logging
-import os
-import time
-
-from tensorforce import TensorForceError
-from tensorforce.agents import Agent
-from tensorforce.execution import Runner
-from tensorforce.contrib.openai_gym import OpenAIGym
-
 import gym
-
+import argparse
 from yamaxenv import YamaXEnv
+
+from baselines.ppo1 import mlp_policy, pposgd_simple
+from baselines.common import tf_util as U
+from baselines import logger
+
+import tensorflow as tf
 
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-a', '--agent', help="Agent configuration file")
-    parser.add_argument('-n', '--network', default=None, help="Network specification file")
-    parser.add_argument('-e', '--episodes', type=int, default=None, help="Number of episodes")
-    parser.add_argument('-t', '--timesteps', type=int, default=None, help="Number of timesteps")
-    parser.add_argument('-m', '--max-episode-timesteps', type=int, default=None, help="Maximum number of timesteps per episode")
-    parser.add_argument('-d', '--deterministic', action='store_true', default=False, help="Choose actions deterministically")
+    parser.add_argument('-e', '--episodes', type=int, default=0, help="Max Number of episodes (0: unlimited)")
+    parser.add_argument('-t', '--timesteps', type=int, default=0, help="Max Number of timesteps (0: unlimited)")
+    parser.add_argument('-i', '--iteration', type=int, default=0, help="Max Number of iteration (0: unlimited)")
+    parser.add_argument('-ss', '--seconds', type=int, default=0, help="Max Seconds (0: unlimited)")
     parser.add_argument('-s', '--save', help="Save agent to this dir")
     parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
     parser.add_argument('-l', '--load', help="Load agent from this dir")
-    parser.add_argument('--monitor', help="Save results to this directory")
+    parser.add_argument('--schedule', type=str, default="linear", help="annealing for stepsize parameters ('constant' or 'linear')")
+    parser.add_argument('-m', '--monitor', help="Save results to this directory")
     parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
     parser.add_argument('--monitor-video', type=int, default=5000, help="Save video every x steps (0 = disabled)")
-    parser.add_argument('--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
-    parser.add_argument('-D', '--debug', action='store_true', default=False, help="Show debug outputs")
-    parser.add_argument('--job', type=str, default=None, help="For distributed mode: The job type of this agent.")
-    parser.add_argument('--task', type=int, default=0, help="For distributed mode: The task index of this agent.")
+    parser.add_argument('-v', '--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
 
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO)
+    logger.configure()
+    sess = U.make_session()
+    sess.__enter__()
 
-    logger = logging.getLogger(__file__)
-    logger.setLevel(logging.INFO)
+    if args.monitor:
+        if not os.path.isdir(args.monitor):
+            try:
+                os.mkdir(args.monitor, 0o755)
+            except OSError:
+                raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
 
-    environment = OpenAIGym.__new__(OpenAIGym)
-    environment.gym_id = "YamaXEnv-v0"
-    environment.gym = YamaXEnv(renders=args.visualize, logdir=args.monitor)
-    environment.visualize = args.visualize
-
+    env = YamaXEnv(logdir=args.monitor, renders=args.visualize)
     if args.monitor:
         if args.monitor_video == 0:
             video_callable = False
         else:
             video_callable = (lambda x: x % args.monitor_video == 0)
-        environment.gym = gym.wrappers.Monitor(environment.gym, args.monitor, force=not args.monitor_safe, video_callable=video_callable)
+        env = gym.wrappers.Monitor(env, args.monitor, force=not args.monitor_safe, video_callable=video_callable)
 
-    if args.agent is not None:
-        with open(args.agent, 'r') as fp:
-            agent = json.load(fp=fp)
-    else:
-        raise TensorForceError("No agent configuration provided.")
-
-    if args.network is not None:
-        with open(args.network, 'r') as fp:
-            network = json.load(fp=fp)
-    else:
-        network = None
-        logger.info("No network configuration provided.")
-
-    # TEST
-    agent["execution"] = dict(
-        type="distributed",
-        distributed_spec=dict(
-            job=args.job,
-            task_index=args.task,
-            # parameter_server=(args.job == "ps"),
-            cluster_spec=dict(
-                ps=["192.168.2.107:22222"],
-                worker=["192.168.2.107:22223"]
-            ))
-    ) if args.job else None
-    # END: TEST
-
-    agent = Agent.from_spec(
-        spec=agent,
-        kwargs=dict(
-            states=environment.states,
-            actions=environment.actions,
-            network=network,
-        )
-    )
     if args.load:
         load_dir = os.path.dirname(args.load)
         if not os.path.isdir(load_dir):
             raise OSError("Could not load agent from {}: No such directory.".format(load_dir))
-        agent.restore_model(args.load)
 
     if args.save:
-        save_dir = os.path.dirname(args.save)
-        if not os.path.isdir(save_dir):
+        if not os.path.isdir(args.save):
             try:
-                os.mkdir(save_dir, 0o755)
+                os.mkdir(args.save, 0o755)
             except OSError:
-                raise OSError("Cannot save agent to dir {} ()".format(save_dir))
+                raise OSError("Cannot save agent to dir {} ()".format(args.save))
 
-    if args.debug:
-        logger.info("-" * 16)
-        logger.info("Configuration:")
-        logger.info(agent)
+    def policy_fn(name, ob_space, ac_space):
+        return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
+            hid_size=64, num_hid_layers=2)
 
-    runner = Runner(
-        agent=agent,
-        environment=environment,
-        repeat_actions=1
-    )
+    def callback(l, g):
+        if l["iters_so_far"] == 0 and args.load:
+            tf.train.Saver().restore(sess, args.load)
+        elif args.save and args.save_episodes:
+            if l["iters_so_far"] % args.save_episodes == 0:
+                tf.train.Saver().save(sess, "{}/afterIter_{}".format(args.save, l["iters_so_far"]))
 
-    if args.debug:  # TODO: Timestep-based reporting
-        report_episodes = 1
-    else:
-        report_episodes = 100
-
-    logger.info("Starting {agent} for Environment '{env}'".format(agent=agent, env=environment))
-
-    def episode_finished(r, id_):
-        if r.episode % report_episodes == 0:
-            steps_per_second = r.timestep / (time.time() - r.start_time)
-            logger.info("Finished episode {:d} after {:d} timesteps. Steps Per Second {:0.2f}".format(
-                r.agent.episode, r.episode_timestep, steps_per_second
-            ))
-            logger.info("Episode reward: {}".format(r.episode_rewards[-1]))
-            logger.info("Average of last 500 rewards: {:0.2f}".
-                        format(sum(r.episode_rewards[-500:]) / min(500, len(r.episode_rewards))))
-            logger.info("Average of last 100 rewards: {:0.2f}".
-                        format(sum(r.episode_rewards[-100:]) / min(100, len(r.episode_rewards))))
-            if args.save and args.save_episodes is not None and not r.episode % args.save_episodes:
-                logger.info("Saving agent to {}".format(args.save))
-                r.agent.save_model(args.save)
-        return True
-
-    runner.run(
-        num_timesteps=args.timesteps,
-        num_episodes=args.episodes,
-        max_episode_timesteps=args.max_episode_timesteps,
-        deterministic=args.deterministic,
-        episode_finished=episode_finished
-    )
-    runner.close()
-
-    logger.info("Learning finished. Total episodes: {ep}".format(ep=runner.agent.episode))
-
+    pposgd_simple.learn(env, policy_fn,
+            max_timesteps=args.timesteps,
+            max_episodes=args.episodes,
+            max_iters=args.iteration,
+            max_seconds=args.seconds,
+            timesteps_per_actorbatch=2048,
+            clip_param=0.2, entcoeff=0.0,
+            optim_epochs=10, optim_stepsize=3e-4, optim_batchsize=64,
+            gamma=0.99, lam=0.95, schedule=args.schedule,
+            callback=callback
+        )
+    env.close()
+    if args.save:
+        saver = tf.train.Saver()
+        saver.save(sess, os.path.join(args.save, "final"))
 
 if __name__ == '__main__':
     main()
