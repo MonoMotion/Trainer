@@ -28,7 +28,7 @@ class YamaXEnv(gym.Env):
       # start the bullet physics server
     if logdir:
         self._reward_log_file = open(os.path.join(logdir, 'log.csv'), 'wt')
-        self._logger = csv.DictWriter(self._reward_log_file, fieldnames=('time_elapsed', 'reward_sum', 'final_reward', 'maximum_leg_error', 'num_timesteps', 'distance_sum', 'final_distance'))
+        self._logger = csv.DictWriter(self._reward_log_file, fieldnames=('time_elapsed', 'reward_sum', 'final_reward', 'maximum_leg_error', 'num_timesteps', 'distance_sum', 'final_distance', 'unperm_sum'))
     else:
         self._reward_log_file = None
         self._logger = None
@@ -55,7 +55,7 @@ class YamaXEnv(gym.Env):
     servo_angular_speed = 0.14
     self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
     self.fail_threshold = 45 * math.pi / 180
-    self.success_x_threshold = 5
+    self.success_x_threshold = 3
     self._seed()
 #    self.reset()
     self.viewer = None
@@ -91,22 +91,23 @@ class YamaXEnv(gym.Env):
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
     done = axisAngle > self.fail_threshold or x > self.success_x_threshold
     numUnpermittedContact = self._checkUnpermittedContacts()
-    self._num_unpermitted += numUnpermittedContact
     lr, ll = self._getLegsOrientation()
+    legError = -0.1 * (lr - ll) ** 2 if (lr - ll) > ((30 * math.pi) / 180) else 0
     Or, Op, Oy = euler
-    reward = -0.01 * (Or**2 + Op**2 + Oy**3 + 1) * (y**3 + 1) - 0.1 * numUnpermittedContact - 0.1 * (lr - ll) ** 2 - (self._last_x - x)
+    reward = -0.01 * (Or**2 + Op**2 + 2*Oy**2 + 1) * (2*y**2 + 1) - 0.1 * numUnpermittedContact + legError - (self._last_x - x)
     if axisAngle > self.fail_threshold:
       reward = -1
     elif x > self.success_x_threshold:
       reward = 1
 
     self._ep_rewards.append(reward)
-    self._ep_legs.append(lr-ll)
+    self._ep_legs.append(legError)
+    self._ep_unperms.append(numUnpermittedContact)
     if done:
         if self._logger:
             eprew = sum(self._ep_rewards)
             eplen = len(self._ep_rewards)
-            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs)}
+            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs), "unperm_sum": sum(self._ep_unperms)}
             self._last_ep_x = x
             self._logger.writerow(epinfo)
             self._reward_log_file.flush()
@@ -132,7 +133,6 @@ class YamaXEnv(gym.Env):
 
   def _reset(self):
 #    print("-----------reset simulation---------------")
-    self._num_unpermitted = 0
     p.resetSimulation()
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     self.plane = p.loadURDF("plane.urdf")
@@ -155,13 +155,14 @@ class YamaXEnv(gym.Env):
     self._last_x = 0
     self._ep_rewards = []
     self._ep_legs = []
+    self._ep_unperms = []
     return np.array(self.state)
 
   def _updateState(self):
       jointStates = [s[0] for s in p.getJointStates(self.yamax, range(8, self.num_joints + 8))]
       (x, y, z), orientation = p.getBasePositionAndOrientation(self.yamax)
-      # hipState = p.getLinkState(self.yamax, 9)
-      euler = p.getEulerFromQuaternion(orientation) # hipState[1])
+      hipState = p.getLinkState(self.yamax, 9)
+      euler = p.getEulerFromQuaternion(hipState[1])
       self.state = jointStates + [x, y, z] + list(euler)
 
   def _render(self, mode='human', close=False):
