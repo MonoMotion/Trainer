@@ -47,7 +47,7 @@ class YamaXEnv(gym.Env):
 
     self.num_joints = 12 # joint idx 8 ~ is needed
     action_high = np.array([50 * math.pi / 180] * self.num_joints)
-    observation_high = np.concatenate((action_high, [np.finfo(np.float32).max] * 6))
+    observation_high = np.concatenate((action_high, [np.finfo(np.float32).max] * 3))
 
     self.action_space = spaces.Box(-action_high, action_high)
     self.observation_space = spaces.Box(-observation_high, observation_high)
@@ -83,8 +83,8 @@ class YamaXEnv(gym.Env):
         p.stepSimulation()
 
     self._updateState()
-    x, y, z = self.state[self.num_joints:self.num_joints+3]
-    euler = self.state[self.num_joints+3:]
+    x, y, z = self._getPos()
+    euler = self.state[self.num_joints:self.num_joints+3]
 
     c = [math.cos(a / 2) for a in euler]
     s = [math.sin(a / 2) for a in euler]
@@ -160,10 +160,13 @@ class YamaXEnv(gym.Env):
 
   def _updateState(self):
       jointStates = [s[0] for s in p.getJointStates(self.yamax, range(8, self.num_joints + 8))]
-      (x, y, z), orientation = p.getBasePositionAndOrientation(self.yamax)
       hipState = p.getLinkState(self.yamax, 9)
       euler = p.getEulerFromQuaternion(hipState[1])
-      self.state = jointStates + [x, y, z] + list(euler)
+      self.state = jointStates + list(euler)
+
+  def _getPos(self):
+      pos, _ = p.getBasePositionAndOrientation(self.yamax)
+      return pos
 
   def _render(self, mode='human', close=False):
       if mode=="human" and not self._renders:
