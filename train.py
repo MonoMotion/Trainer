@@ -63,8 +63,11 @@ def main():
             hid_size=64, num_hid_layers=2)
 
     def callback(l, g):
-        if l["iters_so_far"] == 0 and args.load:
-            tf.train.Saver().restore(sess, args.load)
+        if l["iters_so_far"] == 0:
+            if os.environ.get("OPENAI_LOG_FORMAT") == "tensorboard":
+                tf.summary.FileWriter(os.path.join(os.environ.get("OPENAI_LOGDIR", "tf_logs"), "graph"), sess.graph)
+            if args.load:
+                tf.train.Saver().restore(sess, args.load)
         elif args.save and args.save_episodes:
             if l["iters_so_far"] % args.save_episodes == 0:
                 tf.train.Saver().save(sess, "{}/afterIter_{}".format(args.save, l["iters_so_far"]))
