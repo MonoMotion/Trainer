@@ -23,6 +23,7 @@ def main():
     parser.add_argument('-m', '--monitor', help="Save results to this directory")
     parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
     parser.add_argument('--monitor-video', type=int, default=5000, help="Save video every x steps (0 = disabled)")
+    parser.add_argument('--frame-delay', type=float, default=0.0, help="Delay between each frame (for viewing result; 0 = disabled)")
     parser.add_argument('-v', '--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
 
     args = parser.parse_args()
@@ -38,7 +39,7 @@ def main():
             except OSError:
                 raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
 
-    env = YamaXEnv(logdir=args.monitor, renders=args.visualize)
+    env = YamaXEnv(logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay)
     if args.monitor:
         if args.monitor_video == 0:
             video_callable = False

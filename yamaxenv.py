@@ -24,7 +24,7 @@ class YamaXEnv(gym.Env):
     'video.frames_per_second' : 50
   }
 
-  def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf"):
+  def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf", frame_delay=0):
       # start the bullet physics server
     if logdir:
         self._reward_log_file = open(os.path.join(logdir, 'log.csv'), 'wt')
@@ -35,6 +35,7 @@ class YamaXEnv(gym.Env):
 
     self._renders = renders
     self._urdf = robotUrdf
+    self._updateDelay = frame_delay
     if (renders):
         p.connect(p.GUI)
     else:
@@ -73,7 +74,8 @@ class YamaXEnv(gym.Env):
 
   def _step(self, action):
     p.stepSimulation()
-    # time.sleep(self.timeStep)
+    if self._updateDelay:
+        time.sleep(self._updateDelay)
     self._updateState()
     jointStates = self.state[:self.num_joints]
 
