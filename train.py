@@ -6,6 +6,7 @@ import argparse
 
 import gym
 from yamaxenv import YamaXEnv
+from discord_reporter import report_to_discord
 
 from baselines.ppo1 import mlp_policy, pposgd_simple
 from baselines.common import tf_util as U
@@ -83,12 +84,14 @@ def main():
 
     def callback(l, g):
         if l["iters_so_far"] == 0:
+            report_to_discord("Started learning.")
             if os.environ.get("OPENAI_LOG_FORMAT") == "tensorboard":
                 tf.summary.FileWriter(os.path.join(os.environ.get("OPENAI_LOGDIR", "tf_logs"), "graph"), sess.graph)
             if args.load:
                 tf.train.Saver().restore(sess, args.load)
         elif args.save and args.save_episodes:
             if l["iters_so_far"] % args.save_episodes == 0:
+                report_to_discord("Iter {}. Saving to model...".format(l["iters_so_far"]))
                 tf.train.Saver().save(sess, "{}/afterIter_{}".format(args.save, l["iters_so_far"]))
 
     pposgd_simple.learn(env, policy_fn,
@@ -106,6 +109,7 @@ def main():
     if args.save:
         saver = tf.train.Saver()
         saver.save(sess, os.path.join(args.save, "final"))
+    report_to_discord("Done!")
 
 if __name__ == '__main__':
     main()
