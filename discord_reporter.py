@@ -9,10 +9,13 @@ class DiscordReporter(object):
     def __init__(self, monitor_dir=Path('./monitor')):
         self.monitor_dir = monitor_dir
         self.client = discord.Client()
+        self.ready = False
+        self.report_queue = []
 
     def start(self):
         @self.client.event
         async def on_ready():
+            self.ready = True
             print('Logged in as')
             print(self.client.user.name)
             print(self.client.user.id)
@@ -51,4 +54,12 @@ class DiscordReporter(object):
         self.thread.start()
 
     def report(self, message):
-        asyncio.run_coroutine_threadsafe(self.client.send_message(self.target_channel, message), self.client.loop)
+        def send(m):
+            asyncio.run_coroutine_threadsafe(self.client.send_message(self.target_channel, message), self.client.loop)
+
+        if not self.ready:
+            self.report_queue.append(message)
+        else:
+            send(message)
+            for m in self.report_queue:
+                send(m)
