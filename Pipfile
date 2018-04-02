@@ -13,6 +13,7 @@ matplotlib = "*"
 pandas = "*"
 tensorforce = {extras = ["tf"]}
 gym = "*"
+"discord.py" = "*"
 
 
 [dev-packages]
