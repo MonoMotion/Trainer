@@ -1,7 +1,10 @@
 import os
-import gym
-import argparse
+import atexit
+import signal
 from subprocess import Popen
+import argparse
+
+import gym
 from yamaxenv import YamaXEnv
 
 from baselines.ppo1 import mlp_policy, pposgd_simple
@@ -38,7 +41,10 @@ def main():
             logger.warn('Overwriting OPENAI_LOGDIR to \'{}\', which was \'{}\''.format(args.tensorboard, os.environ['OPENAI_LOGDIR']))
         os.environ['OPENAI_LOGDIR'] = args.tensorboard
         logger.warn('Launching Tensorboard...')
-        Popen(['tensorboard', '--logdir', args.tensorboard])
+        tensorboard_pid = Popen(['tensorboard', '--logdir', args.tensorboard]).pid
+        def kill_tb():
+            os.kill(tensorboard_pid, signal.SIGTERM)
+        atexit.register(kill_tb)
 
     logger.configure()
     sess = U.make_session()
