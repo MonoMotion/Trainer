@@ -26,6 +26,8 @@ class DiscordReporter(object):
                     raise RuntimeError('Cannot get channel')
             else:
                 raise RuntimeError('Please supply channel.')
+            for message in self.report_queue:
+                await self.client.send_message(self.target_channel, message)
 
         @self.client.event
         async def on_message(message):
@@ -54,12 +56,7 @@ class DiscordReporter(object):
         self.thread.start()
 
     def report(self, message):
-        def send(m):
-            asyncio.run_coroutine_threadsafe(self.client.send_message(self.target_channel, message), self.client.loop)
-
         if not self.ready:
             self.report_queue.append(message)
         else:
-            send(message)
-            for m in self.report_queue:
-                send(m)
+            asyncio.run_coroutine_threadsafe(self.client.send_message(self.target_channel, message), self.client.loop)
