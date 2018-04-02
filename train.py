@@ -1,6 +1,7 @@
 import os
 import gym
 import argparse
+from subprocess import Popen
 from yamaxenv import YamaXEnv
 
 from baselines.ppo1 import mlp_policy, pposgd_simple
@@ -20,6 +21,7 @@ def main():
     parser.add_argument('-se', '--save-episodes', type=int, default=5000, help="Save agent every x episodes")
     parser.add_argument('-l', '--load', help="Load agent from this dir")
     parser.add_argument('--schedule', type=str, default="linear", help="annealing for stepsize parameters ('constant' or 'linear')")
+    parser.add_argument('--tensorboard', type=str, help="Store logs for tensorboard in this dir")
     parser.add_argument('-m', '--monitor', help="Save results to this directory")
     parser.add_argument('--monitor-safe', action='store_true', default=False, help="Do not overwrite previous results")
     parser.add_argument('--monitor-video', type=int, default=5000, help="Save video every x steps (0 = disabled)")
@@ -27,6 +29,16 @@ def main():
     parser.add_argument('-v', '--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
 
     args = parser.parse_args()
+
+    if args.tensorboard:
+        if os.environ.get('OPENAI_LOG_FORMAT', 'tensorboard') != 'tensorboard':
+            logger.warn('Overwriting OPENAI_LOG_FORMAT to \'tensorboard\', which was \'{}\''.format(os.environ['OPENAI_LOG_FORMAT']))
+        os.environ['OPENAI_LOG_FORMAT'] = 'tensorboard'
+        if os.environ.get('OPENAI_LOGDIR', args.tensorboard) != args.tensorboard:
+            logger.warn('Overwriting OPENAI_LOGDIR to \'{}\', which was \'{}\''.format(args.tensorboard, os.environ['OPENAI_LOGDIR']))
+        os.environ['OPENAI_LOGDIR'] = args.tensorboard
+        logger.warn('Launching Tensorboard...')
+        Popen(['tensorboard', '--logdir', args.tensorboard])
 
     logger.configure()
     sess = U.make_session()
