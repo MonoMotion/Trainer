@@ -21,7 +21,7 @@ def main():
     parser.add_argument('-i', '--iteration', type=int, default=0, help="Max Number of iteration (0: unlimited)")
     parser.add_argument('-ss', '--seconds', type=int, default=0, help="Max Seconds (0: unlimited)")
     parser.add_argument('-s', '--save', help="Save agent to this dir")
-    parser.add_argument('-se', '--save-episodes', type=int, default=1000, help="Save agent every x episodes")
+    parser.add_argument('-se', '--save-episodes', type=int, default=10000, help="Save agent every x episodes")
     parser.add_argument('-l', '--load', help="Load agent from this dir")
     parser.add_argument('--schedule', type=str, default="linear", help="annealing for stepsize parameters ('constant' or 'linear')")
     parser.add_argument('--tensorboard', type=str, help="Store logs for tensorboard in this dir")
@@ -88,8 +88,8 @@ def main():
             if args.load:
                 tf.train.Saver().restore(sess, args.load)
         elif args.save and args.save_episodes:
-            if l["iters_so_far"] % args.save_episodes == 0:
-                tf.train.Saver().save(sess, "{}/afterIter_{}".format(args.save, l["iters_so_far"]))
+            if l["episodes_so_far"] % args.save_episodes == 0:
+                tf.train.Saver().save(sess, "{}/afterEpisode_{}".format(args.save, l["episodes_so_far"]))
 
     pposgd_simple.learn(env, policy_fn,
             max_timesteps=args.timesteps,
