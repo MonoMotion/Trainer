@@ -38,7 +38,7 @@ class DiscordReporter(object):
                 if self.client.user != message.author and message.channel == self.target_channel:
                     videos = list(self.monitor_dir.glob("*.mp4"))
                     videos.sort(key=lambda x: x.stat().st_mtime)
-                    await self.client.send_file(message.channel, str(videos[0]))
+                    await self.client.send_file(message.channel, str(videos[-1]))
                     await send_state()
             elif message.content.startswith("!progress"):
                 if self.client.user != message.author and message.channel == self.target_channel:

@@ -60,7 +60,8 @@ def main():
                 raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
 
     reporter = DiscordReporter(args.monitor) if args.discord and args.monitor else None
-    reporter.start()
+    if reporter:
+        reporter.start()
 
     env = YamaXEnv(logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay)
     if args.monitor:
