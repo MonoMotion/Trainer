@@ -10,7 +10,7 @@ DeepL2 Project: [https://blog.y-modify.org/2018/01/04/deepl2-start/](https://blo
 
 ### Preparation
 
-```
+```shell
 git clone https://github.com/Y-modify/deepl2-pybullet-locomotion.git
 cd deepl2-pybullet-locomotion
 pipenv install
@@ -19,27 +19,25 @@ pipenv shell
 
 ### Train
 
-```
-# You can enable tensorboard to visualize the progress of learning
-# export OPENAI_LOG_FORMAT=tensorboard
-# export OPENAI_LOGDIR=/some/path
-# tensorboard --logdir /some/path &
-
+```shell
 # Train 1000000 episodes
-python train.py --monitor monitor --save model --save-episodes 500 --monitor-video 5000 --timesteps 10000000 &
+python train.py --monitor monitor --save model --save-episodes 5000 --monitor-video 5000 --timesteps 10000000 &
+
+# You can enable tensorboard to visualize the progress of learning
+# python train.py --monitor monitor --save model --save-episodes 5000 --monitor-video 5000 --timesteps 10000000 --tensorboard ./tblog &
 
 # If you wanna see what is going on in simulation, add --visualize flag:
-# python train.py --monitor monitor --save model --save-episodes 500 --monitor-video 5000 --timesteps 10000000 --visualize &
+# python train.py --monitor monitor --save model --save-episodes 5000 --monitor-video 5000 --timesteps 10000000 --visualize &
 ```
 
 ### Plot results
 
-```
+```shell
 python plot.py monitor/log.csv reward_sum final_distance 10 100
 ```
 
 ### Play with trained model
 
-```
-python train.py --timesteps 100 --load model/ --visualize &
+```shell
+python train.py --timesteps 100 --load model/final --visualize &
 ```
