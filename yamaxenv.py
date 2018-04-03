@@ -46,6 +46,11 @@ class YamaXEnv(gym.Env):
     self._render_width = 320
     self._render_height = 240
 
+    # p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1)
+    p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+    p.configureDebugVisualizer(p.COV_ENABLE_MOUSE_PICKING, 0)
+    p.resetDebugVisualizerCamera(self._cam_dist + 1, self._cam_yaw, self._cam_pitch, [0,0,0])
+
     self.num_joints = 12 # joint idx 8 ~ is needed
     action_high = np.array([50 * math.pi / 180] * self.num_joints)
     observation_high = np.concatenate((action_high, [np.finfo(np.float32).max] * 3))
