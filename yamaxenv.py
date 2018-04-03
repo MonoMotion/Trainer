@@ -167,8 +167,7 @@ class YamaXEnv(gym.Env):
       self.state = jointStates + list(euler)
 
   def _getPos(self):
-      pos, _ = p.getBasePositionAndOrientation(self.yamax)
-      return pos
+      return p.getLinkState(self.yamax, 9)[0]
 
   def _render(self, mode='human', close=False):
       if mode=="human" and not self._renders:
