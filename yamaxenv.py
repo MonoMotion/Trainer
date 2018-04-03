@@ -21,7 +21,7 @@ from pkg_resources import parse_version
 class YamaXEnv(gym.Env):
   metadata = {
     'render.modes': ['human', 'rgb_array'],
-    'video.frames_per_second' : 50
+    'video.frames_per_second' : 10
   }
 
   def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf", frame_delay=0):
@@ -40,10 +40,10 @@ class YamaXEnv(gym.Env):
         p.connect(p.GUI)
     else:
     	p.connect(p.DIRECT)
-    self._cam_dist = 3
-    self._cam_yaw = 0
-    self._cam_pitch = -30
-    self._render_width =320
+    self._cam_dist = 0.75
+    self._cam_yaw = 75
+    self._cam_pitch = -15
+    self._render_width = 320
     self._render_height = 240
 
     self.num_joints = 12 # joint idx 8 ~ is needed
@@ -176,10 +176,7 @@ class YamaXEnv(gym.Env):
       if mode != "rgb_array":
           return np.array([])
 
-      base_pos=[0,0,0]
-      if hasattr(self,'robot'):
-          if hasattr(self.robot,'body_xyz'):
-              base_pos = self.robot.body_xyz
+      base_pos=self._getPos()
 
       view_matrix = p.computeViewMatrixFromYawPitchRoll(
           cameraTargetPosition=base_pos,
