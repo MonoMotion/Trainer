@@ -28,7 +28,8 @@ IP_ADDR=$(terraform output ip)
 
 sleep 30 # Wait for instance
 
-until do ssh -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$IP_ADDR 'mkdir -p /home/ubuntu/deepl2'
+until ssh -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$IP_ADDR 'mkdir -p /home/ubuntu/deepl2'
+do
   sleep 1
 done
 
