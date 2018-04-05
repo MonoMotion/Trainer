@@ -47,4 +47,5 @@ pipenv install baselines/
 pipenv install
 . creds.sh
 ./run.sh
+exit
 EOS
