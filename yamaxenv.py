@@ -97,24 +97,27 @@ class YamaXEnv(gym.Env):
     s = [math.sin(a / 2) for a in euler]
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
     done = axisAngle > self.fail_threshold or x > self.success_x_threshold
-    numUnpermittedContact = self._checkUnpermittedContacts()
+    numPermittedContact, numUnpermittedContact = self._checkUnpermittedContacts()
     lr, ll = self._getLegsOrientation()
     legError = - 0.1 * (lr - ll) ** 2
     Or, Op, Oy = euler
     reward = -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1) - 0.1 * numUnpermittedContact + legError - (self._last_x - x)
-    if axisAngle > self.fail_threshold:
-      reward = -1
-    elif x > self.success_x_threshold:
-      reward = 1
 
     self._ep_rewards.append(reward)
     self._ep_legs.append(legError)
     self._ep_unperms.append(numUnpermittedContact)
+    self._ep_perms.append(numPermittedContact)
+
+    if axisAngle > self.fail_threshold:
+      reward = -0.1 * sum(self._ep_perms) / x
+    elif x > self.success_x_threshold:
+      reward = 1
+
     if done:
         if self._logger:
             eprew = sum(self._ep_rewards)
             eplen = len(self._ep_rewards)
-            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs), "unperm_sum": sum(self._ep_unperms)}
+            epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs), "unperm_sum": sum(self._ep_unperms), "perm_sum": sum(self._ep_perms)}
             self._last_ep_x = x
             self._logger.writerow(epinfo)
             self._reward_log_file.flush()
@@ -129,7 +132,7 @@ class YamaXEnv(gym.Env):
   def _checkUnpermittedContacts(self):
     contacts = p.getContactPoints(bodyA=self.yamax)
     numValid = sum(((contact[1] == self.plane and contact[3] == -1) and (contact[2] == self.yamax and (contact[4] == 19 or contact[4] == 14))) or ((contact[2] == self.plane and contact[4] == -1) and (contact[1] == self.yamax and (contact[3] == 19 or contact[3] == 14))) for contact in contacts)
-    return len(contacts) - numValid
+    return numValid, len(contacts) - numValid
 
   def _getLegsOrientation(self):
     def getRoll(lidx):
@@ -163,6 +166,7 @@ class YamaXEnv(gym.Env):
     self._ep_rewards = []
     self._ep_legs = []
     self._ep_unperms = []
+    self._ep_perms = []
     return np.array(self.state)
 
   def _updateState(self):
