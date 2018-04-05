@@ -57,7 +57,7 @@ class YamaXEnv(gym.Env):
     self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
     self.fail_threshold = 45 * math.pi / 180
     self.success_x_threshold = 3
-    self._seed()
+    self._seed(0)
 #    self.reset()
     self.viewer = None
     self._configure()
