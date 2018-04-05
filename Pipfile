@@ -11,8 +11,8 @@ pybullet = "*"
 pyflakes = "*"
 matplotlib = "*"
 pandas = "*"
-tensorforce = {extras = ["tf"]}
 gym = "*"
+baselines = "*"
 
 
 [dev-packages]
