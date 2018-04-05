@@ -10,6 +10,7 @@ resource "aws_spot_instance_request" "yamax_learn_worker" {
   instance_type = "${var.instance_type}"
   key_name      = "${aws_key_pair.auth.id}"
   spot_type = "one-time"
+  wait_for_fulfillment = true
   vpc_security_group_ids = ["${aws_security_group.default.id}"]
   associate_public_ip_address = true
 
