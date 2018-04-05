@@ -22,7 +22,10 @@ terraform init -input=false
 terraform plan -out=tfplan -input=false
 terraform apply -input=false tfplan
 
+sleep 10 # Wait for instance
+
 scp -o ConnectTimeout=120 -o StrictHostKeychecking=no -r -i ~/.ssh/terraform [!.]* ubuntu@$(terraform output ip):/home/ubuntu/deepl2-pybullet-locomotion
+
 ssh -t -t -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$(terraform output ip) << EOS
 export DEBIAN_FRONTEND=noninteractive
 cd /home/ubuntu/deepl2-pybullet-locomotion
@@ -33,5 +36,6 @@ git clone https://github.com/openai/baselines --depth 1
 sed -i -e 's/mujoco,atari,classic_control,robotics/classic_control/g' baselines/setup.py
 pipenv install baselines/
 pipenv install
+. creds.sh
 ./run.sh
 EOS
