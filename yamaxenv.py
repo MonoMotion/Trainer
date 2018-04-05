@@ -109,7 +109,7 @@ class YamaXEnv(gym.Env):
     self._ep_perms.append(numPermittedContact)
 
     if axisAngle > self.fail_threshold:
-      reward = -0.1 * sum(self._ep_perms) / x
+      reward = - 0.1 * sum(self._ep_perms) / (abs(x) + 1e-4)
     elif x > self.success_x_threshold:
       reward = 1
 
