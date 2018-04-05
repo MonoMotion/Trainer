@@ -7,7 +7,7 @@ provider "aws" {
 resource "aws_spot_instance_request" "yamax_learn_worker" {
   ami           = "ami-4e79ed36"
   spot_price    = "0.1"
-  instance_type = "m5.xlarge"
+  instance_type = "${var.instance_type}"
   key_name      = "${aws_key_pair.auth.id}"
   spot_type = "one-time"
   vpc_security_group_ids = ["${aws_security_group.default.id}"]
