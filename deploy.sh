@@ -22,9 +22,12 @@ terraform init -input=false
 terraform plan -out=tfplan -input=false
 terraform apply -input=false tfplan
 
-sleep 10 # Wait for instance
+sleep 30 # Wait for instance
 
-scp -o ConnectTimeout=120 -o StrictHostKeychecking=no -r -i ~/.ssh/terraform [!.]* ubuntu@$(terraform output ip):/home/ubuntu/deepl2-pybullet-locomotion
+until scp -o ConnectTimeout=120 -o StrictHostKeychecking=no -r -i ~/.ssh/terraform [!.]* ubuntu@$(terraform output ip):/home/ubuntu/deepl2-pybullet-locomotion
+do
+  sleep 1
+done
 
 ssh -t -t -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$(terraform output ip) << EOS
 export DEBIAN_FRONTEND=noninteractive
