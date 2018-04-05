@@ -28,14 +28,15 @@ IP_ADDR=$(terraform output ip)
 
 sleep 30 # Wait for instance
 
-until scp -o ConnectTimeout=120 -o StrictHostKeychecking=no -r -i ~/.ssh/terraform [!.]* ubuntu@$IP_ADDR:/home/ubuntu/deepl2-pybullet-locomotion
-do
+until do ssh -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$IP_ADDR 'mkdir -p /home/ubuntu/deepl2'
   sleep 1
 done
 
+scp -o StrictHostKeychecking=no -r -i ~/.ssh/terraform [!.]* ubuntu@$IP_ADDR:/home/ubuntu/deepl2
+
 ssh -t -t -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$IP_ADDR << EOS
 export DEBIAN_FRONTEND=noninteractive
-cd /home/ubuntu/deepl2-pybullet-locomotion
+cd /home/ubuntu/deepl2
 sudo apt-get update
 sudo apt-get install ffmpeg python3-pip python3-tk libffi-dev libopenmpi-dev libssl-dev psmisc curl git
 sudo pip3 install pipenv
