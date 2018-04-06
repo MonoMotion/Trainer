@@ -1,3 +1,13 @@
+terraform {
+  required_version = ">= 0.11.0"
+
+  backend "s3" {
+    bucket = "deepl2"
+    key    = "terraform.tfstate"
+    region = "us-west-2"
+  }
+}
+
 provider "aws" {
   access_key = "${var.access_key}"
   secret_key = "${var.secret_key}"
