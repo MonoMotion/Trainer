@@ -58,10 +58,18 @@ def main():
                 os.mkdir(args.monitor, 0o755)
             except OSError:
                 raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
+        if args.discord:
+            logger.warn('Launching Progress Reporter...')
+            reporter_pid = Popen(['python', 'discord_reporter.py']).pid
+            def kill_reporter():
+                os.kill(reporter_pid, signal.SIGTERM)
+            atexit.register(kill_reporter)
 
-    reporter = DiscordReporter(args.monitor) if args.discord and args.monitor else None
-    if reporter:
+    if args.discord:
+        reporter = DiscordReporter()
         reporter.start()
+    else:
+        reporter = None
 
     env = YamaXEnv(logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay)
     if args.monitor:
