@@ -13,6 +13,7 @@ matplotlib = "*"
 pandas = "*"
 gym = "*"
 baselines = "*"
+"discord.py" = "*"
 
 
 [dev-packages]

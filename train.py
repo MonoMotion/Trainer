@@ -6,6 +6,7 @@ import argparse
 
 import gym
 from yamaxenv import YamaXEnv
+from discord_reporter import DiscordReporter
 
 from baselines.ppo1 import mlp_policy, pposgd_simple
 from baselines.common import tf_util as U
@@ -30,6 +31,7 @@ def main():
     parser.add_argument('--monitor-video', type=int, default=10000, help="Save video every x steps (0 = disabled)")
     parser.add_argument('--frame-delay', type=float, default=0.0, help="Delay between each frame (for viewing result; 0 = disabled)")
     parser.add_argument('-v', '--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
+    parser.add_argument('--discord', action='store_true', default=False, help="Enable discord reporting")
 
     args = parser.parse_args()
 
@@ -56,6 +58,18 @@ def main():
                 os.mkdir(args.monitor, 0o755)
             except OSError:
                 raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
+        if args.discord:
+            logger.warn('Launching Progress Reporter...')
+            reporter_pid = Popen(['python', 'discord_reporter.py']).pid
+            def kill_reporter():
+                os.kill(reporter_pid, signal.SIGTERM)
+            atexit.register(kill_reporter)
+
+    if args.discord:
+        reporter = DiscordReporter()
+        reporter.start()
+    else:
+        reporter = None
 
     env = YamaXEnv(logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay)
     if args.monitor:
@@ -83,12 +97,16 @@ def main():
 
     def callback(l, g):
         if l["iters_so_far"] == 0:
+            if reporter:
+                reporter.report("Started learning.")
             if os.environ.get("OPENAI_LOG_FORMAT") == "tensorboard":
                 tf.summary.FileWriter(os.path.join(os.environ.get("OPENAI_LOGDIR", "tf_logs"), "graph"), sess.graph)
             if args.load:
                 tf.train.Saver().restore(sess, args.load)
         elif args.save and args.save_episodes:
             if l["episodes_so_far"] % args.save_episodes == 0:
+                if reporter:
+                    reporter.report("Episode {}. Saving to model...".format(l["episodes_so_far"]))
                 tf.train.Saver().save(sess, "{}/afterEpisode_{}".format(args.save, l["episodes_so_far"]))
 
     pposgd_simple.learn(env, policy_fn,
@@ -106,6 +124,8 @@ def main():
     if args.save:
         saver = tf.train.Saver()
         saver.save(sess, os.path.join(args.save, "final"))
+    if reporter:
+        reporter.report("Done!")
 
 if __name__ == '__main__':
     main()
