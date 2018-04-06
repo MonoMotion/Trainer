@@ -6,8 +6,7 @@ from pathlib import Path
 import subprocess
 
 class DiscordReporter(object):
-    def __init__(self, monitor_dir=Path('./monitor')):
-        self.monitor_dir = monitor_dir
+    def __init__(self):
         self.client = discord.Client()
         self.ready = False
         self.report_queue = []
@@ -29,6 +28,42 @@ class DiscordReporter(object):
             for message in self.report_queue:
                 await self.client.send_message(self.target_channel, message)
 
+        if 'DEEPL2_DISCORD_TOKEN' in os.environ:
+            token = os.environ['DEEPL2_DISCORD_TOKEN']
+        else:
+            raise RuntimeError('Please supply token')
+
+        def t():
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            self.client.run(token)
+        self.thread = Thread(target=t)
+        self.thread.start()
+
+    def report(self, message):
+        if not self.ready:
+            self.report_queue.append(message)
+        else:
+            asyncio.run_coroutine_threadsafe(self.client.send_message(self.target_channel, message), self.client.loop)
+
+class DiscordProgressResponder(object):
+    def __init__(self, monitor_dir=Path('./monitor')):
+        self.monitor_dir = monitor_dir
+        self.client = discord.Client()
+
+    def start(self):
+        @self.client.event
+        async def on_ready():
+            print('Logged in as')
+            print(self.client.user.name)
+            print(self.client.user.id)
+            print('------')
+            if 'DEEPL2_DISCORD_CHANNEL' in os.environ:
+                self.target_channel = self.client.get_channel(os.environ['DEEPL2_DISCORD_CHANNEL'])
+                if not self.target_channel:
+                    raise RuntimeError('Cannot get channel')
+            else:
+                raise RuntimeError('Please supply channel.')
+
         @self.client.event
         async def on_message(message):
             async def send_state():
@@ -49,14 +84,8 @@ class DiscordReporter(object):
         else:
             raise RuntimeError('Please supply token')
 
-        def t():
-            asyncio.set_event_loop(asyncio.new_event_loop())
-            self.client.run(token)
-        self.thread = Thread(target=t)
-        self.thread.start()
+        self.client.run(token)
 
-    def report(self, message):
-        if not self.ready:
-            self.report_queue.append(message)
-        else:
-            asyncio.run_coroutine_threadsafe(self.client.send_message(self.target_channel, message), self.client.loop)
+if __name__ == '__main__':
+    p = DiscordProgressResponder()
+    p.start()
