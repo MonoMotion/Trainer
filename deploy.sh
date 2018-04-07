@@ -57,7 +57,9 @@ export DEBIAN_FRONTEND=noninteractive \
 && sed -i -e 's/mujoco,atari,classic_control,robotics/classic_control/g' baselines/setup.py \
 && pipenv install baselines/ \
 && pipenv install \
+&& echo "Dependency installation succeeded" \
 && . creds.sh \
 && . run.sh \
+&& echo "Deploy succeeded" \
 && exit
 EOS
