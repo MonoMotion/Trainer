@@ -14,10 +14,6 @@ provider "aws" {
   region     = "${var.region}"
 }
 
-data "http" "ip" {
-  url = "http://ifconfig.co/"
-}
-
 data "aws_ami" "ubuntu_xenial" {
     most_recent = true
 
@@ -57,7 +53,7 @@ resource "aws_security_group" "default" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${chomp(data.http.ip.body)}/32"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
