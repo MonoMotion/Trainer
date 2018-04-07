@@ -131,6 +131,7 @@ def main():
         saver.save(sess, os.path.join(args.save, "final"))
     if reporter:
         reporter.report("Done!")
+        reporter.exit()
 
 if __name__ == '__main__':
     main()

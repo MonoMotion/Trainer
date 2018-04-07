@@ -39,6 +39,9 @@ class DiscordReporter(object):
         self.thread = Thread(target=t)
         self.thread.start()
 
+    def exit(self):
+        asyncio.run_coroutine_threadsafe(self.client.logout(), self.client.loop)
+
     def report(self, message):
         if not self.ready:
             self.report_queue.append(message)
