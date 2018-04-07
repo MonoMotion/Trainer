@@ -44,9 +44,9 @@ do
   sleep 5
 done
 
-scp -o StrictHostKeychecking=no -r -i ~/.ssh/terraform [!.]* ubuntu@$IP_ADDR:/home/ubuntu/deepl2
+scp -o StrictHostKeychecking=no -r -i ~/.ssh/terraform [!.]* ubuntu@$IP_ADDR:/home/ubuntu/deepl2 || exit -1
 
-ssh -t -t -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$IP_ADDR << EOS
+ssh -t -t -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$IP_ADDR << EOS || exit -1
 export DEBIAN_FRONTEND=noninteractive \
 && cd /home/ubuntu/deepl2 \
 && sudo -E apt-get update \
