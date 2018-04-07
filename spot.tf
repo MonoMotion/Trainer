@@ -14,6 +14,10 @@ provider "aws" {
   region     = "${var.region}"
 }
 
+data "http" "ip" {
+  url = "http://ifconfig.co/"
+}
+
 resource "aws_spot_instance_request" "yamax_learn_worker" {
   ami           = "ami-4e79ed36"
   spot_price    = "0.1"
@@ -37,7 +41,7 @@ resource "aws_security_group" "default" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["${chomp(data.http.ip.body)}/32"]
   }
 
   ingress {
