@@ -22,8 +22,6 @@ terraform init -input=false
 terraform plan -out=tfplan -input=false
 terraform apply -input=false tfplan || exit -1
 
-cat terraform.tfstate
-
 IP_ADDR=$(terraform output ip)
 
 sleep 30 # Wait for instance
