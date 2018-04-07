@@ -3,6 +3,7 @@ import atexit
 import signal
 from subprocess import Popen
 import argparse
+import urllib.request
 
 import gym
 from yamaxenv import YamaXEnv
@@ -35,6 +36,10 @@ def main():
 
     args = parser.parse_args()
 
+    logger.configure()
+    sess = U.make_session()
+    sess.__enter__()
+
     if args.tensorboard:
         if os.environ.get('OPENAI_LOG_FORMAT', 'tensorboard') != 'tensorboard':
             logger.warn('Overwriting OPENAI_LOG_FORMAT to \'tensorboard\', which was \'{}\''.format(os.environ['OPENAI_LOG_FORMAT']))
@@ -47,10 +52,6 @@ def main():
         def kill_tb():
             os.kill(tensorboard_pid, signal.SIGTERM)
         atexit.register(kill_tb)
-
-    logger.configure()
-    sess = U.make_session()
-    sess.__enter__()
 
     if args.monitor:
         if not os.path.isdir(args.monitor):
@@ -68,6 +69,10 @@ def main():
     if args.discord:
         reporter = DiscordReporter()
         reporter.start()
+        if args.tensorboard:
+            with urllib.request.urlopen('http://169.254.169.254/latest/meta-data/public-ipv4') as response:
+                ip = response.read()
+            reporter.report('Tensorboard is running: http://{}:6006/'.format(ip))
     else:
         reporter = None
 
