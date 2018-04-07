@@ -3,8 +3,8 @@
 
 ARCHIVE_NAME=train_archive_$(date +%y%m_%H%M%S).tar.xz
 
-nohup $SHELL <<EOF &
+nohup $SHELL << EOS &
 pipenv run python train.py --monitor monitor --save model -se 500 --monitor-video 50000 --timesteps 10000000 --tensorboard ./tblog --discord \
   && tar Jcf $ARCHIVE_NAME monitor model tblog \
   && aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/
-EOF
+EOS
