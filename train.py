@@ -110,8 +110,6 @@ def main():
                 tf.train.Saver().restore(sess, args.load)
         elif args.save and args.save_episodes:
             if l["episodes_so_far"] % args.save_episodes == 0:
-                if reporter:
-                    reporter.report("Episode {}. Saving to model...".format(l["episodes_so_far"]))
                 tf.train.Saver().save(sess, "{}/afterEpisode_{}".format(args.save, l["episodes_so_far"]))
 
     pposgd_simple.learn(env, policy_fn,
