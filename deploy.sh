@@ -22,6 +22,12 @@ export DEEPL2_DISCORD_TOKEN='${DEEPL2_DISCORD_TOKEN}'
 export DEEPL2_DISCORD_CHANNEL='${DEEPL2_DISCORD_CHANNEL}'
 EOS
 
+cat << EOS > ~/.aws/credentials
+[default]
+aws_access_key_id = ${TF_VAR_access_key}
+aws_secret_access_key = ${TF_VAR_secret_key}
+EOS
+
 terraform init -input=false
 terraform plan -out=tfplan -input=false
 terraform apply -input=false tfplan || exit -1
