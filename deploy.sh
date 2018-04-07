@@ -3,6 +3,7 @@
 # Required Environment Variables:
 # $DEEPL2_DISCORD_CHANNEL
 # $DEEPL2_DISCORD_TOKEN
+# $DEEPL2_S3_BUCKET_NAME
 # $TF_VAR_access_key
 # $TF_VAR_secret_key
 
@@ -14,6 +15,9 @@ public_key_path = "~/.ssh/terraform.pub"
 EOS
 
 cat << EOS > creds.sh
+export BUCKET_NAME='${DEEPL2_S3_BUCKET_NAME}'
+export AWS_ACCESS_KEY_ID='${TF_VAR_access_key}'
+export AWS_SECRET_ACCESS_KEY='${TF_VAR_secret_key}'
 export DEEPL2_DISCORD_TOKEN='${DEEPL2_DISCORD_TOKEN}'
 export DEEPL2_DISCORD_CHANNEL='${DEEPL2_DISCORD_CHANNEL}'
 EOS
