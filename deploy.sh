@@ -43,8 +43,8 @@ export DEBIAN_FRONTEND=noninteractive \
 && cd /home/ubuntu/deepl2 \
 && sudo -E apt-get update \
 && sudo -E apt-get install -y -qq ffmpeg python3-pip python3-tk libffi-dev libopenmpi-dev libssl-dev psmisc curl git \
-&& sudo -E pip3 install pipenv \
-&& sudo -E pip3 install awscli \
+&& sudo -H pip3 install pipenv \
+&& sudo -H pip3 install awscli \
 && git clone https://github.com/openai/baselines --depth 1 \
 && sed -i -e 's/mujoco,atari,classic_control,robotics/classic_control/g' baselines/setup.py \
 && pipenv install baselines/ \
