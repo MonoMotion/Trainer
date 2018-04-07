@@ -61,5 +61,6 @@ export DEBIAN_FRONTEND=noninteractive \
 && . creds.sh \
 && . run.sh \
 && echo "Deploy succeeded" \
+&& cat nohup.out | head -n 50 \
 && exit
 EOS
