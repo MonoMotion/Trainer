@@ -18,8 +18,24 @@ data "http" "ip" {
   url = "http://ifconfig.co/"
 }
 
+data "aws_ami" "ubuntu_xenial" {
+    most_recent = true
+
+    filter {
+        name   = "name"
+        values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+    }
+
+    filter {
+        name   = "virtualization-type"
+        values = ["hvm"]
+    }
+
+    owners = ["099720109477"]
+}
+
 resource "aws_spot_instance_request" "yamax_learn_worker" {
-  ami           = "ami-4e79ed36"
+  ami           = "${data.aws_ami.ubuntu_xenial.id}"
   spot_price    = "0.1"
   instance_type = "${var.instance_type}"
   key_name      = "${aws_key_pair.auth.id}"
