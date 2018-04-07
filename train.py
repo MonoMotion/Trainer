@@ -72,7 +72,7 @@ def main():
         if args.tensorboard:
             with urllib.request.urlopen('http://169.254.169.254/latest/meta-data/public-ipv4') as response:
                 ip = response.read()
-            reporter.report('Tensorboard is running: http://{}:6006/'.format(ip))
+            reporter.report('Tensorboard is running: http://{}:6006/'.format(ip.decode()))
     else:
         reporter = None
 
