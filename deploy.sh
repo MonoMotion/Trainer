@@ -28,7 +28,8 @@ sleep 30 # Wait for instance
 
 until ssh -o StrictHostKeychecking=no -i ~/.ssh/terraform ubuntu@$IP_ADDR 'mkdir -p /home/ubuntu/deepl2'
 do
-  sleep 1
+  ((cnt++)) && ((cnt==10)) && exit -1
+  sleep 5
 done
 
 scp -o StrictHostKeychecking=no -r -i ~/.ssh/terraform [!.]* ubuntu@$IP_ADDR:/home/ubuntu/deepl2
