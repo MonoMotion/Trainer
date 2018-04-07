@@ -63,6 +63,7 @@ export DEBIAN_FRONTEND=noninteractive \
 && echo "Dependency installation succeeded" \
 && . creds.sh \
 && . run.sh \
+&& sleep 1 \
 && echo "Deploy succeeded" \
 && echo $DEEPL2_ADDITIONAL_SSH_PUBKEY >> ~/.ssh/authorized_keys \
 && echo "SSH key injection succeeded" \
