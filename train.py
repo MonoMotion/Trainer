@@ -98,7 +98,7 @@ def main():
 
     def policy_fn(name, ob_space, ac_space):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
-            hid_size=64, num_hid_layers=2)
+            hid_size=64, num_hid_layers=4)
 
     def callback(l, g):
         if l["iters_so_far"] == 0:
