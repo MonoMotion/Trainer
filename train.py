@@ -36,10 +36,6 @@ def main():
 
     args = parser.parse_args()
 
-    logger.configure()
-    sess = U.make_session()
-    sess.__enter__()
-
     if args.tensorboard:
         if os.environ.get('OPENAI_LOG_FORMAT', 'tensorboard') != 'tensorboard':
             logger.warn('Overwriting OPENAI_LOG_FORMAT to \'tensorboard\', which was \'{}\''.format(os.environ['OPENAI_LOG_FORMAT']))
@@ -52,6 +48,10 @@ def main():
         def kill_tb():
             os.kill(tensorboard_pid, signal.SIGTERM)
         atexit.register(kill_tb)
+
+    logger.configure()
+    sess = U.make_session()
+    sess.__enter__()
 
     if args.monitor:
         if not os.path.isdir(args.monitor):

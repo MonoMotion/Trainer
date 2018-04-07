@@ -6,6 +6,8 @@
 # $DEEPL2_S3_BUCKET_NAME
 # $TF_VAR_access_key
 # $TF_VAR_secret_key
+# Optional:
+# $DEEPL2_ADDITIONAL_SSH_PUBKEY
 
 echo -e 'y\n' | ssh-keygen -t rsa -b 4096 -C "me@coord-e.com" -N '' -f ~/.ssh/terraform
 
@@ -20,6 +22,7 @@ export AWS_ACCESS_KEY_ID='${TF_VAR_access_key}'
 export AWS_SECRET_ACCESS_KEY='${TF_VAR_secret_key}'
 export DEEPL2_DISCORD_TOKEN='${DEEPL2_DISCORD_TOKEN}'
 export DEEPL2_DISCORD_CHANNEL='${DEEPL2_DISCORD_CHANNEL}'
+export DEEPL2_ADDITIONAL_SSH_PUBKEY='${DEEPL2_ADDITIONAL_SSH_PUBKEY}'
 EOS
 
 mkdir ~/.aws
@@ -61,6 +64,7 @@ export DEBIAN_FRONTEND=noninteractive \
 && . creds.sh \
 && . run.sh \
 && echo "Deploy succeeded" \
-&& cat nohup.out | head -n 50 \
+&& echo $DEEPL2_ADDITIONAL_SSH_PUBKEY >> ~/.ssh/authorized_keys \
+&& echo "SSH key injection succeeded" \
 && exit
 EOS

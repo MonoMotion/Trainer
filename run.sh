@@ -8,5 +8,3 @@ pipenv run python train.py --monitor monitor --save model -se 500 --monitor-vide
   && tar Jcf $ARCHIVE_NAME monitor model tblog \
   && aws s3 cp $ARCHIVE_NAME s3://$BUCKET_NAME/
 EOF
-
-nohup pipenv run python discord_reporter.py &
