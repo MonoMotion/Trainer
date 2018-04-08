@@ -97,7 +97,7 @@ class YamaXEnv(gym.Env):
     numUnpermittedContact = self._checkUnpermittedContacts()
     lr, ll = self._getLegsOrientation()
     legError = - 0.1 * (lr - ll) ** 2
-    bodyError = - 0.01 * bp ** 2 if abs(bp) > math.pi / 3 else 0
+    bodyError = - 0.01 * bp ** 2 if abs(bp) > math.pi / 6 else 0
     Or, Op, Oy = euler
     reward = -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1) - 0.1 * numUnpermittedContact + legError - (self._last_x - x) + bodyError
     if axisAngle > self.fail_threshold:
