@@ -11,9 +11,20 @@ DeepL2 Project: [https://blog.y-modify.org/2018/01/04/deepl2-start/](https://blo
 ### Preparation
 
 ```shell
+# Clone this repo
 git clone https://github.com/Y-modify/deepl2-pybullet-locomotion.git
 cd deepl2-pybullet-locomotion
+
+# Generate YamaX's URDF
+cd YamaX
+make
+cp yamax.urdf ../
+cd ..
+
+# Install dependencies
 pipenv install
+
+# Activate the environment
 pipenv shell
 ```
 
