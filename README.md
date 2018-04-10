@@ -1,4 +1,4 @@
-# deepl2-pybullet-locomotion
+# DeepL2
 
 An experiment to make [YamaX](https://y-modify.org/yamax) walk in the simulation environment using Bullet physics engine.
 
@@ -12,8 +12,8 @@ DeepL2 Project: [https://blog.y-modify.org/2018/01/04/deepl2-start/](https://blo
 
 ```shell
 # Clone this repo
-git clone https://github.com/Y-modify/deepl2-pybullet-locomotion.git
-cd deepl2-pybullet-locomotion
+git clone https://github.com/Y-modify/deepl2.git
+cd deepl2
 
 # Generate YamaX's URDF
 cd YamaX
