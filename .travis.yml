@@ -8,7 +8,10 @@ addons:
     - wget
 script:
   - |
-    git clone https://github.com/Y-modify/deepl2-infra --depth=1 .
+    git submodule init
+    git submodule update
+    git clone https://github.com/Y-modify/deepl2-infra --depth=1
+    cp deepl2-infra/* .
     wget -q https://releases.hashicorp.com/terraform/0.11.5/terraform_0.11.5_linux_amd64.zip
     unzip terraform_0.11.5_linux_amd64.zip
     sudo mv terraform /usr/bin/terraform
