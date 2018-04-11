@@ -6,6 +6,8 @@ addons:
     packages:
     - unzip
     - wget
+env:
+  - DEEPL2_YAMAX_VERSION="4.0"
 script:
   - |
     git clone https://github.com/Y-modify/deepl2-infra --depth=1
