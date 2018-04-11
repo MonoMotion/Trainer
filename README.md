@@ -15,11 +15,8 @@ DeepL2 Project: [https://blog.y-modify.org/2018/01/04/deepl2-start/](https://blo
 git clone https://github.com/Y-modify/deepl2.git
 cd deepl2
 
-# Generate YamaX's URDF
-cd YamaX
-make
-cp yamax.urdf ../
-cd ..
+# Download YamaX's URDF
+curl -o yamax.urdf https://github.com/Y-modify/YamaX/releases/download/4.0/YamaX_4.0.urdf
 
 # Install dependencies
 pipenv install
