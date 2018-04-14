@@ -18,8 +18,3 @@ baselines = "*"
 
 [dev-packages]
 
-
-
-[requires]
-
-python_version = "3.5.2"
