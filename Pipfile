@@ -8,13 +8,13 @@ name = "pypi"
 [packages]
 
 pybullet = "*"
-pyflakes = "*"
-matplotlib = "*"
-pandas = "*"
 gym = "*"
 baselines = "*"
 "discord.py" = "*"
 
 
 [dev-packages]
+
+matplotlib = "*"
+pyflakes = "*"
 
