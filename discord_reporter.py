@@ -2,6 +2,7 @@ import asyncio
 from threading import Thread
 import discord
 import os
+import sys
 from pathlib import Path
 import subprocess
 
@@ -53,7 +54,7 @@ class DiscordProgressResponder(object):
         self.monitor_dir = monitor_dir
         self.client = discord.Client()
 
-    def start(self):
+    def start(self, pidstr):
         @self.client.event
         async def on_ready():
             print('Logged in as')
@@ -81,6 +82,9 @@ class DiscordProgressResponder(object):
             elif message.content.startswith("!progress"):
                 if self.client.user != message.author and message.channel == self.target_channel:
                     await send_state()
+            elif message.content.startswith("!terminate"):
+                subprocess.call(['kill', '-9', pidstr])
+                sys.exit()
 
         if 'DEEPL2_DISCORD_TOKEN' in os.environ:
             token = os.environ['DEEPL2_DISCORD_TOKEN']
@@ -91,4 +95,4 @@ class DiscordProgressResponder(object):
 
 if __name__ == '__main__':
     p = DiscordProgressResponder()
-    p.start()
+    p.start(sys.argv[1])

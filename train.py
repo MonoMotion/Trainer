@@ -61,7 +61,7 @@ def main():
                 raise OSError("Cannot save logs to dir {} ()".format(args.monitor))
         if args.discord:
             logger.warn('Launching Progress Reporter...')
-            reporter_pid = Popen(['python3', 'discord_reporter.py']).pid
+            reporter_pid = Popen(['python3', 'discord_reporter.py', str(os.getpid())]).pid
             def kill_reporter():
                 os.kill(reporter_pid, signal.SIGTERM)
             atexit.register(kill_reporter)
