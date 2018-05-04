@@ -70,7 +70,7 @@ def main():
         reporter = DiscordReporter()
         reporter.start()
         if args.tensorboard:
-            with urllib.request.urlopen('http://inet-ip.info/') as response:
+            with urllib.request.urlopen('http://inet-ip.info/ip') as response:
                 ip = response.read()
             reporter.report('Tensorboard is running: http://{}:6006/'.format(ip.decode()))
     else:
