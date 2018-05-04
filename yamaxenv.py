@@ -10,12 +10,10 @@ from gym.utils import seeding
 import numpy as np
 import math
 import time
-import subprocess
 import pybullet as p
 import pybullet_data
 from functools import reduce
 from operator import mul
-import matplotlib.pyplot as plt
 from pkg_resources import parse_version
 
 class YamaXEnv(gym.Env):
