@@ -11,6 +11,7 @@ class DiscordReporter(object):
         self.client = discord.Client()
         self.ready = False
         self.report_queue = []
+        self.prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"][:6] + ": "
 
     def start(self):
         @self.client.event
@@ -34,7 +35,6 @@ class DiscordReporter(object):
         else:
             raise RuntimeError('Please supply token')
 
-        self.prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"][:6] + ": "
         def t():
             asyncio.set_event_loop(asyncio.new_event_loop())
             self.client.run(token)
