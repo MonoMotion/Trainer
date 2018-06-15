@@ -34,6 +34,7 @@ class DiscordReporter(object):
         else:
             raise RuntimeError('Please supply token')
 
+        self.prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"] + ": "
         def t():
             asyncio.set_event_loop(asyncio.new_event_loop())
             self.client.run(token)
@@ -47,7 +48,7 @@ class DiscordReporter(object):
         if not self.ready:
             self.report_queue.append(message)
         else:
-            asyncio.run_coroutine_threadsafe(self.client.send_message(self.target_channel, message), self.client.loop)
+            asyncio.run_coroutine_threadsafe(self.client.send_message(self.target_channel, self.prefix+message), self.client.loop)
 
 class DiscordProgressResponder(object):
     def __init__(self, monitor_dir=Path('./monitor')):
@@ -71,8 +72,9 @@ class DiscordProgressResponder(object):
         @self.client.event
         async def on_message(message):
             async def send_state():
+                prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"] + ": "
                 state = subprocess.check_output(['tail', '-1', str(self.monitor_dir.joinpath('log.csv'))]).decode().rstrip()
-                await self.client.send_message(message.channel, state)
+                await self.client.send_message(message.channel, prefix+state)
             if message.content.startswith("!progress_video"):
                 if self.client.user != message.author and message.channel == self.target_channel:
                     videos = list(self.monitor_dir.glob("*.mp4"))
