@@ -34,7 +34,7 @@ class DiscordReporter(object):
         else:
             raise RuntimeError('Please supply token')
 
-        self.prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"] + ": "
+        self.prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"][:6] + ": "
         def t():
             asyncio.set_event_loop(asyncio.new_event_loop())
             self.client.run(token)
@@ -72,7 +72,7 @@ class DiscordProgressResponder(object):
         @self.client.event
         async def on_message(message):
             async def send_state():
-                prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"] + ": "
+                prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"][:6] + ": "
                 state = subprocess.check_output(['tail', '-1', str(self.monitor_dir.joinpath('log.csv'))]).decode().rstrip()
                 await self.client.send_message(message.channel, prefix+state)
             if message.content.startswith("!progress_video"):
