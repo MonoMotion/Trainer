@@ -16,5 +16,4 @@ baselines = "*"
 [dev-packages]
 
 matplotlib = "*"
-pyflakes = "*"
-
+"flake8" = "*"
