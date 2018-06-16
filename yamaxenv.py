@@ -103,7 +103,7 @@ class YamaXEnv(gym.Env):
     Or, Op, Oy = euler
     reward = -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1) - 0.1 * numUnpermittedContact + legError - (self._last_x - x) + bodyError
     if axisAngle > self.fail_threshold:
-      reward = - 2 + x**2
+      reward = -1
     elif x > self.success_x_threshold:
       reward = 1
 
