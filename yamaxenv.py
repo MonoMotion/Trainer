@@ -22,7 +22,7 @@ class YamaXEnv(gym.Env):
     'video.frames_per_second' : 10
   }
 
-  def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf", frame_delay=0):
+  def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf", frame_delay=0, render_size=(320, 240)):
       # start the bullet physics server
     if logdir:
         self._reward_log_file = open(os.path.join(logdir, 'log.csv'), 'wt')
@@ -41,8 +41,7 @@ class YamaXEnv(gym.Env):
     self._cam_dist = 0.75
     self._cam_yaw = 75
     self._cam_pitch = -15
-    self._render_width = 320
-    self._render_height = 240
+    self._render_width, self._render_height = render_size
 
     # p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1)
     p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)

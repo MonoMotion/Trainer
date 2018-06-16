@@ -32,6 +32,8 @@ def main():
     parser.add_argument('--monitor-video', type=int, default=10000, help="Save video every x steps (0 = disabled)")
     parser.add_argument('--frame-delay', type=float, default=0.0, help="Delay between each frame (for viewing result; 0 = disabled)")
     parser.add_argument('-v', '--visualize', action='store_true', default=False, help="Enable OpenAI Gym's visualization")
+    parser.add_argument('--render-w', type=int, default=320, help="Rendering width")
+    parser.add_argument('--render-h', type=int, default=240, help="Rendering height")
     parser.add_argument('--discord', action='store_true', default=False, help="Enable discord reporting")
 
     args = parser.parse_args()
@@ -76,7 +78,7 @@ def main():
     else:
         reporter = None
 
-    env = YamaXEnv(logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay)
+    env = YamaXEnv(logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay, render_size=(args.render_w, args.render_h))
     if args.monitor:
         if args.monitor_video == 0:
             video_callable = False
