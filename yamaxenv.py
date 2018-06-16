@@ -59,7 +59,7 @@ class YamaXEnv(gym.Env):
     servo_angular_speed = 0.14
     self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
     self.fail_threshold = 45 * math.pi / 180
-    self.success_x_threshold = 0.4
+    self.success_x_threshold = 0.5
     self._seed(0)
 #    self.reset()
     self.viewer = None
@@ -76,7 +76,7 @@ class YamaXEnv(gym.Env):
     return [seed]
 
   def _step_success_threshold(self):
-      self.success_x_thredshold *= 1.5
+      self.success_x_thredshold += 0.5
 
   def _step(self, action):
     p.stepSimulation()
