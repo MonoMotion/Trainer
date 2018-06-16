@@ -4,10 +4,12 @@ import signal
 from subprocess import Popen
 import argparse
 import urllib.request
+from pathlib import Path
 
 import gym
 from yamaxenv import YamaXEnv
 from discord_reporter import DiscordReporter
+from plot import plot
 
 from baselines.ppo1 import mlp_policy, pposgd_simple
 from baselines.common import tf_util as U
@@ -126,11 +128,15 @@ def main():
             callback=callback
         )
     env.close()
+    if args.monitor:
+        plot(str(Path(args.monitor).glob("*.csv").__next__()), "reward_sum", "final_distance", 10, 100, title="Plot", filename=os.path.join(args.monitor, "plot.png"))
     if args.save:
         saver = tf.train.Saver()
         saver.save(sess, os.path.join(args.save, "final"))
     if reporter:
         reporter.report("Done!")
+        if args.monitor:
+            reporter.send_file(os.path.join(args.monitor, "plot.png"))
         reporter.exit()
 
 if __name__ == '__main__':

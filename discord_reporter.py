@@ -45,6 +45,12 @@ class DiscordReporter(object):
     def exit(self):
         asyncio.run_coroutine_threadsafe(self.client.logout(), self.client.loop)
 
+    def send_file(self, path):
+        if not self.ready:
+            raise RuntimeError("Attempt to send file before reporter become ready")
+        else:
+            asyncio.run_coroutine_threadsafe(self.client.send_file(self.target_channel, path), self.client.loop)
+
     def report(self, message):
         if not self.ready:
             self.report_queue.append(message)
