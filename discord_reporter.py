@@ -29,7 +29,7 @@ class DiscordReporter(object):
             else:
                 raise RuntimeError('Please supply channel.')
             for message in self.report_queue:
-                await self.client.send_message(self.target_channel, message)
+                await self.client.send_message(self.target_channel, self.prefix+message)
 
         if 'DEEPL2_DISCORD_TOKEN' in os.environ:
             token = os.environ['DEEPL2_DISCORD_TOKEN']
