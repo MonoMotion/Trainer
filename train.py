@@ -102,7 +102,7 @@ def main():
 
     def policy_fn(name, ob_space, ac_space):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
-            hid_size=64, num_hid_layers=3)
+            hid_size=64, num_hid_layers=2)
 
     def callback(l, g):
         if l["iters_so_far"] == 0:
@@ -114,6 +114,8 @@ def main():
                 tf.train.Saver().restore(sess, args.load)
         elif args.save and args.save_episodes:
             if l["episodes_so_far"] % args.save_episodes == 0:
+                if reporter:
+                    reporter.report("Episode {}. Saving to model...".format(l["episodes_so_far"]))
                 tf.train.Saver().save(sess, "{}/afterEpisode_{}".format(args.save, l["episodes_so_far"]))
 
     pposgd_simple.learn(env, policy_fn,
