@@ -54,6 +54,7 @@ class DiscordProgressResponder(object):
     def __init__(self, monitor_dir=Path('./monitor')):
         self.monitor_dir = monitor_dir
         self.client = discord.Client()
+        self.prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"][:6] + ": "
 
     def start(self, pidstr):
         @self.client.event
@@ -71,6 +72,8 @@ class DiscordProgressResponder(object):
 
         @self.client.event
         async def on_message(message):
+            if len(message.content.split()) > 1 and not os.environ["DEEPL2_COMMIT_ID"].startswith(message.content.split[1]):
+                return
             async def send_state():
                 prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"][:6] + ": "
                 state = subprocess.check_output(['tail', '-1', str(self.monitor_dir.joinpath('log.csv'))]).decode().rstrip()
