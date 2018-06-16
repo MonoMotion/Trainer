@@ -5,6 +5,7 @@ import os
 import sys
 from pathlib import Path
 import subprocess
+from plot import plot
 
 class DiscordReporter(object):
     def __init__(self):
@@ -86,6 +87,9 @@ class DiscordProgressResponder(object):
                 await send_state()
             elif message.content.startswith("!progress"):
                 await send_state()
+            elif message.content.startswith("!plot"):
+                plot(str(self.monitor_dir.glob("*.csv").__next__()), "reward_sum", "final_distance", 10, 100, title=self.prefix+"Plot", filename="plot.png")
+                await self.client.send_file(message.channel, "./plot.png")
             elif message.content.startswith("!terminate"):
                 await self.client.send_message(message.channel, self.prefix + "Terminating...")
                 subprocess.call(['kill', '-9', pidstr])
