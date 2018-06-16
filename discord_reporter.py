@@ -79,10 +79,11 @@ class DiscordProgressResponder(object):
 
         @self.client.event
         async def on_message(message):
-            if len(message.content.split()) > 1 and not os.environ["DEEPL2_COMMIT_ID"].startswith(message.content.split[1]):
-                return
             if self.client.user == message.author or message.channel != self.target_channel:
                 return
+            if len(message.content.split()) > 1 and not os.environ["DEEPL2_COMMIT_ID"].startswith(message.content.split()[1]):
+                return
+
             async def send_state():
                 state = subprocess.check_output(['tail', '-1', str(self.monitor_dir.joinpath('log.csv'))]).decode().rstrip()
                 await self.client.send_message(message.channel, self.prefix+state)
