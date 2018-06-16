@@ -75,9 +75,8 @@ class DiscordProgressResponder(object):
             if len(message.content.split()) > 1 and not os.environ["DEEPL2_COMMIT_ID"].startswith(message.content.split[1]):
                 return
             async def send_state():
-                prefix = os.environ["DEEPL2_BRANCH_NAME"] + " " + os.environ["DEEPL2_COMMIT_ID"][:6] + ": "
                 state = subprocess.check_output(['tail', '-1', str(self.monitor_dir.joinpath('log.csv'))]).decode().rstrip()
-                await self.client.send_message(message.channel, prefix+state)
+                await self.client.send_message(message.channel, self.prefix+state)
             if message.content.startswith("!progress_video"):
                 if self.client.user != message.author and message.channel == self.target_channel:
                     videos = list(self.monitor_dir.glob("*.mp4"))
@@ -88,6 +87,7 @@ class DiscordProgressResponder(object):
                 if self.client.user != message.author and message.channel == self.target_channel:
                     await send_state()
             elif message.content.startswith("!terminate"):
+                await self.client.send_message(message.channel, self.prefix + "Terminating...")
                 subprocess.call(['kill', '-9', pidstr])
                 sys.exit()
 
