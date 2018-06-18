@@ -5,8 +5,7 @@ from pybullet_envs.bullet import bullet_client
 import pybullet_data
 
 class Humanoid(object):
-    def __init__(self, urdf, bullet_client, real=False, time_step=0.01, render=False,  servo_angular_speed=0.14):
-        self.is_rendered = render
+    def __init__(self, urdf, bullet_client, real=False, time_step=0.01, servo_angular_speed=0.14):
         self.is_real     = real
         self.servo_angular_speed = servo_angular_speed
         self.time_step = time_step

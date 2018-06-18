@@ -52,7 +52,7 @@ class YamaXEnv(gym.Env):
     self._pybullet.configureDebugVisualizer(self._pybullet.COV_ENABLE_MOUSE_PICKING, 0)
     self._pybullet.resetDebugVisualizerCamera(self._cam_dist + 1, self._cam_yaw, self._cam_pitch, [0,0,0])
 
-    self.robot = Humanoid(urdf=robotUrdf, bullet_client=self._pybullet, render=renders)
+    self.robot = Humanoid(urdf=robotUrdf, bullet_client=self._pybullet)
 
     action_high = np.array([50 * math.pi / 180] * self.robot.num_joints)
     observation_high = np.concatenate((action_high, [np.finfo(np.float32).max] * 3))
