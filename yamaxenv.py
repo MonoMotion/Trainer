@@ -15,9 +15,6 @@ from operator import mul
 from pkg_resources import parse_version
 
 import pybullet
-from pybullet_envs.bullet import bullet_client
-
-from humanoid import Humanoid
 
 class YamaXEnv(gym.Env):
   metadata = {
@@ -25,7 +22,7 @@ class YamaXEnv(gym.Env):
     'video.frames_per_second' : 10
   }
 
-  def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf", frame_delay=0, render_size=(320, 240), cam_dist=0.75, cam_yaw=75, cam_pitch=-15):
+  def __init__(self, robot, logdir, renders=True, frame_delay=0, render_size=(320, 240), cam_dist=0.75, cam_yaw=75, cam_pitch=-15):
       # start the bullet physics server
     if logdir:
         self._reward_log_file = open(os.path.join(logdir, 'log.csv'), 'wt')
@@ -34,6 +31,8 @@ class YamaXEnv(gym.Env):
         self._reward_log_file = None
         self._logger = None
 
+    self.robot = robot
+
     self._renders = renders
     self._updateDelay = frame_delay
     self._cam_dist = cam_dist
@@ -41,18 +40,10 @@ class YamaXEnv(gym.Env):
     self._cam_pitch = cam_pitch
     self._rendering_size = render_size
 
-    if self._renders:
-        self._pybullet = bullet_client.BulletClient(
-            connection_mode=pybullet.GUI, options=f"--width={self._rendering_size[0]} --height={self._rendering_size[1]}")
-    else:
-        self._pybullet = bullet_client.BulletClient()
-
-    # self._pybullet.configureDebugVisualizer(self._pybullet.COV_ENABLE_WIREFRAME, 1)
-    self._pybullet.configureDebugVisualizer(self._pybullet.COV_ENABLE_GUI, 0)
-    self._pybullet.configureDebugVisualizer(self._pybullet.COV_ENABLE_MOUSE_PICKING, 0)
-    self._pybullet.resetDebugVisualizerCamera(self._cam_dist + 1, self._cam_yaw, self._cam_pitch, [0,0,0])
-
-    self.robot = Humanoid(urdf=robotUrdf, bullet_client=self._pybullet)
+    # self.robot._pybullet.configureDebugVisualizer(self.robot._pybullet.COV_ENABLE_WIREFRAME, 1)
+    self.robot._pybullet.configureDebugVisualizer(self.robot._pybullet.COV_ENABLE_GUI, 0)
+    self.robot._pybullet.configureDebugVisualizer(self.robot._pybullet.COV_ENABLE_MOUSE_PICKING, 0)
+    self.robot._pybullet.resetDebugVisualizerCamera(self._cam_dist + 1, self._cam_yaw, self._cam_pitch, [0,0,0])
 
     action_high = np.array([50 * math.pi / 180] * self.robot.num_joints)
     observation_high = np.concatenate((action_high, [np.finfo(np.float32).max] * 3))
@@ -146,7 +137,7 @@ class YamaXEnv(gym.Env):
 
       base_pos=self.robot.get_position()
 
-      view_matrix = self._pybullet.computeViewMatrixFromYawPitchRoll(
+      view_matrix = self.robot._pybullet.computeViewMatrixFromYawPitchRoll(
           cameraTargetPosition=base_pos,
           distance=self._cam_dist,
           yaw=self._cam_yaw,
@@ -154,13 +145,13 @@ class YamaXEnv(gym.Env):
           roll=0,
           upAxisIndex=2)
       width, height = self._rendering_size
-      proj_matrix = self._pybullet.computeProjectionMatrixFOV(
+      proj_matrix = self.robot._pybullet.computeProjectionMatrixFOV(
           fov=60, aspect=float(width)/height,
           nearVal=0.1, farVal=100.0)
-      (_, _, px, _, _) = self._pybullet.getCameraImage(
+      (_, _, px, _, _) = self.robot._pybullet.getCameraImage(
       width=width, height=height, viewMatrix=view_matrix,
           projectionMatrix=proj_matrix,
-          renderer=self._pybullet.ER_BULLET_HARDWARE_OPENGL
+          renderer=self.robot._pybullet.ER_BULLET_HARDWARE_OPENGL
           )
       if len(px) != height:
           px = np.reshape(px, (height, width, 4)).astype('uint8')

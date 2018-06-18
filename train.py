@@ -6,8 +6,11 @@ import argparse
 import urllib.request
 from pathlib import Path
 
+import pybullet
+
 import gym
 from yamaxenv import YamaXEnv
+from humanoid import Humanoid
 from discord_reporter import DiscordReporter
 from plot import plot
 
@@ -80,7 +83,11 @@ def main():
     else:
         reporter = None
 
-    env = YamaXEnv(logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay, render_size=(args.render_w, args.render_h))
+    pybullet.connect(pybullet.GUI if args.visualize else pybullet.DIRECT)
+    robot = Humanoid(urdf="yamax.urdf", bullet_client=pybullet)
+
+    env = YamaXEnv(robot=robot, logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay, render_size=(args.render_w, args.render_h))
+
     if args.monitor:
         if args.monitor_video == 0:
             video_callable = False
