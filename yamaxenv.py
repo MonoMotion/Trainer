@@ -140,7 +140,7 @@ class YamaXEnv(gym.Env):
     p.resetSimulation()
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     self.plane = p.loadURDF("plane.urdf")
-    self.yamax = p.loadURDF(self._urdf, [0,0,0])
+    self.yamax = p.loadURDF(self._urdf, [0,0,0], flags=p.URDF_USE_SELF_COLLISION)
     h = p.getLinkState(self.yamax, 19)[0][2] # HARDCODED!!
     p.resetBasePositionAndOrientation(self.yamax, [0,0,-h + 0.01], [0,0,0,1]) # HARDCODED: 0.01
     self.timeStep = 0.01#0.01
