@@ -23,6 +23,7 @@ import tensorflow as tf
 def main():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('-r', '--robot', type=str, default="yamax.urdf", help="Path to robot model file")
     parser.add_argument('-e', '--episodes', type=int, default=0, help="Max Number of episodes (0: unlimited)")
     parser.add_argument('-t', '--timesteps', type=int, default=0, help="Max Number of timesteps (0: unlimited)")
     parser.add_argument('-i', '--iteration', type=int, default=0, help="Max Number of iteration (0: unlimited)")
@@ -84,7 +85,7 @@ def main():
         reporter = None
 
     pybullet.connect(pybullet.GUI if args.visualize else pybullet.DIRECT)
-    robot = Humanoid(urdf="yamax.urdf", bullet_client=pybullet)
+    robot = Humanoid(urdf=args.robot, bullet_client=pybullet)
 
     env = YamaXEnv(robot=robot, logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay, render_size=(args.render_w, args.render_h))
 
