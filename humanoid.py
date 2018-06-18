@@ -20,7 +20,7 @@ class Humanoid(object):
 
         self.reset()
 
-    def step_simulation(self):
+    def step(self):
         self._pybullet.stepSimulation()
 
     def reset(self):

@@ -78,7 +78,7 @@ class YamaXEnv(gym.Env):
     return [seed]
 
   def _step(self, action):
-    self.robot.step_simulation()
+    self.robot.step()
 
     if self._updateDelay:
         time.sleep(self._updateDelay)
@@ -88,7 +88,7 @@ class YamaXEnv(gym.Env):
     applied = [a + da for (a, da) in zip(joint_states, action)]
     self.robot.set_joint_states(applied)
     for _ in range(5):
-        self.robot.step_simulation()
+        self.robot.step()
 
     self._updateState()
     x, y, z = self.robot.get_position()
