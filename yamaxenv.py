@@ -10,11 +10,14 @@ from gym.utils import seeding
 import numpy as np
 import math
 import time
-import pybullet as p
-import pybullet_data
 from functools import reduce
 from operator import mul
 from pkg_resources import parse_version
+
+import pybullet
+from pybullet_envs.bullet import bullet_client
+
+from humanoid import Humanoid
 
 class YamaXEnv(gym.Env):
   metadata = {
@@ -22,7 +25,7 @@ class YamaXEnv(gym.Env):
     'video.frames_per_second' : 10
   }
 
-  def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf", frame_delay=0, render_size=(320, 240)):
+  def __init__(self, logdir, renders=True, robotUrdf="yamax.urdf", frame_delay=0, render_size=(320, 240), cam_dist=0.75, cam_yaw=75, cam_pitch=-15):
       # start the bullet physics server
     if logdir:
         self._reward_log_file = open(os.path.join(logdir, 'log.csv'), 'wt')
@@ -32,31 +35,31 @@ class YamaXEnv(gym.Env):
         self._logger = None
 
     self._renders = renders
-    self._urdf = robotUrdf
     self._updateDelay = frame_delay
-    if (renders):
-        p.connect(p.GUI)
+    self._cam_dist = cam_dist
+    self._cam_yaw = cam_yaw
+    self._cam_pitch = cam_pitch
+    self._rendering_size = render_size
+
+    if self._renders:
+        self._pybullet = bullet_client.BulletClient(
+            connection_mode=pybullet.GUI, options=f"--width={self._rendering_size[0]} --height={self._rendering_size[1]}")
     else:
-    	p.connect(p.DIRECT)
-    self._cam_dist = 0.75
-    self._cam_yaw = 75
-    self._cam_pitch = -15
-    self._render_width, self._render_height = render_size
+        self._pybullet = bullet_client.BulletClient()
 
-    # p.configureDebugVisualizer(p.COV_ENABLE_WIREFRAME, 1)
-    p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
-    p.configureDebugVisualizer(p.COV_ENABLE_MOUSE_PICKING, 0)
-    p.resetDebugVisualizerCamera(self._cam_dist + 1, self._cam_yaw, self._cam_pitch, [0,0,0])
+    # self._pybullet.configureDebugVisualizer(self._pybullet.COV_ENABLE_WIREFRAME, 1)
+    self._pybullet.configureDebugVisualizer(self._pybullet.COV_ENABLE_GUI, 0)
+    self._pybullet.configureDebugVisualizer(self._pybullet.COV_ENABLE_MOUSE_PICKING, 0)
+    self._pybullet.resetDebugVisualizerCamera(self._cam_dist + 1, self._cam_yaw, self._cam_pitch, [0,0,0])
 
-    self.num_joints = 12 # joint idx 8 ~ is needed
-    action_high = np.array([50 * math.pi / 180] * self.num_joints)
+    self.robot = Humanoid(urdf=robotUrdf, bullet_client=self._pybullet, render=renders)
+
+    action_high = np.array([50 * math.pi / 180] * self.robot.num_joints)
     observation_high = np.concatenate((action_high, [np.finfo(np.float32).max] * 3))
 
     self.action_space = spaces.Box(-action_high, action_high)
     self.observation_space = spaces.Box(-observation_high, observation_high)
 
-    servo_angular_speed = 0.14
-    self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
     self.fail_threshold = 45 * math.pi / 180
     self.success_x_threshold = 3
     self._seed(0)
@@ -75,27 +78,28 @@ class YamaXEnv(gym.Env):
     return [seed]
 
   def _step(self, action):
-    p.stepSimulation()
+    self.robot.step_simulation()
+
     if self._updateDelay:
         time.sleep(self._updateDelay)
     self._updateState()
-    jointStates = self.state[:self.num_joints]
+    joint_states = self.state[:self.robot.num_joints]
 
-    jointStatesApplied = [a + da for (a, da) in zip(jointStates, action)]
-    self._setJointMotorControlArrayWithLimit(targetPositions=jointStatesApplied, maxVelocity=self._angular_velocity_limit)
+    applied = [a + da for (a, da) in zip(joint_states, action)]
+    self.robot.set_joint_states(applied)
     for _ in range(5):
-        p.stepSimulation()
+        self.robot.step_simulation()
 
     self._updateState()
-    x, y, z = self._getPos()
-    euler = self.state[self.num_joints:self.num_joints+3]
+    x, y, z = self.robot.get_position()
+    euler = self.state[self.robot.num_joints:self.robot.num_joints+3]
 
     c = [math.cos(a / 2) for a in euler]
     s = [math.sin(a / 2) for a in euler]
     axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
     done = axisAngle > self.fail_threshold or x > self.success_x_threshold
-    numUnpermittedContact = self._checkUnpermittedContacts()
-    lr, ll = self._getLegsOrientation()
+    numUnpermittedContact = self.robot.count_unpermitted_contacts()
+    lr, ll = self.robot.get_legs_orientation()
     legError = - 0.1 * (lr - ll) ** 2
     Or, Op, Oy = euler
     reward = -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1) - 0.1 * numUnpermittedContact + legError - (self._last_x - x)
@@ -119,40 +123,9 @@ class YamaXEnv(gym.Env):
     self._last_x = x
     return np.array(self.state), reward, done, {}
 
-  def _setJointMotorControlArrayWithLimit(self, targetPositions, maxVelocity):
-    for (idx, pos) in enumerate(self._fixed_joints + targetPositions):
-        p.setJointMotorControl2(self.yamax, idx, p.POSITION_CONTROL, targetPosition=pos, maxVelocity=maxVelocity)
-
-  def _checkUnpermittedContacts(self):
-    contacts = p.getContactPoints(bodyA=self.yamax)
-    numValid = sum(((contact[1] == self.plane and contact[3] == -1) and (contact[2] == self.yamax and (contact[4] == 19 or contact[4] == 14))) or ((contact[2] == self.plane and contact[4] == -1) and (contact[1] == self.yamax and (contact[3] == 19 or contact[3] == 14))) for contact in contacts)
-    return len(contacts) - numValid
-
-  def _getLegsOrientation(self):
-    def getRoll(lidx):
-        orientation = p.getLinkState(self.yamax, lidx)[1]
-        euler = p.getEulerFromQuaternion(orientation)
-        return euler[0] # roll
-    return (getRoll(12), getRoll(17))
-
   def _reset(self):
 #    print("-----------reset simulation---------------")
-    p.resetSimulation()
-    p.setAdditionalSearchPath(pybullet_data.getDataPath())
-    self.plane = p.loadURDF("plane.urdf")
-    self.yamax = p.loadURDF(self._urdf, [0,0,0], flags=p.URDF_USE_SELF_COLLISION)
-    h = p.getLinkState(self.yamax, 19)[0][2] # HARDCODED!!
-    p.resetBasePositionAndOrientation(self.yamax, [0,0,-h + 0.01], [0,0,0,1]) # HARDCODED: 0.01
-    self.timeStep = 0.01#0.01
-    numJoints = p.getNumJoints(self.yamax) - 8
-    assert numJoints == self.num_joints
-    p.setGravity(0,0, -9.79)
-    p.setTimeStep(self.timeStep)
-    p.setRealTimeSimulation(0)
-
-    self._fixed_joints = [0] * 8
-    initialJointAngles = [0] * self.num_joints # self.np_random.uniform(low=-0.5, high=0.5, size=(self.num_joints,))
-    self._setJointMotorControlArrayWithLimit(targetPositions=initialJointAngles, maxVelocity=self._angular_velocity_limit)
+    self.robot.reset()
 
     self._updateState()
 
@@ -163,14 +136,7 @@ class YamaXEnv(gym.Env):
     return np.array(self.state)
 
   def _updateState(self):
-      jointStates = [s[0] for s in p.getJointStates(self.yamax, range(8, self.num_joints + 8))]
-      hipState = p.getLinkState(self.yamax, 9)
-      euler = p.getEulerFromQuaternion(hipState[1])
-      self.state = jointStates + list(euler)
-
-  def _getPos(self):
-      pos, _ = p.getBasePositionAndOrientation(self.yamax)
-      return pos
+      self.state = self.robot.get_joint_states() + self.robot.get_rotation()
 
   def _render(self, mode='human', close=False):
       if mode=="human" and not self._renders:
@@ -178,25 +144,26 @@ class YamaXEnv(gym.Env):
       if mode != "rgb_array":
           return np.array([])
 
-      base_pos=self._getPos()
+      base_pos=self.robot.get_position()
 
-      view_matrix = p.computeViewMatrixFromYawPitchRoll(
+      view_matrix = self._pybullet.computeViewMatrixFromYawPitchRoll(
           cameraTargetPosition=base_pos,
           distance=self._cam_dist,
           yaw=self._cam_yaw,
           pitch=self._cam_pitch,
           roll=0,
           upAxisIndex=2)
-      proj_matrix = p.computeProjectionMatrixFOV(
-          fov=60, aspect=float(self._render_width)/self._render_height,
+      width, height = self._rendering_size
+      proj_matrix = self._pybullet.computeProjectionMatrixFOV(
+          fov=60, aspect=float(width)/height,
           nearVal=0.1, farVal=100.0)
-      (_, _, px, _, _) = p.getCameraImage(
-      width=self._render_width, height=self._render_height, viewMatrix=view_matrix,
+      (_, _, px, _, _) = self._pybullet.getCameraImage(
+      width=width, height=height, viewMatrix=view_matrix,
           projectionMatrix=proj_matrix,
-          renderer=p.ER_BULLET_HARDWARE_OPENGL
+          renderer=self._pybullet.ER_BULLET_HARDWARE_OPENGL
           )
-      if len(px) != self._render_height:
-          px = np.reshape(px, (self._render_height, self._render_width, 4)).astype('uint8')
+      if len(px) != height:
+          px = np.reshape(px, (height, width, 4)).astype('uint8')
       rgb_array = np.array(px)
       rgb_array = rgb_array[:, :, :3]
       return rgb_array
