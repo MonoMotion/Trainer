@@ -1,0 +1,3 @@
+[submodule "urdf_parser_py"]
+	path = urdf_parser_py
+	url = https://github.com/ros/urdf_parser_py

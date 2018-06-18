@@ -10,6 +10,10 @@ baselines = "*"
 "discord.py" = "*"
 matplotlib = "*"
 pandas = "*"
+catkin-pkg = "*"
+"05d79e8" = {path = "./urdf_parser_py"}
+pyyaml = "*"
+lxml = "*"
 
 [dev-packages]
 "flake8" = "*"
