@@ -4,6 +4,8 @@ import pybullet
 from pybullet_envs.bullet import bullet_client
 import pybullet_data
 
+from urdf_parser_py.urdf import URDF
+
 from Adafruit_PCA9685 import PCA9685
 from mpu6050 import mpu6050
 
@@ -12,10 +14,13 @@ class Humanoid(object):
         self.is_real     = real
         self.servo_angular_speed = servo_angular_speed
         self.time_step = time_step
+        self.urdf = URDF.from_xml_file(self._urdf_path)
 
         self._angular_velocity_limit = math.pi / (self.servo_angular_speed * 3)
         self._urdf_path = urdf
         self._pybullet = bullet_client
+
+        self.num_joints = len(self.urdf.joints) - 8 # HARDCODED: 8
 
         if self.is_real:
             self.pwm = PCA9685(i2c_address, i2c_busnum)
