@@ -31,6 +31,9 @@ class Humanoid(object):
         pwm.set_pwm(channel, 0, pulse)
 
     def step(self):
+        if self.real:
+            return
+
         self._pybullet.stepSimulation()
 
     def reset(self):
@@ -62,8 +65,11 @@ class Humanoid(object):
             return list(euler)
 
     def get_position(self):
-        pos, _ = self._pybullet.getBasePositionAndOrientation(self.robot_id)
-        return pos
+        if self.is_real:
+            raise RuntimeError("Cannot get position of real robot")
+        else:
+            pos, _ = self._pybullet.getBasePositionAndOrientation(self.robot_id)
+            return pos
 
     def set_joint_state(self, idx, pos):
         if self.is_real:
@@ -76,13 +82,19 @@ class Humanoid(object):
             self.set_joint_state(idx, pos)
 
     def count_unpermitted_contacts(self):
-        contacts = self._pybullet.getContactPoints(bodyA=self.robot_id)
-        num_valid = sum(((contact[1] == self.plane_id and contact[3] == -1) and (contact[2] == self.robot_id and (contact[4] == 19 or contact[4] == 14))) or ((contact[2] == self.plane_id and contact[4] == -1) and (contact[1] == self.robot_id and (contact[3] == 19 or contact[3] == 14))) for contact in contacts)
-        return len(contacts) - num_valid
+        if self.is_real:
+            raise RuntimeError("Cannot count contacts of real robot")
+        else:
+            contacts = self._pybullet.getContactPoints(bodyA=self.robot_id)
+            num_valid = sum(((contact[1] == self.plane_id and contact[3] == -1) and (contact[2] == self.robot_id and (contact[4] == 19 or contact[4] == 14))) or ((contact[2] == self.plane_id and contact[4] == -1) and (contact[1] == self.robot_id and (contact[3] == 19 or contact[3] == 14))) for contact in contacts)
+            return len(contacts) - num_valid
 
     def get_legs_orientation(self):
-        def get_roll(lidx):
-            orientation = self._pybullet.getLinkState(self.robot_id, lidx)[1]
-            euler = self._pybullet.getEulerFromQuaternion(orientation)
-            return euler[0] # roll
-        return (get_roll(12), get_roll(17))
+        if self.is_real:
+            raise RuntimeError("Cannot measure rotation of legs of real robot")
+        else:
+            def get_roll(lidx):
+                orientation = self._pybullet.getLinkState(self.robot_id, lidx)[1]
+                euler = self._pybullet.getEulerFromQuaternion(orientation)
+                return euler[0] # roll
+            return (get_roll(12), get_roll(17))
