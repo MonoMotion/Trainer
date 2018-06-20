@@ -60,7 +60,10 @@ class Humanoid(object):
         return pos
 
     def set_joint_state(self, idx, pos):
-        self._pybullet.setJointMotorControl2(self.robot_id, 8 + idx, self._pybullet.POSITION_CONTROL, targetPosition=pos, maxVelocity=self._angular_velocity_limit) # HARDCODED: 8
+        if self.is_real:
+            self._set_servo(idx, pos)
+        else:
+            self._pybullet.setJointMotorControl2(self.robot_id, 8 + idx, self._pybullet.POSITION_CONTROL, targetPosition=pos, maxVelocity=self._angular_velocity_limit) # HARDCODED: 8
 
     def set_joint_states(self, pos_array):
         for (idx, pos) in enumerate(pos_array):
