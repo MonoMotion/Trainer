@@ -4,8 +4,10 @@ import pybullet
 from pybullet_envs.bullet import bullet_client
 import pybullet_data
 
+from Adafruit_PCA9685 import PCA9685
+
 class Humanoid(object):
-    def __init__(self, urdf, bullet_client, real=False, time_step=0.01, servo_angular_speed=0.14):
+    def __init__(self, urdf, bullet_client, real=False, time_step=0.01, servo_angular_speed=0.14, i2c_address=0x40, i2c_busnum=2):
         self.is_real     = real
         self.servo_angular_speed = servo_angular_speed
         self.time_step = time_step
@@ -15,7 +17,8 @@ class Humanoid(object):
         self._pybullet = bullet_client
 
         if self.is_real:
-            raise NotImplementedError("Hardware integration is not implemented yet")
+            self.pwm = PCA9685(i2c_address, i2c_busnum)
+            self.pwm.set_pwm_freq(60)
 
         self.reset()
 
