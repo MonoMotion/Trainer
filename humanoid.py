@@ -5,9 +5,10 @@ from pybullet_envs.bullet import bullet_client
 import pybullet_data
 
 from Adafruit_PCA9685 import PCA9685
+from mpu6050 import mpu6050
 
 class Humanoid(object):
-    def __init__(self, urdf, bullet_client, real=False, time_step=0.01, servo_angular_speed=0.14, i2c_address=0x40, i2c_busnum=2, servo_min=150, servo_max=600):
+    def __init__(self, urdf, bullet_client, real=False, time_step=0.01, servo_angular_speed=0.14, i2c_address=0x40, i2c_busnum=2, i2c_imu_address=0x68, servo_min=150, servo_max=600):
         self.is_real     = real
         self.servo_angular_speed = servo_angular_speed
         self.time_step = time_step
@@ -19,6 +20,7 @@ class Humanoid(object):
         if self.is_real:
             self.pwm = PCA9685(i2c_address, i2c_busnum)
             self.pwm.set_pwm_freq(60)
+            self.imu = mpu6050(i2c_imu_address)
 
         self.reset()
 
@@ -51,9 +53,13 @@ class Humanoid(object):
         return [s[0] for s in self._pybullet.getJointStates(self.robot_id, range(8, self.num_joints + 8))] # HARDCODED: 8
 
     def get_rotation(self):
-        hip_state = self._pybullet.getLinkState(self.robot_id, 9)
-        euler = self._pybullet.getEulerFromQuaternion(hip_state[1])
-        return list(euler)
+        if self.is_real:
+            gyro = self.imu.get_gyro_data()
+            return [gyro['x'], gyro['y'], gyro['z']]
+        else:
+            hip_state = self._pybullet.getLinkState(self.robot_id, 9)
+            euler = self._pybullet.getEulerFromQuaternion(hip_state[1])
+            return list(euler)
 
     def get_position(self):
         pos, _ = self._pybullet.getBasePositionAndOrientation(self.robot_id)

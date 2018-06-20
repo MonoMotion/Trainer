@@ -15,6 +15,7 @@ catkin-pkg = "*"
 pyyaml = "*"
 lxml = "*"
 "adafruit-pca9685" = "*"
+"mpu6050-raspberrypi" = "*"
 
 [dev-packages]
 "flake8" = "*"
