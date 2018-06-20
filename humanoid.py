@@ -36,7 +36,7 @@ class Humanoid(object):
         pwm.set_pwm(channel, 0, pulse)
 
     def step(self):
-        if self.real:
+        if self.is_real:
             return
 
         self._pybullet.stepSimulation()
