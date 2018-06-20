@@ -42,17 +42,19 @@ class Humanoid(object):
         self._pybullet.stepSimulation()
 
     def reset(self):
-        self._pybullet.resetSimulation()
-        self._pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())
-        self.plane_id = self._pybullet.loadURDF("plane.urdf")
-        self.robot_id = self._pybullet.loadURDF(self._urdf_path, [0,0,0], flags=self._pybullet.URDF_USE_SELF_COLLISION)
-        h = self._pybullet.getLinkState(self.robot_id, 19)[0][2] # HARDCODED!!
-        self._pybullet.resetBasePositionAndOrientation(self.robot_id, [0,0,-h + 0.01], [0,0,0,1]) # HARDCODED: 0.01
-        self.num_joints = self._pybullet.getNumJoints(self.robot_id) - 8 # HARDCODED: 8
+        if not self.is_real:
+            self._pybullet.resetSimulation()
+            self._pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())
+            self.plane_id = self._pybullet.loadURDF("plane.urdf")
+            self.robot_id = self._pybullet.loadURDF(self._urdf_path, [0,0,0], flags=self._pybullet.URDF_USE_SELF_COLLISION)
+            h = self._pybullet.getLinkState(self.robot_id, 19)[0][2] # HARDCODED!!
+            self._pybullet.resetBasePositionAndOrientation(self.robot_id, [0,0,-h + 0.01], [0,0,0,1]) # HARDCODED: 0.01
+            num_joints = self._pybullet.getNumJoints(self.robot_id) - 8 # HARDCODED: 8
+            assert self.num_joints == num_joints
 
-        self._pybullet.setGravity(0,0, -9.79)
-        self._pybullet.setTimeStep(self.time_step)
-        self._pybullet.setRealTimeSimulation(0) # HARDCODED: 8
+            self._pybullet.setGravity(0,0, -9.79)
+            self._pybullet.setTimeStep(self.time_step)
+            self._pybullet.setRealTimeSimulation(0) # HARDCODED: 8
 
         self._fixed_joints = [0] * 8 # HARDCODED: 8
         self.set_joint_states([0] * self.num_joints)
