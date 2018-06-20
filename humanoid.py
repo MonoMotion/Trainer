@@ -7,7 +7,7 @@ import pybullet_data
 from Adafruit_PCA9685 import PCA9685
 
 class Humanoid(object):
-    def __init__(self, urdf, bullet_client, real=False, time_step=0.01, servo_angular_speed=0.14, i2c_address=0x40, i2c_busnum=2):
+    def __init__(self, urdf, bullet_client, real=False, time_step=0.01, servo_angular_speed=0.14, i2c_address=0x40, i2c_busnum=2, servo_min=150, servo_max=600):
         self.is_real     = real
         self.servo_angular_speed = servo_angular_speed
         self.time_step = time_step
@@ -21,6 +21,12 @@ class Humanoid(object):
             self.pwm.set_pwm_freq(60)
 
         self.reset()
+
+    def _set_servo(self, channel, rad):
+        pulse = (rad + math.pi / 2) / math.pi * (self.servo_max - self.servo_min) + self.servo_min
+        pulse_length = 1000000 // 60 // 4096   # 1,000,000 us per second
+        pulse = pulse * 100 // pulse_length
+        pwm.set_pwm(channel, 0, pulse)
 
     def step(self):
         self._pybullet.stepSimulation()
