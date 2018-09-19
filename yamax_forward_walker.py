@@ -7,6 +7,7 @@ import math
 from functools import reduce
 from operator import mul
 
+
 class YamaXForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._updateDelay = frame_delay
@@ -90,7 +91,8 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
         lr, ll = self.get_legs_orientation()
         legError = - 0.1 * (lr - ll) ** 2
         Or, Op, Oy = euler
-        reward = -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1) + feetCollisionCost + legError - (self._last_x - x)
+        reward = -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1) + \
+            feetCollisionCost + legError - (self._last_x - x)
         if axisAngle > self.fail_threshold:
             reward = -1
         elif x > self.success_x_threshold:
@@ -132,7 +134,7 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
                 camy *= -1
             camx += x
             camy += y
-            camz  = 1.8
+            camz = 1.8
         else:
             camx = x
             camy = y + 4.3
@@ -142,5 +144,5 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
         self.camera_x = smoothness*self.camera_x + (1-smoothness)*camx
         self.camera_y = smoothness*self.camera_y + (1-smoothness)*camy
         self.camera_z = smoothness*self.camera_z + (1-smoothness)*camz
-        self.camera.move_and_look_at(self.camera_x, self.camera_y, self.camera_z, x, y, 0.6)
-
+        self.camera.move_and_look_at(
+            self.camera_x, self.camera_y, self.camera_z, x, y, 0.6)
