@@ -33,10 +33,10 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
         self.cpp_robot.set_pose(pose)
         self.start_pos_x, self.start_pos_y, self.start_pos_z = init_x, init_y, init_z
 
-    def apply_action(self, a):
-        assert( np.isfinite(a).all() )
-        for n,j in enumerate(self.ordered_joints):
-            j.set_motor_torque( self.power*j.power_coef*float(np.clip(a[n], -1, +1)) )
+    def apply_action(self, action):
+        assert( np.isfinite(action).all() )
+        for a, j in zip(action, self.ordered_joints):
+            j.set_relative_servo_target(a, 0.7, 0.4)
 
     def calc_state(self):
        jointStates = [s[0] for s in p.getJointStates(self.yamax, range(8, self.num_joints + 8))]
@@ -46,19 +46,8 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
 
    def _step(self, action):
        if not self.scene.multiplayer:  # if multiplayer, action first applied to all robots, then global step() called, then _step() for all robots with the same actions
-           self.apply_action(action)
+            self.apply_action(action)
             self.scene.global_step()
-
-        p.stepSimulation()
-        if self._updateDelay:
-            time.sleep(self._updateDelay)
-        state = self.calc_state()
-        jointStates = state[:self.num_joints]
-
-        jointStatesApplied = [a + da for (a, da) in zip(jointStates, action)]
-        self._setJointMotorControlArrayWithLimit(targetPositions=jointStatesApplied, maxVelocity=self._angular_velocity_limit)
-        for _ in range(5):
-            p.stepSimulation()
 
         state = self.calc_state()
         x, y, z = self._getPos()
