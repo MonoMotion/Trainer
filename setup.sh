@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eu
+
 ROBOSCHOOL_PATH=$(realpath ./roboschool)
 
 if [ ! -d $ROBOSCHOOL_PATH/roboschool ]; then
