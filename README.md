@@ -43,5 +43,5 @@ tensorboard --logdir=$OPENAI_LOGDIR
 ### Play with trained model
 
 ```shell
-python run,py --alg=ppo2 --env=YamaXForwardWalk-v0 --num_timesteps=0 --load_path=./models/model --play
+python run.py --alg=ppo2 --env=YamaXForwardWalk-v0 --num_timesteps=0 --load_path=./models/model --play
 ```
