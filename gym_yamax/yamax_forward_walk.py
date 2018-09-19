@@ -1,4 +1,4 @@
-from forward_walker import ForwardWalker
+from gym_yamax.forward_walker import ForwardWalker
 from roboschool.gym_urdf_robot_env import RoboschoolUrdfEnv
 from roboschool.scene_abstract import cpp_household
 from roboschool.scene_stadium import SinglePlayerStadiumScene
@@ -13,7 +13,7 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
     hip_part = "hip"
 
     def __init__(self):
-        YamaXForwardWalker.__init__(self)
+        ForwardWalker.__init__(self)
         RoboschoolUrdfEnv.__init__(self,
                                    "robot_models/yamax.urdf",
                                    "YamaX",
@@ -26,7 +26,7 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
         return SinglePlayerStadiumScene(gravity=9.8, timestep=0.0165/8, frame_skip=8)
 
     def robot_specific_reset(self):
-        YamaXForwardWalker.robot_specific_reset(self)
+        ForwardWalker.robot_specific_reset(self)
         self.set_initial_orientation(yaw_center=0, yaw_random_spread=np.pi)
         self.head = self.parts["head"]
 
