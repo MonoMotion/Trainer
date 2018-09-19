@@ -38,7 +38,8 @@ class ForwardWalker(SharedMemoryClientEnv):
     def apply_action(self, action):
         assert(np.isfinite(action).all())
         for a, j in zip(action, self.ordered_joints):
-            j.set_relative_servo_target(a, 0.7, 0.4)
+            # TODO: Calculate kp, kd, and maxForce correctly
+            j.set_servo_target(j.current_position()[0] + a, 0.7, 0.4, 100)
 
     def calc_state(self):
         jointStates = [j.current_position()[0] for j in self.ordered_joints]
