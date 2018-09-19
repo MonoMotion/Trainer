@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pybullet = "*"
+pybullet = ">=2.1.7,!=2.1.8"
 gym = "*"
 baselines = "*"
 "discord.py" = "*"
