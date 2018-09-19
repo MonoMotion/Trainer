@@ -49,7 +49,7 @@ class ForwardWalker(SharedMemoryClientEnv):
     def get_position(self):
         self.cpp_robot.query_position()
         pose = self.cpp_robot.root_part.pose()
-        return pose
+        return pose.xyz()
 
     foot_collision_cost = -0.1
     foot_ground_object_names = set(["floor"])
