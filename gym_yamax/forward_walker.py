@@ -25,6 +25,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             [0.0 for f in self.foot_list], dtype=np.float32)
         self.scene.actor_introduce(self)
         self.initial_z = None
+        self._last_x = self.start_pos_x
 
     def move_robot(self, init_x, init_y, init_z):
         "Used by multiplayer stadium to move sideways, to another running lane."
