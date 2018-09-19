@@ -40,10 +40,8 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
             j.set_relative_servo_target(a, 0.7, 0.4)
 
     def calc_state(self):
-        jointStates = [s[0] for s in p.getJointStates(
-            self.yamax, range(8, self.num_joints + 8))]
-        hipState = p.getLinkState(self.yamax, 9)
-        euler = p.getEulerFromQuaternion(hipState[1])
+        jointStates = [j.current_position()[0] for j in self.ordered_joints]
+        euler = self.parts[self.hip_part].pose().rpy()
         return jointStates + list(euler)
 
     def get_position(self):
