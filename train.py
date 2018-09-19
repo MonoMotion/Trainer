@@ -7,7 +7,7 @@ import urllib.request
 from pathlib import Path
 
 import gym
-from yamaxenv import YamaXEnv
+from yamaxenv import RoboschoolYamaXForwardWalk
 from discord_reporter import DiscordReporter
 from plot import plot
 
@@ -80,13 +80,13 @@ def main():
     else:
         reporter = None
 
-    env = YamaXEnv(logdir=args.monitor, renders=args.visualize, frame_delay=args.frame_delay, render_size=(args.render_w, args.render_h))
-    if args.monitor:
-        if args.monitor_video == 0:
-            video_callable = False
-        else:
-            video_callable = (lambda x: x % args.monitor_video == 0)
-        env = gym.wrappers.Monitor(env, args.monitor, force=not args.monitor_safe, video_callable=video_callable)
+    env = RoboschoolYamaXForwardWalk()
+    # if args.monitor:
+    #     if args.monitor_video == 0:
+    #         video_callable = False
+    #     else:
+    #         video_callable = (lambda x: x % args.monitor_video == 0)
+    #     env = gym.wrappers.Monitor(env, args.monitor, force=not args.monitor_safe, video_callable=video_callable)
 
     if args.load:
         load_dir = os.path.dirname(args.load)
