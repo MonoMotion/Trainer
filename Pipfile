@@ -17,5 +17,6 @@ pandas = "*"
 "autopep8" = "*"
 
 [scripts]
+start = "python run.py --alg=ppo2 --env=YamaXForwardWalk-v0 --network=mlp --num_timesteps=1e6"
 fix = "autopep8 -ivr ."
 lint = "flake8 ."
