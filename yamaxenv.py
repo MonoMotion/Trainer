@@ -23,7 +23,7 @@ class RoboschoolYamaXForwardWalk(YamaXForwardWalker, RoboschoolUrdfEnv):
         return SinglePlayerStadiumScene(gravity=9.8, timestep=0.0165/8, frame_skip=8)   # 8 instead of 4 here
 
     def robot_specific_reset(self):
-        RoboschoolForwardWalker.robot_specific_reset(self)
+        YamaXForwardWalker.robot_specific_reset(self)
         self.set_initial_orientation(yaw_center=0, yaw_random_spread=np.pi)
         self.head = self.parts["head"]
 
