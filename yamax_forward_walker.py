@@ -44,21 +44,37 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
        euler = p.getEulerFromQuaternion(hipState[1])
        return jointStates + list(euler)
 
+   def get_position(self):
+       pos, _ = p.getBasePositionAndOrientation(self.yamax)
+       return pos
+
+   def check_unpermitted_contacts(self):
+     contacts = p.getContactPoints(bodyA=self.yamax)
+     numValid = sum(((contact[1] == self.plane and contact[3] == -1) and (contact[2] == self.yamax and (contact[4] == 19 or contact[4] == 14))) or ((contact[2] == self.plane and contact[4] == -1) and (contact[1] == self.yamax and (contact[3] == 19 or contact[3] == 14))) for contact in contacts)
+     return len(contacts) - numValid
+
+   def get_legs_orientation(self):
+     def getRoll(lidx):
+         orientation = p.getLinkState(self.yamax, lidx)[1]
+         euler = p.getEulerFromQuaternion(orientation)
+         return euler[0] # roll
+     return (getRoll(12), getRoll(17))
+
    def _step(self, action):
        if not self.scene.multiplayer:  # if multiplayer, action first applied to all robots, then global step() called, then _step() for all robots with the same actions
             self.apply_action(action)
             self.scene.global_step()
 
         state = self.calc_state()
-        x, y, z = self._getPos()
+        x, y, z = self.get_position()
         euler = state[self.num_joints:self.num_joints+3]
 
         c = [math.cos(a / 2) for a in euler]
         s = [math.sin(a / 2) for a in euler]
         axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
         done = axisAngle > self.fail_threshold or x > self.success_x_threshold
-        numUnpermittedContact = self._checkUnpermittedContacts()
-        lr, ll = self._getLegsOrientation()
+        numUnpermittedContact = self.check_unpermitted_contacts()
+        lr, ll = self.get_legs_orientation()
         legError = - 0.1 * (lr - ll) ** 2
         Or, Op, Oy = euler
         reward = -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1) - 0.1 * numUnpermittedContact + legError - (self._last_x - x)
