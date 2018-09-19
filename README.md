@@ -24,25 +24,24 @@ pipenv shell
 
 ### Train
 
+`run.py` can be used in the same way as [baselines' `run.py`](https://github.com/openai/baselines/blob/115b59d28b79523826dd5a81fbc5d6f8ed431c7c/README.md#training-models)
+
 ```shell
-# Train 1000000 episodes
-python train.py --monitor monitor --save model --save-episodes 5000 --monitor-video 5000 --timesteps 10000000 &
-
-# You can enable tensorboard to visualize the progress of learning
-# python train.py --monitor monitor --save model --save-episodes 5000 --monitor-video 5000 --timesteps 10000000 --tensorboard ./tblog &
-
-# If you wanna see what is going on in simulation, add --visualize flag:
-# python train.py --monitor monitor --save model --save-episodes 5000 --monitor-video 5000 --timesteps 10000000 --visualize &
+# Train 1000000 timesteps
+python run.py --alg=ppo2 --env=YamaXForwardWalk-v0 --network=mlp --num_timesteps=1e6
 ```
 
-### Plot results
+You can enable tensorboard to visualize the progress of learning
 
 ```shell
-python plot.py monitor/log.csv reward_sum final_distance 10 100
+# Set them before training
+export OPENAI_LOG_FORMAT='tensorboard'
+export OPENAI_LOGDIR=./tblog
+tensorboard --logdir=$OPENAI_LOGDIR
 ```
 
 ### Play with trained model
 
 ```shell
-python train.py --timesteps 100 --load model/final --visualize &
+python run,py --alg=ppo2 --env=YamaXForwardWalk-v0 --num_timesteps=0 --load_path=./models/model --play
 ```
