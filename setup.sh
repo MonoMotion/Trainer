@@ -2,8 +2,8 @@
 
 ROBOSCHOOL_PATH=$(realpath ./roboschool)
 
-if [ ! -d $ROBOSCHOOL_PATH ]; then
-  git submodule update --init --recusrive
+if [ ! -d $ROBOSCHOOL_PATH/roboschool ]; then
+  git submodule update --init --recursive
 fi
 
 mkdir -p bullet3/build
