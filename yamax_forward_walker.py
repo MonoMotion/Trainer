@@ -2,9 +2,14 @@ from roboschool.scene_abstract import cpp_household
 from roboschool.scene_stadium import SinglePlayerStadiumScene
 from roboschool.multiplayer import SharedMemoryClientEnv
 from roboschool.gym_mujoco_xml_env import RoboschoolMujocoXmlEnv
-import gym, gym.spaces, gym.utils, gym.utils.seeding
+import gym
+import gym.spaces
+import gym.utils
+import gym.utils.seeding
 import numpy as np
-import os, sys
+import os
+import sys
+
 
 class YamaXForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
@@ -19,9 +24,11 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
 
     def robot_specific_reset(self):
         for j in self.ordered_joints:
-            j.reset_current_position(self.np_random.uniform( low=-0.1, high=0.1 ), 0)
+            j.reset_current_position(
+                self.np_random.uniform(low=-0.1, high=0.1), 0)
         self.feet = [self.parts[f] for f in self.foot_list]
-        self.feet_contact = np.array([0.0 for f in self.foot_list], dtype=np.float32)
+        self.feet_contact = np.array(
+            [0.0 for f in self.foot_list], dtype=np.float32)
         self.scene.actor_introduce(self)
         self.initial_z = None
 
@@ -29,46 +36,49 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
         "Used by multiplayer stadium to move sideways, to another running lane."
         self.cpp_robot.query_position()
         pose = self.cpp_robot.root_part.pose()
-        pose.move_xyz(init_x, init_y, init_z)  # Works because robot loads around (0,0,0), and some robots have z != 0 that is left intact
+        # Works because robot loads around (0,0,0), and some robots have z != 0 that is left intact
+        pose.move_xyz(init_x, init_y, init_z)
         self.cpp_robot.set_pose(pose)
         self.start_pos_x, self.start_pos_y, self.start_pos_z = init_x, init_y, init_z
 
     def apply_action(self, action):
-        assert( np.isfinite(action).all() )
+        assert(np.isfinite(action).all())
         for a, j in zip(action, self.ordered_joints):
             j.set_relative_servo_target(a, 0.7, 0.4)
 
     def calc_state(self):
-       jointStates = [s[0] for s in p.getJointStates(self.yamax, range(8, self.num_joints + 8))]
-       hipState = p.getLinkState(self.yamax, 9)
-       euler = p.getEulerFromQuaternion(hipState[1])
-       return jointStates + list(euler)
+        jointStates = [s[0] for s in p.getJointStates(
+            self.yamax, range(8, self.num_joints + 8))]
+        hipState = p.getLinkState(self.yamax, 9)
+        euler = p.getEulerFromQuaternion(hipState[1])
+        return jointStates + list(euler)
 
-   def get_position(self):
-       self.cpp_robot.query_position()
-       pose = self.cpp_robot.root_part.pose()
-       return pose
+    def get_position(self):
+        self.cpp_robot.query_position()
+        pose = self.cpp_robot.root_part.pose()
+        return pose
 
-   foot_collision_cost  = -0.1
-   foot_ground_object_names = set(["floor"])
+    foot_collision_cost = -0.1
+    foot_ground_object_names = set(["floor"])
 
-   def calc_feet_collision_cost(self):
-       feet_collision_cost = 0.0
-       for i,f in enumerate(self.feet):
-           contact_names = set(x.name for x in f.contact_list())
-           self.feet_contact[i] = 1.0 if (self.foot_ground_object_names & contact_names) else 0.0
-           if contact_names - self.foot_ground_object_names:
-               feet_collision_cost += self.foot_collision_cost
-       return feet_collision_cost
+    def calc_feet_collision_cost(self):
+        feet_collision_cost = 0.0
+        for i, f in enumerate(self.feet):
+            contact_names = set(x.name for x in f.contact_list())
+            self.feet_contact[i] = 1.0 if (
+                self.foot_ground_object_names & contact_names) else 0.0
+            if contact_names - self.foot_ground_object_names:
+                feet_collision_cost += self.foot_collision_cost
+        return feet_collision_cost
 
-   def get_legs_orientation(self):
-     def get_roll(name):
-         euler = self.parts[name].pose().rpy()
-         return euler[0] # roll
-     return (getRoll(self.left_leg), getRoll(self.right_leg))
+    def get_legs_orientation(self):
+        def get_roll(name):
+            euler = self.parts[name].pose().rpy()
+            return euler[0]  # roll
+        return (getRoll(self.left_leg), getRoll(self.right_leg))
 
-   def _step(self, action):
-       if not self.scene.multiplayer:  # if multiplayer, action first applied to all robots, then global step() called, then _step() for all robots with the same actions
+    def _step(self, action):
+        if not self.scene.multiplayer:  # if multiplayer, action first applied to all robots, then global step() called, then _step() for all robots with the same actions
             self.apply_action(action)
             self.scene.global_step()
 
@@ -93,12 +103,8 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
         self._last_x = x
         return np.array(state), reward, done, {}
 
-
-    def episode_over(self, frames):
-        pass
-
     def camera_adjust(self):
-        #self.camera_dramatic()
+        # self.camera_dramatic()
         self.camera_simple_follow()
 
     def camera_simple_follow(self):
@@ -135,7 +141,7 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
             camx = x
             camy = y + 4.3
             camz = 2.2
-        #print("%05i" % self.frame, self.camera_follow, camy)
+        # print("%05i" % self.frame, self.camera_follow, camy)
         smoothness = 0.97
         self.camera_x = smoothness*self.camera_x + (1-smoothness)*camx
         self.camera_y = smoothness*self.camera_y + (1-smoothness)*camy
