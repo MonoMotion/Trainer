@@ -14,3 +14,8 @@ pandas = "*"
 
 [dev-packages]
 "flake8" = "*"
+"autopep8" = "*"
+
+[scripts]
+fix = "autopep8 -ivr ."
+lint = "flake8 ."
