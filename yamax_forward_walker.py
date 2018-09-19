@@ -62,11 +62,10 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
        return feet_collision_cost
 
    def get_legs_orientation(self):
-     def getRoll(lidx):
-         orientation = p.getLinkState(self.yamax, lidx)[1]
-         euler = p.getEulerFromQuaternion(orientation)
+     def get_roll(name):
+         euler = self.parts[name].pose().rpy()
          return euler[0] # roll
-     return (getRoll(12), getRoll(17))
+     return (getRoll(self.left_leg), getRoll(self.right_leg))
 
    def _step(self, action):
        if not self.scene.multiplayer:  # if multiplayer, action first applied to all robots, then global step() called, then _step() for all robots with the same actions
