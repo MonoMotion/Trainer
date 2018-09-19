@@ -6,11 +6,11 @@ name = "pypi"
 [packages]
 pybullet = ">=2.1.7,!=2.1.8"
 gym = "*"
-baselines = "*"
 "discord.py" = "*"
 matplotlib = "*"
 pandas = "*"
 "44eff87" = {path = "./roboschool", editable = true}
+"9eeb991" = {path = "./baselines"}
 
 [dev-packages]
 "flake8" = "*"
