@@ -1,7 +1,5 @@
 from roboschool.scene_stadium import SinglePlayerStadiumScene
 from roboschool.multiplayer import SharedMemoryClientEnv
-import gym
-import gym.spaces
 import numpy as np
 import math
 from functools import reduce
@@ -10,8 +8,6 @@ from operator import mul
 
 class YamaXForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
-        self._updateDelay = frame_delay
-
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_threshold = 45 * math.pi / 180
         self.success_x_threshold = 3
@@ -72,7 +68,7 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
         def get_roll(name):
             euler = self.parts[name].pose().rpy()
             return euler[0]  # roll
-        return (getRoll(self.left_leg), getRoll(self.right_leg))
+        return (get_roll(self.left_leg), get_roll(self.right_leg))
 
     def _step(self, action):
         if not self.scene.multiplayer:  # if multiplayer, action first applied to all robots, then global step() called, then _step() for all robots with the same actions
