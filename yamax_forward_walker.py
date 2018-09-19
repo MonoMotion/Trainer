@@ -1,15 +1,11 @@
-from roboschool.scene_abstract import cpp_household
 from roboschool.scene_stadium import SinglePlayerStadiumScene
 from roboschool.multiplayer import SharedMemoryClientEnv
-from roboschool.gym_mujoco_xml_env import RoboschoolMujocoXmlEnv
 import gym
 import gym.spaces
-import gym.utils
-import gym.utils.seeding
 import numpy as np
-import os
-import sys
-
+import math
+from functools import reduce
+from operator import mul
 
 class YamaXForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
