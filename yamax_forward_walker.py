@@ -60,7 +60,7 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
         for _ in range(5):
             p.stepSimulation()
 
-        self._updateState()
+        state = self.calc_state()
         x, y, z = self._getPos()
         euler = state[self.num_joints:self.num_joints+3]
 
@@ -78,20 +78,8 @@ class YamaXForwardWalker(SharedMemoryClientEnv):
         elif x > self.success_x_threshold:
             reward = 1
 
-        self._ep_rewards.append(reward)
-        self._ep_legs.append(legError)
-        self._ep_unperms.append(numUnpermittedContact)
-        if done:
-            if self._logger:
-                eprew = sum(self._ep_rewards)
-                eplen = len(self._ep_rewards)
-                epinfo = {"reward_sum": round(eprew, 6), "num_timesteps": eplen, "time_elapsed": round(time.time() - self._tstart, 6), "final_reward": reward, "final_distance": x, "distance_sum": x - self._last_ep_x, "maximum_leg_error": max(self._ep_legs), "unperm_sum": sum(self._ep_unperms)}
-                self._last_ep_x = x
-                self._logger.writerow(epinfo)
-                self._reward_log_file.flush()
-
         self._last_x = x
-        return np.array(self.state), reward, done, {}
+        return np.array(state), reward, done, {}
 
 
     def episode_over(self, frames):
