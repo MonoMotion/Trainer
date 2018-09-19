@@ -14,7 +14,9 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
 
     def create_single_player_scene(self):
-        return SinglePlayerStadiumScene(gravity=9.8, timestep=0.0165/4, frame_skip=4)
+        return SinglePlayerStadiumScene(gravity=9.8,
+                                        timestep=0.0165/4,
+                                        frame_skip=4)
 
     def robot_specific_reset(self):
         for j in self.ordered_joints:
@@ -28,10 +30,13 @@ class ForwardWalker(SharedMemoryClientEnv):
         self._last_x = self.start_pos_x
 
     def move_robot(self, init_x, init_y, init_z):
-        "Used by multiplayer stadium to move sideways, to another running lane."
+        """
+        Used by multiplayer stadium to move sideways, to another running lane.
+        """
         self.cpp_robot.query_position()
         pose = self.cpp_robot.root_part.pose()
-        # Works because robot loads around (0,0,0), and some robots have z != 0 that is left intact
+        # Works because robot loads around (0,0,0),
+        # and some robots have z != 0 that is left intact
         pose.move_xyz(init_x, init_y, init_z)
         self.cpp_robot.set_pose(pose)
         self.start_pos_x, self.start_pos_y, self.start_pos_z = init_x, init_y, init_z
@@ -72,7 +77,9 @@ class ForwardWalker(SharedMemoryClientEnv):
         return (get_roll(self.left_leg), get_roll(self.right_leg))
 
     def _step(self, action):
-        if not self.scene.multiplayer:  # if multiplayer, action first applied to all robots, then global step() called, then _step() for all robots with the same actions
+        # if multiplayer, action first applied to all robots,
+        # then global step() called, then _step() for all robots with the same actions
+        if not self.scene.multiplayer:
             self.apply_action(action)
             self.scene.global_step()
 
