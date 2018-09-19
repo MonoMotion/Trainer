@@ -4,3 +4,6 @@
 [submodule "bullet3"]
 	path = bullet3
 	url = https://github.com/olegklimov/bullet3
+[submodule "baselines"]
+	path = baselines
+	url = https://github.com/openai/baselines.git
