@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ROBOSCHOOL_PATH=./roboschool
+ROBOSCHOOL_PATH=$(realpath ./roboschool)
 
 mkdir bullet3/build
 cd    bullet3/build

@@ -10,6 +10,7 @@ baselines = "*"
 "discord.py" = "*"
 matplotlib = "*"
 pandas = "*"
+"44eff87" = {path = "./roboschool", editable = true}
 
 [dev-packages]
 "flake8" = "*"
