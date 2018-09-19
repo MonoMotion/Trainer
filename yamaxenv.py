@@ -10,6 +10,7 @@ class RoboschoolYamaXForwardWalk(YamaXForwardWalker, RoboschoolUrdfEnv):
     foot_list = ["foot_right", "foot_left"]
     right_leg = "leg_right_2"
     left_leg = "leg_left_2"
+    hip_part = "hip"
 
     def __init__(self):
         YamaXForwardWalker.__init__(self)
