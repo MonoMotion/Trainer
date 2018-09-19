@@ -1,4 +1,5 @@
 import gym_yamax
 from baselines.run import main
 
-main()
+if __name__ == '__main__':
+    main()
