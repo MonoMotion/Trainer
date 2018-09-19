@@ -1,0 +1,3 @@
+[submodule "roboschool"]
+	path = roboschool
+	url = https://github.com/openai/roboschool.git
