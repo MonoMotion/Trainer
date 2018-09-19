@@ -6,7 +6,7 @@ from functools import reduce
 from operator import mul
 
 
-class YamaXForwardWalker(SharedMemoryClientEnv):
+class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_threshold = 45 * math.pi / 180

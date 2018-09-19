@@ -1,11 +1,11 @@
-from yamax_forward_walker import YamaXForwardWalker
+from forward_walker import ForwardWalker
 from roboschool.gym_urdf_robot_env import RoboschoolUrdfEnv
 from roboschool.scene_abstract import cpp_household
 from roboschool.scene_stadium import SinglePlayerStadiumScene
 import numpy as np
 
 
-class RoboschoolYamaXForwardWalk(YamaXForwardWalker, RoboschoolUrdfEnv):
+class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
     random_yaw = False
     foot_list = ["foot_right", "foot_left"]
     right_leg = "leg_right_2"
