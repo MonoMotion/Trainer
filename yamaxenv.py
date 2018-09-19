@@ -4,6 +4,7 @@ from roboschool.scene_abstract import cpp_household
 from roboschool.scene_stadium import SinglePlayerStadiumScene
 import numpy as np
 
+
 class RoboschoolYamaXForwardWalk(YamaXForwardWalker, RoboschoolUrdfEnv):
     random_yaw = False
     foot_list = ["foot_right", "foot_left"]
@@ -13,14 +14,15 @@ class RoboschoolYamaXForwardWalk(YamaXForwardWalker, RoboschoolUrdfEnv):
     def __init__(self):
         YamaXForwardWalker.__init__(self)
         RoboschoolUrdfEnv.__init__(self,
-            "yamax.urdf",
-            "YamaX",
-            action_dim=20, obs_dim=26,
-            fixed_base=False,
-            self_collision=True)
+                                   "yamax.urdf",
+                                   "YamaX",
+                                   action_dim=20, obs_dim=26,
+                                   fixed_base=False,
+                                   self_collision=True)
 
     def create_single_player_scene(self):
-        return SinglePlayerStadiumScene(gravity=9.8, timestep=0.0165/8, frame_skip=8)   # 8 instead of 4 here
+        # 8 instead of 4 here
+        return SinglePlayerStadiumScene(gravity=9.8, timestep=0.0165/8, frame_skip=8)
 
     def robot_specific_reset(self):
         YamaXForwardWalker.robot_specific_reset(self)
@@ -34,9 +36,13 @@ class RoboschoolYamaXForwardWalk(YamaXForwardWalker, RoboschoolUrdfEnv):
         if not self.random_yaw:
             yaw = yaw_center
         else:
-            yaw = yaw_center + self.np_random.uniform(low=-yaw_random_spread, high=yaw_random_spread)
+            yaw = yaw_center + \
+                self.np_random.uniform(
+                    low=-yaw_random_spread, high=yaw_random_spread)
 
-        cpose.set_xyz(self.start_pos_x, self.start_pos_y, self.start_pos_z + 1.0)
-        cpose.set_rpy(0, 0, yaw)  # just face random direction, but stay straight otherwise
-        self.cpp_robot.set_pose_and_speed(cpose, 0,0,0)
+        cpose.set_xyz(self.start_pos_x, self.start_pos_y,
+                      self.start_pos_z + 1.0)
+        # just face random direction, but stay straight otherwise
+        cpose.set_rpy(0, 0, yaw)
+        self.cpp_robot.set_pose_and_speed(cpose, 0, 0, 0)
         self.initial_z = 1.5
