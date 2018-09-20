@@ -56,7 +56,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         pose = self.cpp_robot.root_part.pose()
         return pose.xyz()
 
-    foot_collision_cost = -0.1
+    foot_collision_cost = -1
     foot_ground_object_names = set(["floor"])
 
     def calc_feet_collision_cost(self):
@@ -103,7 +103,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         done = axisAngle > self.fail_threshold or x > self.success_x_threshold
         feetCollisionCost = self.calc_feet_collision_cost()
         lr, ll = self.get_legs_orientation()
-        legError = - 0.1 * (lr - ll) ** 2
+        legError = - (lr - ll) ** 2
         Or, Op, Oy = euler
 
         potential_old = self.potential
@@ -116,7 +116,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             alive = +2
 
         self.rewards = [
-            -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
+            -0.1 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
             feetCollisionCost,
             legError,
             progress,
