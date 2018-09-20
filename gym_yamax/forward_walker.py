@@ -95,16 +95,29 @@ class ForwardWalker(SharedMemoryClientEnv):
         lr, ll = self.get_legs_orientation()
         legError = - 0.1 * (lr - ll) ** 2
         Or, Op, Oy = euler
-        reward = -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1) + \
-            feetCollisionCost + legError - (self._last_x - x)
+
+        self.rewards = [
+            -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
+            feetCollisionCost,
+            legError,
+            - (self._last_x - x)
+            ]
         if axisAngle > self.fail_threshold:
             reward = -1
         elif x > self.success_x_threshold:
             reward = 1
 
         self._last_x = x
+
+        state = np.array(state)
+
+        # for RoboschoolUrdfEnv
+        self.frame  += 1
+        self.done   += done
+        self.reward += sum(self.rewards)
         self.HUD(state, action, done)
-        return np.array(state), reward, done, {}
+
+        return state, sum(self.rewards), done, {}
 
     def camera_adjust(self):
         # self.camera_dramatic()
