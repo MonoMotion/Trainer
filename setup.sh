@@ -19,4 +19,11 @@ ln -vsr robot_models $ROBOSCHOOL_PATH/roboschool/models_robot/robot_models
 
 wget -O robot_models/yamax.urdf https://github.com/Y-modify/YamaX/releases/download/4.0/YamaX_4.0.urdf
 
+if type "nvidia-smi" > /dev/null 2>&1
+then
+  sed -i 's/tensorflow = "\*"/tensorflow-gpu = "*"/' Pipfile
+else
+  echo "Using tensorflow without GPU support"
+fi
+
 pipenv install
