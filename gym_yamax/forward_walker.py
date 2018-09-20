@@ -27,7 +27,6 @@ class ForwardWalker(SharedMemoryClientEnv):
             [0.0 for f in self.foot_list], dtype=np.float32)
         self.scene.actor_introduce(self)
         self.initial_z = None
-        self._last_x = self.start_pos_x
 
     def move_robot(self, init_x, init_y, init_z):
         """
@@ -76,6 +75,17 @@ class ForwardWalker(SharedMemoryClientEnv):
             return euler[0]  # roll
         return (get_roll(self.left_leg), get_roll(self.right_leg))
 
+    def calc_potential(self):
+        # Taken from roboschool.gym_forward_walker.RoboschoolForwardWalker
+        #
+        # progress in potential field is speed*dt, typical speed is about 2-3 meter per second, this potential will change 2-3 per frame (not per second),
+        # all rewards have rew/frame units and close to 1.0
+        body_pose = self.robot_body.pose()
+        parts_xyz = np.array( [p.pose().xyz() for p in self.parts.values()] ).flatten()
+        self.body_xyz = (parts_xyz[0::3].mean(), parts_xyz[1::3].mean(), body_pose.xyz()[2])  # torso z is more informative than mean z
+        walk_target_dist  = np.linalg.norm( [ - self.body_xyz[1], self.success_x_threshold - self.body_xyz[0]] )
+        return -walk_target_dist / self.scene.dt
+
     def _step(self, action):
         # if multiplayer, action first applied to all robots,
         # then global step() called, then _step() for all robots with the same actions
@@ -96,18 +106,20 @@ class ForwardWalker(SharedMemoryClientEnv):
         legError = - 0.1 * (lr - ll) ** 2
         Or, Op, Oy = euler
 
+        potential_old = self.potential
+        self.potential = self.calc_potential()
+        progress = float(self.potential - potential_old)
+
         self.rewards = [
             -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
             feetCollisionCost,
             legError,
-            - (self._last_x - x)
+            progress
             ]
         if axisAngle > self.fail_threshold:
             reward = -1
         elif x > self.success_x_threshold:
             reward = 1
-
-        self._last_x = x
 
         state = np.array(state)
 
