@@ -103,6 +103,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             reward = 1
 
         self._last_x = x
+        self.HUD(state, action, done)
         return np.array(state), reward, done, {}
 
     def camera_adjust(self):
