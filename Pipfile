@@ -12,6 +12,10 @@ pandas = "*"
 tensorflow = "*"
 "44eff87" = {path = "./roboschool", editable = true}
 "9eeb991" = {path = "./baselines"}
+scipy = "*"
+opencv-python = "*"
+joblib = "*"
+"mpi4py" = "*"
 
 [dev-packages]
 "flake8" = "*"
