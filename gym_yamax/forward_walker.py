@@ -110,16 +110,18 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.potential = self.calc_potential()
         progress = float(self.potential - potential_old)
 
+        if axisAngle > self.fail_threshold:
+            alive = -1
+        else:
+            alive = +2
+
         self.rewards = [
             -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
             feetCollisionCost,
             legError,
-            progress
+            progress,
+            alive
             ]
-        if axisAngle > self.fail_threshold:
-            reward = -1
-        elif x > self.success_x_threshold:
-            reward = 1
 
         state = np.array(state)
 
