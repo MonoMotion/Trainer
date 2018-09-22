@@ -11,7 +11,7 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
     right_leg = "leg_right_2"
     left_leg = "leg_left_2"
     hip_part = "hip"
-    num_joints = 19
+    num_joints = 14
 
     def __init__(self):
         ForwardWalker.__init__(self)
