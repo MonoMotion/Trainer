@@ -126,7 +126,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             'alive': alive
         }
 
-        self.rewards = rewards_dict.values()
+        self.rewards = list(rewards_dict.values())
 
         state = np.array(state)
 
