@@ -131,7 +131,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         state = np.array(state)
 
         # Log reward values
-        for k, v in rewards_dict:
+        for k, v in rewards_dict.items():
             logger.logkv_mean(k + '_mean', v)
             if done:
                 logger.logkv_mean('last_' + k + '_mean', v)
