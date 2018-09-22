@@ -116,20 +116,27 @@ class ForwardWalker(SharedMemoryClientEnv):
         else:
             alive = +1.5
 
-        self.rewards = [
-            -0.1 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
-            feetCollisionCost,
-            legError,
-            progress,
-            alive
-            ]
+        rewards_dict = {
+            'angle_cost': -0.1 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
+            'feet_collision_cost': feetCollisionCost,
+            'leg_error': legError,
+            'progress': progress,
+            'alive': alive
+            }
+
+        self.rewards = rewards_dict.values()
 
         state = np.array(state)
 
-        # Log
+        # Log reward values
+        for k, v in rewards_dict:
+	    logger.logkv_mean(k + '_mean', v)
+            if done:
+                logger.logkv_mean('last_' + k + '_mean', v)
+
         logger.logkv_mean('xpos_mean', x)
-        logger.logkv_mean('legerror_mean', legError)
-        logger.logkv_mean('potential_mean', potential)
+        if done:
+            logger.logkv_mean('last_xpos_mean', x)
 
         # for RoboschoolUrdfEnv
         self.frame  += 1
