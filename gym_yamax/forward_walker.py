@@ -103,7 +103,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         done = axisAngle > self.fail_threshold or x > self.success_x_threshold
         feetCollisionCost = self.calc_feet_collision_cost()
         lr, ll = self.get_legs_orientation()
-        legError = - (lr - ll) ** 2
+        legError = - 5 * (lr - ll) ** 2
         Or, Op, Oy = euler
 
         potential_old = self.potential
