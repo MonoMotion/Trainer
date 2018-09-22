@@ -1,5 +1,6 @@
 from roboschool.scene_stadium import SinglePlayerStadiumScene
 from roboschool.multiplayer import SharedMemoryClientEnv
+from baselines import logger
 import numpy as np
 import math
 from functools import reduce
@@ -124,6 +125,11 @@ class ForwardWalker(SharedMemoryClientEnv):
             ]
 
         state = np.array(state)
+
+        # Log
+        logger.logkv_mean('xpos_mean', x)
+        logger.logkv_mean('legerror_mean', legError)
+        logger.logkv_mean('potential_mean', potential)
 
         # for RoboschoolUrdfEnv
         self.frame  += 1
