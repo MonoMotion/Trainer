@@ -82,9 +82,11 @@ class ForwardWalker(SharedMemoryClientEnv):
         # progress in potential field is speed*dt, typical speed is about 2-3 meter per second, this potential will change 2-3 per frame (not per second),
         # all rewards have rew/frame units and close to 1.0
         body_pose = self.robot_body.pose()
-        parts_xyz = np.array( [p.pose().xyz() for p in self.parts.values()] ).flatten()
-        self.body_xyz = (parts_xyz[0::3].mean(), parts_xyz[1::3].mean(), body_pose.xyz()[2])  # torso z is more informative than mean z
-        walk_target_dist  = np.linalg.norm( [ - self.body_xyz[1], self.success_x_threshold - self.body_xyz[0]] )
+        parts_xyz = np.array([p.pose().xyz() for p in self.parts.values()]).flatten()
+        self.body_xyz = (parts_xyz[0::3].mean(), parts_xyz[1::3].mean(),
+                         body_pose.xyz()[2])  # torso z is more informative than mean z
+        walk_target_dist = np.linalg.norm(
+            [- self.body_xyz[1], self.success_x_threshold - self.body_xyz[0]])
         return -walk_target_dist / self.scene.dt
 
     def _step(self, action):
@@ -122,7 +124,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             'leg_error': legError,
             'progress': progress,
             'alive': alive
-            }
+        }
 
         self.rewards = rewards_dict.values()
 
@@ -130,7 +132,7 @@ class ForwardWalker(SharedMemoryClientEnv):
 
         # Log reward values
         for k, v in rewards_dict:
-	    logger.logkv_mean(k + '_mean', v)
+            logger.logkv_mean(k + '_mean', v)
             if done:
                 logger.logkv_mean('last_' + k + '_mean', v)
 
@@ -139,8 +141,8 @@ class ForwardWalker(SharedMemoryClientEnv):
             logger.logkv_mean('last_xpos_mean', x)
 
         # for RoboschoolUrdfEnv
-        self.frame  += 1
-        self.done   += done
+        self.frame += 1
+        self.done += done
         self.reward += sum(self.rewards)
         self.HUD(state, action, done)
 
