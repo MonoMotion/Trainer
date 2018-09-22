@@ -10,7 +10,7 @@ class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_threshold = 45 * math.pi / 180
-        self.success_x_threshold = 3
+        self.success_x_threshold = 3e2
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
 
     def create_single_player_scene(self):
@@ -44,7 +44,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         assert(np.isfinite(action).all())
         for a, j in zip(action, self.ordered_joints):
             # TODO: Calculate kp, kd, and maxForce correctly
-            j.set_servo_target(j.current_position()[0] + a, 0.7, 0.4, 100)
+            j.set_servo_target(j.current_position()[0] + a, 0.1, 1.0, 100000)
 
     def calc_state(self):
         jointStates = [j.current_position()[0] for j in self.ordered_joints]

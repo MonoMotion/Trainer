@@ -18,6 +18,7 @@ popd
 ln -vsr robot_models $ROBOSCHOOL_PATH/roboschool/models_robot/robot_models
 
 wget -O robot_models/yamax.urdf https://github.com/Y-modify/YamaX/releases/download/4.0/YamaX_4.0.urdf
+patch robot_models/yamax.urdf < yamax.urdf.patch
 
 if type "nvidia-smi" > /dev/null 2>&1
 then
