@@ -1,0 +1,48 @@
+--- robot_models/yamax.orig.urdf	2018-04-11 23:09:05.000000000 +0900
++++ robot_models/yamax.urdf	2018-09-22 12:06:15.597738970 +0900
+@@ -67,7 +67,6 @@
+     <self_collide>False</self_collide>
+     <material>Gazebo/Grey</material>
+   </gazebo>
+-  <link name="base_link"/>
+   <link name="body">
+     <visual>
+       <origin rpy="0 0 0" xyz="0 0 0"/>
+@@ -380,7 +379,7 @@
+     <collision>
+       <origin rpy="0 0 0" xyz="0 0 -0.035"/>
+       <geometry>
+-        <box size="0.054 0.053 0.07"/>
++        <box size="0 0 0"/>
+       </geometry>
+     </collision>
+     <inertial>
+@@ -596,7 +595,7 @@
+     <collision>
+       <origin rpy="0 0 0" xyz="0 0 -0.0175"/>
+       <geometry>
+-        <box size="0.022 0.06 0.035"/>
++        <box size="0 0 0"/>
+       </geometry>
+     </collision>
+     <inertial>
+@@ -812,7 +811,7 @@
+     <collision>
+       <origin rpy="0 0 0" xyz="0 0 -0.0175"/>
+       <geometry>
+-        <box size="0.022 0.06 0.035"/>
++        <box size="0 0 0"/>
+       </geometry>
+     </collision>
+     <inertial>
+@@ -1033,10 +1032,6 @@
+       <mechanicalReduction>1.0</mechanicalReduction>
+     </actuator>
+   </transmission>
+-  <joint name="dummy_joint" type="fixed">
+-    <parent link="base_link"/>
+-    <child link="body"/>
+-  </joint>
+   <joint name="shoulder_right_x" type="revolute">
+     <parent link="body"/>
+     <child link="arm_right_virtual"/>
