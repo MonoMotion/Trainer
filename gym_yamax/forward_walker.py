@@ -113,7 +113,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         if axisAngle > self.fail_threshold:
             alive = -1
         else:
-            alive = +2
+            alive = +1.5
 
         self.rewards = [
             -0.1 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
