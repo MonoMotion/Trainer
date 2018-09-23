@@ -119,7 +119,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             alive = +0.5
 
         rewards_dict = {
-            'angle_cost': -0.1 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
+            'angle_cost': - (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
             'feet_collision_cost': feetCollisionCost,
             'leg_error': legError,
             'progress': progress,
