@@ -98,8 +98,8 @@ class ForwardWalker(SharedMemoryClientEnv):
 
         state = self.calc_state()
         x, y, z = self.get_position()
-        euler = state[self.num_joints:self.num_joints+3]
 
+        euler = self.root_part.pose().rpy()
         c = [math.cos(a / 2) for a in euler]
         s = [math.sin(a / 2) for a in euler]
         axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
@@ -107,7 +107,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         feetCollisionCost = self.calc_feet_collision_cost()
         lr, ll = self.get_legs_orientation()
         legError = - 3 * (lr - ll) ** 2
-        Or, Op, Oy = euler
+        Or, Op, Oy = state[self.num_joints:self.num_joints+3]
 
         potential_old = self.potential
         self.potential = self.calc_potential()
