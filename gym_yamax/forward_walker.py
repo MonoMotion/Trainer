@@ -99,7 +99,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         state = self.calc_state()
         x, y, z = self.get_position()
 
-        euler = self.root_part.pose().rpy()
+        euler = self.cpp_robot.root_part.pose().rpy()
         c = [math.cos(a / 2) for a in euler]
         s = [math.sin(a / 2) for a in euler]
         axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
