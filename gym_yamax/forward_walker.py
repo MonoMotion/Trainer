@@ -11,7 +11,7 @@ class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_threshold = 45 * math.pi / 180
-        self.success_x_threshold = 3e2
+        self.success_x_threshold = 3
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
 
     def create_single_player_scene(self):
