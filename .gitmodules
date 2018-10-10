@@ -1,9 +1,12 @@
+[submodule "rlenv"]
+	path = rlenv
+	url = https://github.com/coord-e/rlenv
+[submodule "baselines"]
+	path = baselines
+	url = https://github.com/openai/baselines
 [submodule "roboschool"]
 	path = roboschool
-	url = https://github.com/openai/roboschool.git
+	url = https://github.com/openai/roboschool
 [submodule "bullet3"]
 	path = bullet3
 	url = https://github.com/olegklimov/bullet3
-[submodule "baselines"]
-	path = baselines
-	url = https://github.com/openai/baselines.git

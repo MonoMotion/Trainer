@@ -12,36 +12,24 @@ DeepL2 Project: [https://blog.y-modify.org/2018/01/04/deepl2-start/](https://blo
 
 ```shell
 # Clone this repo
-git clone https://github.com/Y-modify/deepl2.git
+git clone https://github.com/Y-modify/deepl2.git --recursive
 cd deepl2
 
 # Setup
 ./setup.sh
-
-# Activate the environment
-pipenv shell
 ```
 
 ### Train
 
-`run.py` can be used in the same way as [baselines' `run.py`](https://github.com/openai/baselines/blob/115b59d28b79523826dd5a81fbc5d6f8ed431c7c/README.md#training-models)
+The scripts' usage can be found in [coord-e/rlenv](https://github.com/coord-e/rlenv#usage)
 
 ```shell
 # Train 1000000 timesteps
-python run.py --alg=ppo2 --env=YamaXForwardWalk-v0 --network=mlp --num_timesteps=1e6
-```
-
-You can enable tensorboard to visualize the progress of learning
-
-```shell
-# Set them before training
-export OPENAI_LOG_FORMAT='tensorboard'
-export OPENAI_LOGDIR=./tblog
-tensorboard --logdir=$OPENAI_LOGDIR
+pipenv run train yamax --alg=ppo2 --env=YamaXForwardWalk-v0 --network=mlp --num_timesteps=1e6
 ```
 
 ### Play with trained model
 
 ```shell
-python run.py --alg=ppo2 --env=YamaXForwardWalk-v0 --num_timesteps=0 --load_path=./models/model --play
+pipenv run play yamax
 ```
