@@ -4,27 +4,29 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+tensorflow-gpu = "*"
 pybullet = ">=2.1.7,!=2.1.8"
 gym = "*"
-"discord.py" = "*"
-matplotlib = "*"
-pandas = "*"
-tensorflow = "*"
-"44eff87" = {path = "./roboschool", editable = true}
-"9eeb991" = {path = "./baselines", editable = true}
 scipy = "*"
 opencv-python = "*"
 joblib = "*"
 "mpi4py" = "*"
+matplotlib = "*"
+pick = "*"
+"9eeb991" = {path = "./baselines", editable = true}
+roboschool = {path = "./roboschool", editable = true}
 
 [dev-packages]
 "flake8" = "*"
 "autopep8" = "*"
 
 [scripts]
-start = "python run.py --alg=ppo2 --env=YamaXForwardWalk-v0 --network=mlp --num_timesteps=1e6"
 fix = "autopep8 -ivr ."
 lint = "flake8 ."
+train = "./rlenv/scripts/run.sh"
+play = "./rlenv/scripts/play.sh"
+experiment = "./rlenv/scripts/experiment.sh"
+plot = "python ./rlenv/scripts/plot.py"
 
 [requires]
 python_version = "3.6"
