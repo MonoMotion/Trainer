@@ -51,6 +51,10 @@ class ForwardWalker(SharedMemoryClientEnv):
             j.set_servo_target(j.current_position()[0] + a, 0.1, 1.0, 100000)
 
     def calc_state(self):
+        body_pose = self.robot_body.pose()
+        parts_xyz = np.array( [p.pose().xyz() for p in self.parts.values()] ).flatten()
+        self.body_xyz = (parts_xyz[0::3].mean(), parts_xyz[1::3].mean(), body_pose.xyz()[2])
+
         jointStates = [j.current_position()[0] for j in self.ordered_joints]
         euler = self.parts[self.hip_part].pose().rpy()
         return jointStates + list(euler)
