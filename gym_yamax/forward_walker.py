@@ -18,7 +18,7 @@ class ForwardWalker(SharedMemoryClientEnv):
     def create_single_player_scene(self):
         return SinglePlayerStadiumScene(gravity=9.8,
                                         timestep=0.0165/4,
-                                        frame_skip=4)
+                                        frame_skip=3)
     random_initial_joints = False
 
     def robot_specific_reset(self):
@@ -88,6 +88,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         # if multiplayer, action first applied to all robots,
         # then global step() called, then _step() for all robots with the same actions
         if not self.scene.multiplayer:
+            self.scene.cpp_world.step(1)
             self.apply_action(action)
             self.scene.global_step()
 
