@@ -29,4 +29,4 @@ experiment = "./rlenv/scripts/experiment.sh"
 plot = "python ./rlenv/scripts/plot.py"
 
 [requires]
-python_version = "3.6"
+python_version = "3.5"
