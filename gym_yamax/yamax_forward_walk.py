@@ -34,7 +34,7 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
     random_yaw = False
 
     def set_initial_orientation(self, yaw_center, yaw_random_spread):
-        cpose = cpp_household.Pose()
+        self.cpp_robot.query_position()
         if not self.random_yaw:
             yaw = yaw_center
         else:
@@ -42,9 +42,12 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
                 self.np_random.uniform(
                     low=-yaw_random_spread, high=yaw_random_spread)
 
+        _, _, self.initial_z = self.cpp_robot.root_part.pose().xyz()
+        self.initial_z += 0.01
+
+        cpose = cpp_household.Pose()
         cpose.set_xyz(self.start_pos_x, self.start_pos_y,
-                      self.start_pos_z + .25)
+                      self.initial_z)
         # just face random direction, but stay straight otherwise
         cpose.set_rpy(0, 0, yaw)
         self.cpp_robot.set_pose_and_speed(cpose, 0, 0, 0)
-        self.initial_z = self.start_pos_z + .25
