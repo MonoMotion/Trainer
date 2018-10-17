@@ -100,7 +100,8 @@ class ForwardWalker(SharedMemoryClientEnv):
         c = [math.cos(a / 2) for a in euler]
         s = [math.sin(a / 2) for a in euler]
         axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-        done = axisAngle > self.fail_threshold or self.current_ts > 100
+        fell_over = axisAngle > self.fail_threshold
+        done = fell_over or self.current_ts > 100
         feetCollisionCost = self.calc_feet_collision_cost()
 
         rewards_dict = {
@@ -124,7 +125,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             logger.logkv_mean('last_xpos_mean', x)
 
         self.current_ts += 1
-        reward_sum = sum(self.rewards) if axisAngle <= self.fail_threshold else -1
+        reward_sum = sum(self.rewards) if not fell_over else -1
 
         # for RoboschoolUrdfEnv
         self.frame += 1
