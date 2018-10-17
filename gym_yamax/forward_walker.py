@@ -124,14 +124,16 @@ class ForwardWalker(SharedMemoryClientEnv):
             logger.logkv_mean('last_xpos_mean', x)
 
         self.current_ts += 1
+        reward_sum = sum(self.rewards) if axisAngle <= self.fail_threshold else -1
+
         # for RoboschoolUrdfEnv
         self.frame += 1
         self.done += done
-        self.reward += sum(self.rewards) if axisAngle <= self.fail_threshold else -1
+        self.reward += reward_sum
         self.HUD(state, action, done)
 
         self._last_x = x
-        return state, sum(self.rewards), done, {}
+        return state, reward_sum, done, {}
 
     def camera_adjust(self):
         self.camera_simple_follow()
