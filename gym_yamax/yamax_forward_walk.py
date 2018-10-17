@@ -42,7 +42,7 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
                 self.np_random.uniform(
                     low=-yaw_random_spread, high=yaw_random_spread)
 
-        self.initial_z = - self.cpp_robot.root_part.pose().xyz()[2] + 0.01
+        self.initial_z = - self.parts[self.foot_list[0]].pose().xyz()[2] + 0.01
 
         cpose = cpp_household.Pose()
         cpose.set_xyz(self.start_pos_x, self.start_pos_y,
