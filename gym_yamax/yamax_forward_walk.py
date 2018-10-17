@@ -47,4 +47,4 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
         # just face random direction, but stay straight otherwise
         cpose.set_rpy(0, 0, yaw)
         self.cpp_robot.set_pose_and_speed(cpose, 0, 0, 0)
-        self.initial_z = .5
+        self.initial_z = self.start_pos_z + .25
