@@ -105,7 +105,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         feetCollisionCost = self.calc_feet_collision_cost()
 
         rewards_dict = {
-            'zdiff': 5 * min(z - self.initial_z, 0),
+            'height_cost': 5 * min(z - self.initial_z, 0),
             'feet_collision_cost': 0.1 * feetCollisionCost,
             'progress': - 10 * (self._last_x - x),
         }
