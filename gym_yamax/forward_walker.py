@@ -31,7 +31,8 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.scene.actor_introduce(self)
         x, _, _ = self.get_position()
         self._last_x = x
-        self.initial_z = None
+        self.current_ts = 0
+        # self.initial_z = None
 
     def move_robot(self, init_x, init_y, init_z):
         """
@@ -99,23 +100,14 @@ class ForwardWalker(SharedMemoryClientEnv):
         c = [math.cos(a / 2) for a in euler]
         s = [math.sin(a / 2) for a in euler]
         axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-        done = axisAngle > self.fail_threshold
+        fell_over = axisAngle > self.fail_threshold
+        done = fell_over or self.current_ts > 100
         feetCollisionCost = self.calc_feet_collision_cost()
-        lr, ll = self.get_legs_orientation()
-        legError = - 0.1 * (lr - ll) ** 2
-        Or, Op, Oy = state[self.num_joints:self.num_joints+3]
-
-        if axisAngle > self.fail_threshold:
-            alive = -1
-        else:
-            alive = 0
 
         rewards_dict = {
-            'angle_cost': -0.01 * (Or**2 + Op**2 + 3*Oy**2 + 1) * (3*y**2 + 1),
+            'height_cost': 5 * min(z - self.initial_z, 0),
             'feet_collision_cost': 0.1 * feetCollisionCost,
-            'leg_error': legError,
-            'alive': alive,
-            'progress': - 10 * (self._last_x - x),
+            'progress': 10 * (x - self._last_x),
         }
 
         self.rewards = list(rewards_dict.values())
@@ -132,14 +124,17 @@ class ForwardWalker(SharedMemoryClientEnv):
         if done:
             logger.logkv_mean('last_xpos_mean', x)
 
+        self.current_ts += 1
+        reward_sum = sum(self.rewards) if not fell_over else -1
+
         # for RoboschoolUrdfEnv
         self.frame += 1
         self.done += done
-        self.reward += sum(self.rewards)
+        self.reward += reward_sum
         self.HUD(state, action, done)
 
         self._last_x = x
-        return state, sum(self.rewards), done, {}
+        return state, reward_sum, done, {}
 
     def camera_adjust(self):
         self.camera_simple_follow()
