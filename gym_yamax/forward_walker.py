@@ -101,7 +101,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         s = [math.sin(a / 2) for a in euler]
         axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
         fell_over = axisAngle > self.fail_threshold
-        done = fell_over or self.current_ts > 100
+        done = fell_over
         feetCollisionCost = self.calc_feet_collision_cost()
 
         rewards_dict = {
