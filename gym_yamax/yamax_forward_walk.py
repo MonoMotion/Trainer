@@ -10,14 +10,13 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
     foot_list = ["foot_right", "foot_left"]
     right_leg = "leg_right_2"
     left_leg = "leg_left_2"
-    hip_part = "hip"
-    num_joints = 14
+    num_joints = 10
 
     def __init__(self):
         ForwardWalker.__init__(self)
         RoboschoolUrdfEnv.__init__(self,
                                    "robot_models/yamax.urdf",
-                                   "body",
+                                   "hip",
                                    action_dim=self.num_joints, obs_dim=self.num_joints + 3,
                                    fixed_base=False,
                                    self_collision=True)
@@ -29,7 +28,6 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
     def robot_specific_reset(self):
         ForwardWalker.robot_specific_reset(self)
         self.set_initial_orientation(yaw_center=0, yaw_random_spread=np.pi)
-        self.head = self.parts["head"]
 
     random_yaw = False
 

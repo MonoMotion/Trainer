@@ -58,7 +58,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.body_xyz = (parts_xyz[0::3].mean(), parts_xyz[1::3].mean(), body_pose.xyz()[2])
 
         jointStates = [j.current_position()[0] for j in self.ordered_joints]
-        euler = self.parts[self.hip_part].pose().rpy()
+        euler = self.robot_body.pose().rpy()
         return jointStates + list(euler)
 
     def get_position(self):
