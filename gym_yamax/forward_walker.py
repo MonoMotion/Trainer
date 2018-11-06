@@ -58,7 +58,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.body_xyz = (parts_xyz[0::3].mean(), parts_xyz[1::3].mean(), body_pose.xyz()[2])
 
         jointStates = [j.current_position()[0] for j in self.ordered_joints]
-        euler = self.parts[self.hip_part].pose().rpy()
+        euler = self.robot_body.pose().rpy()
         return jointStates + list(euler)
 
     def get_position(self):
@@ -100,7 +100,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         c = [math.cos(a / 2) for a in euler]
         s = [math.sin(a / 2) for a in euler]
         axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-        fell_over = axisAngle > self.fail_threshold
+        fell_over = self.initial_z - z > 1 / 3 * self.initial_z # axisAngle > self.fail_threshold
         done = fell_over
         feetCollisionCost = self.calc_feet_collision_cost()
 
