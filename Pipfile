@@ -13,8 +13,6 @@ joblib = "*"
 "mpi4py" = "*"
 matplotlib = "*"
 pick = "*"
-"9eeb991" = {path = "./baselines", editable = true}
-roboschool = {path = "./roboschool", editable = true}
 
 [dev-packages]
 "flake8" = "*"
