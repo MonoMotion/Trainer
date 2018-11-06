@@ -51,7 +51,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         for a, j in zip(action, self.ordered_joints):
             target = j.current_position()[0] + a
             target_clipped = max(-math.pi / 2, min(target, math.pi / 2))
-            const += abs(target - target_clipped)
+            cost += abs(target - target_clipped)
             # TODO: Calculate kp, kd, and maxForce correctly
             j.set_servo_target(target_clipped, 0.1, 1.0, 100000)
 
