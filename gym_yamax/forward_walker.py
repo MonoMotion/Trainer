@@ -10,7 +10,7 @@ from operator import mul
 class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
-        self.fail_threshold = 45 * math.pi / 180
+        self.fail_ratio = 1 / 3
         self.success_x_threshold = 3
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
         self.camera_x = 0
@@ -100,7 +100,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         c = [math.cos(a / 2) for a in euler]
         s = [math.sin(a / 2) for a in euler]
         axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-        fell_over = self.initial_z - z > 1 / 3 * self.initial_z # axisAngle > self.fail_threshold
+        fell_over = self.initial_z - z > self.fail_ratio * self.initial_z
         done = fell_over
         feetCollisionCost = self.calc_feet_collision_cost()
 
