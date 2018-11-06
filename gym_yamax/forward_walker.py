@@ -11,7 +11,6 @@ class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_ratio = 1 / 3
-        self.success_x_threshold = 3
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
         self.camera_x = 0
 
@@ -79,12 +78,6 @@ class ForwardWalker(SharedMemoryClientEnv):
                 feet_collision_cost += self.foot_collision_cost
         return feet_collision_cost
 
-    def get_legs_orientation(self):
-        def get_roll(name):
-            euler = self.parts[name].pose().rpy()
-            return euler[0]  # roll
-        return (get_roll(self.left_leg), get_roll(self.right_leg))
-
     def _step(self, action):
         # if multiplayer, action first applied to all robots,
         # then global step() called, then _step() for all robots with the same actions
@@ -96,10 +89,6 @@ class ForwardWalker(SharedMemoryClientEnv):
         state = self.calc_state()
         x, y, z = self.get_position()
 
-        euler = self.cpp_robot.root_part.pose().rpy()
-        c = [math.cos(a / 2) for a in euler]
-        s = [math.sin(a / 2) for a in euler]
-        axisAngle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
         fell_over = self.initial_z - z > self.fail_ratio * self.initial_z
         done = fell_over
         feetCollisionCost = self.calc_feet_collision_cost()
