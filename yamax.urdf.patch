@@ -1,127 +1,21 @@
---- robot_models/yamax.orig.urdf	2018-04-11 23:09:05.000000000 +0900
-+++ robot_models/yamax.urdf	2018-09-22 12:35:07.122220888 +0900
-@@ -67,7 +67,6 @@
-     <self_collide>False</self_collide>
-     <material>Gazebo/Grey</material>
-   </gazebo>
+--- robot_models/yamax.orig.urdf	2018-10-31 23:16:36.000000000 +0900
++++ robot_models/yamax.urdf	2018-11-05 05:02:37.699771059 +0900
+@@ -13,7 +13,6 @@
+   <material name="Black">
+     <color rgba="0.1718 0.2421 0.3125 1.0"/>
+   </material>
 -  <link name="base_link"/>
-   <link name="body">
+   <link name="hip">
      <visual>
        <origin rpy="0 0 0" xyz="0 0 0"/>
-@@ -380,7 +379,7 @@
-     <collision>
-       <origin rpy="0 0 0" xyz="0 0 -0.035"/>
-       <geometry>
--        <box size="0.054 0.053 0.07"/>
-+        <box size="0 0 0"/>
-       </geometry>
-     </collision>
-     <inertial>
-@@ -596,7 +595,7 @@
-     <collision>
-       <origin rpy="0 0 0" xyz="0 0 -0.0175"/>
-       <geometry>
--        <box size="0.022 0.06 0.035"/>
-+        <box size="0 0 0"/>
-       </geometry>
-     </collision>
-     <inertial>
-@@ -812,7 +811,7 @@
-     <collision>
-       <origin rpy="0 0 0" xyz="0 0 -0.0175"/>
-       <geometry>
--        <box size="0.022 0.06 0.035"/>
-+        <box size="0 0 0"/>
-       </geometry>
-     </collision>
-     <inertial>
-@@ -1017,7 +1016,7 @@
+@@ -901,10 +900,6 @@
      <self_collide>False</self_collide>
      <material>Gazebo/Orange</material>
    </gazebo>
--  <joint name="neck" type="revolute">
-+  <joint name="ignore_neck" type="revolute">
-     <parent link="body"/>
-     <child link="head"/>
-     <origin rpy="0 0 0" xyz="-0.004 0 0.07"/>
-@@ -1026,18 +1025,14 @@
-   </joint>
-   <transmission name="neck_transmission">
-     <type>transmission_interface/SimpleTransmission</type>
--    <joint name="neck">
-+    <joint name="ignore_neck">
-       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-     </joint>
-     <actuator name="A">
-       <mechanicalReduction>1.0</mechanicalReduction>
-     </actuator>
-   </transmission>
 -  <joint name="dummy_joint" type="fixed">
 -    <parent link="base_link"/>
--    <child link="body"/>
+-    <child link="hip"/>
 -  </joint>
--  <joint name="shoulder_right_x" type="revolute">
-+  <joint name="ignore_shoulder_right_x" type="revolute">
-     <parent link="body"/>
-     <child link="arm_right_virtual"/>
-     <origin rpy="0 0 0" xyz="0.025 -0.075 0.04"/>
-@@ -1046,14 +1041,14 @@
-   </joint>
-   <transmission name="shoulder_right_x_transmission">
-     <type>transmission_interface/SimpleTransmission</type>
--    <joint name="shoulder_right_x">
-+    <joint name="ignore_shoulder_right_x">
-       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-     </joint>
-     <actuator name="E">
-       <mechanicalReduction>1.0</mechanicalReduction>
-     </actuator>
-   </transmission>
--  <joint name="shoulder_right_z" type="revolute">
-+  <joint name="ignore_shoulder_right_z" type="revolute">
-     <parent link="arm_right_virtual"/>
-     <child link="arm_right_1"/>
-     <origin rpy="0 0 0" xyz="0 0 0"/>
-@@ -1062,14 +1057,14 @@
-   </joint>
-   <transmission name="shoulder_right_z_transmission">
-     <type>transmission_interface/SimpleTransmission</type>
--    <joint name="shoulder_right_z">
-+    <joint name="ignore_shoulder_right_z">
-       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-     </joint>
-     <actuator name="F">
-       <mechanicalReduction>1.0</mechanicalReduction>
-     </actuator>
-   </transmission>
--  <joint name="shoulder_left_x" type="revolute">
-+  <joint name="ignore_shoulder_left_x" type="revolute">
-     <parent link="body"/>
-     <child link="arm_left_virtual"/>
-     <origin rpy="0 0 0" xyz="0.025 0.075 0.04"/>
-@@ -1078,14 +1073,14 @@
-   </joint>
-   <transmission name="shoulder_left_x_transmission">
-     <type>transmission_interface/SimpleTransmission</type>
--    <joint name="shoulder_left_x">
-+    <joint name="ignore_shoulder_left_x">
-       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-     </joint>
-     <actuator name="B">
-       <mechanicalReduction>1.0</mechanicalReduction>
-     </actuator>
-   </transmission>
--  <joint name="shoulder_left_z" type="revolute">
-+  <joint name="ignore_shoulder_left_z" type="revolute">
-     <parent link="arm_left_virtual"/>
-     <child link="arm_left_1"/>
-     <origin rpy="0 0 0" xyz="0 0 0"/>
-@@ -1094,7 +1089,7 @@
-   </joint>
-   <transmission name="shoulder_left_z_transmission">
-     <type>transmission_interface/SimpleTransmission</type>
--    <joint name="shoulder_left_z">
-+    <joint name="ignore_shoulder_left_z">
-       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-     </joint>
-     <actuator name="C">
+   <gazebo>
+     <plugin filename="libgazebo_ros_p3d.so" name="ground_truth">
+       <robotNamespace>/yamax</robotNamespace>
