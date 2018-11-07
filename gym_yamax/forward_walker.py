@@ -47,9 +47,14 @@ class ForwardWalker(SharedMemoryClientEnv):
 
     def apply_action(self, action):
         assert(np.isfinite(action).all())
+        cost = 0
         for a, j in zip(action, self.ordered_joints):
+            target = j.current_position()[0] + a
+            target_clipped = max(-math.pi / 2, min(target, math.pi / 2))
+            cost += abs(target - target_clipped)
             # TODO: Calculate kp, kd, and maxForce correctly
-            j.set_servo_target(j.current_position()[0] + a, 0.1, 1.0, 100000)
+            j.set_servo_target(target_clipped, 0.1, 1.0, 100000)
+        return cost
 
     def calc_state(self):
         body_pose = self.robot_body.pose()
@@ -79,11 +84,13 @@ class ForwardWalker(SharedMemoryClientEnv):
         return feet_collision_cost
 
     def _step(self, action):
+        out_of_range_cost = 0
+
         # if multiplayer, action first applied to all robots,
         # then global step() called, then _step() for all robots with the same actions
         if not self.scene.multiplayer:
             self.scene.cpp_world.step(1)
-            self.apply_action(action)
+            out_of_range_cost = self.apply_action(action)
             self.scene.global_step()
 
         state = self.calc_state()
@@ -95,6 +102,7 @@ class ForwardWalker(SharedMemoryClientEnv):
 
         rewards_dict = {
             'height_cost': 5 * min(z - self.initial_z, 0),
+            'out_of_range_cost': - 0.1 * out_of_range_cost,
             'feet_collision_cost': 0.1 * feetCollisionCost,
             'progress': 10 * (x - self._last_x),
         }
