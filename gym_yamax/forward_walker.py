@@ -60,9 +60,9 @@ class ForwardWalker(SharedMemoryClientEnv):
             target_clipped = max(-math.pi / 2, min(target, math.pi / 2))
             cost += abs(target - target_clipped)
             # TODO: Calculate kp, kd, and maxForce correctly
-            j.set_target_speed(self.servo_speed, 1.0, self.servo_max_torque)
-            apply_sec = target_clipped / self.servo_speed
-            self.scene.cpp_world.step(round(apply_sec / self.scene.timestep))
+            j.set_target_speed(math.copysign(self.servo_speed, a), 1.0, self.servo_max_torque)
+            apply_sec = abs(a) / self.servo_speed
+            self.scene.cpp_world.step(int(round(apply_sec / self.scene.timestep)))
 
         return cost
 
