@@ -11,6 +11,13 @@ class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_ratio = 1 / 3
+
+        # https://kondo-robot.com/product/krs-4031hv-ics
+        # 0.16s/60°
+        self.servo_speed = math.pi / 3 / 0.16
+        # 13.0kgf・cm
+        self.servo_max_torque = 13.0
+
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
         self.camera_x = 0
 
@@ -53,7 +60,10 @@ class ForwardWalker(SharedMemoryClientEnv):
             target_clipped = max(-math.pi / 2, min(target, math.pi / 2))
             cost += abs(target - target_clipped)
             # TODO: Calculate kp, kd, and maxForce correctly
-            j.set_servo_target(target_clipped, 0.1, 1.0, 100000)
+            j.set_servo_target(self.servo_speed, 1.0, self.servo_max_torque)
+            apply_sec = target_clipped / self.servo_speed
+            self.scene.cpp_world.step(round(apply_sec / self.scene.timestep))
+
         return cost
 
     def calc_state(self):
