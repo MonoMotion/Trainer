@@ -102,7 +102,7 @@ class ForwardWalker(SharedMemoryClientEnv):
 
         rewards_dict = {
             'height_cost': 5 * min(z - self.initial_z, 0),
-            'out_of_range_cost': - out_of_range_cost,
+            'out_of_range_cost': - 0.1 * out_of_range_cost,
             'feet_collision_cost': 0.1 * feetCollisionCost,
             'progress': 10 * (x - self._last_x),
         }
