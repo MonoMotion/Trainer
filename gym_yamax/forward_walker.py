@@ -54,6 +54,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             cost += abs(target - target_clipped)
             # TODO: Calculate kp, kd, and maxForce correctly
             j.set_servo_target(target_clipped, 0.1, 1.0, 100000)
+        return cost
 
     def calc_state(self):
         body_pose = self.robot_body.pose()
