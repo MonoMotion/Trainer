@@ -121,6 +121,8 @@ class ForwardWalker(SharedMemoryClientEnv):
         if done:
             logger.logkv_mean('last_xpos_mean', x)
 
+        logger.logkv_mean('zpos_mean', z)
+
         self.current_ts += 1
         reward_sum = sum(self.rewards) if not fell_over else -1
 
