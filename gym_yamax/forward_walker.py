@@ -94,12 +94,12 @@ class ForwardWalker(SharedMemoryClientEnv):
 
     def get_position(self):
         self.cpp_robot.query_position()
-        _, _, b_z = self.cpp_robot.root_part.pose().xyz()
+        body_pose = self.cpp_robot.root_part.pose().xyz()
 
         part_poses = np.array([p.pose().xyz() for p in self.parts.values()])
-        p_x, p_y, _ = part_poses.mean(axis=0)
+        part_pose_mean = part_poses.mean(axis=0)
 
-        return p_x, p_y, b_z
+        return part_pose_mean, body_pose
 
     foot_collision_cost = -1
     foot_ground_object_names = set(["floor"])
@@ -127,7 +127,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             self.scene.cpp_world.step(rest_step)
 
         state = self.calc_state()
-        x, y, z = self.get_position()
+        (part_x, y, _), (body_x, _, z) = self.get_position()
 
         fell_over = self.initial_z - z > self.fail_ratio * self.initial_z
         done = fell_over
@@ -135,9 +135,10 @@ class ForwardWalker(SharedMemoryClientEnv):
 
         rewards_dict = {
             'height_cost': 5 * min(z - self.initial_z, 0),
+            'part_body_diff_cost': - 3 * abs(part_x - body_x),
             'out_of_range_cost': - 0.1 * out_of_range_cost,
             'feet_collision_cost': 0.1 * feetCollisionCost,
-            'progress': 10 * (x - self._last_x),
+            'progress': 10 * (part_x - self._last_x),
         }
 
         self.rewards = list(rewards_dict.values())
@@ -150,9 +151,9 @@ class ForwardWalker(SharedMemoryClientEnv):
             if done:
                 logger.logkv_mean('last_' + k + '_mean', v)
 
-        logger.logkv_mean('xpos_mean', x)
+        logger.logkv_mean('xpos_mean', part_x)
         if done:
-            logger.logkv_mean('last_xpos_mean', x)
+            logger.logkv_mean('last_xpos_mean', part_x)
 
         logger.logkv_mean('zpos_mean', z)
 
@@ -165,7 +166,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.reward += reward_sum
         self.HUD(state, action, done)
 
-        self._last_x = x
+        self._last_x = part_x
         return state, reward_sum, done, {}
 
     def camera_adjust(self):
