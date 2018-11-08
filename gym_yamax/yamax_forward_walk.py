@@ -21,10 +21,6 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
                                    fixed_base=False,
                                    self_collision=True)
 
-    def create_single_player_scene(self):
-        # 8 instead of 4 here
-        return SinglePlayerStadiumScene(gravity=9.8, timestep=0.0165/8, frame_skip=8)
-
     def robot_specific_reset(self):
         ForwardWalker.robot_specific_reset(self)
         self.set_initial_orientation(yaw_center=0, yaw_random_spread=np.pi)
