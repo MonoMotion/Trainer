@@ -65,7 +65,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             j.set_target_speed(math.copysign(self.servo_speed, a), 1.0, self.servo_max_torque)
             apply_sec = abs(a) / self.servo_speed
             step = min(int(round(apply_sec / self.scene.timestep)), self.scene.frame_skip)
-            triggers.append((step, lambda: j.set_target_speed(0, 1.0, self.servo_max_torque)))
+            triggers.append((step, j))
 
         def pairwise_z(iterable):
             "s -> (0, s0), (s0,s1), (s1,s2), (s2, s3), ..."
@@ -77,9 +77,10 @@ class ForwardWalker(SharedMemoryClientEnv):
         for s, k in zip(steps, keys):
             self.scene.cpp_world.step(s)
 
-            for trig_t, func in triggers:
+            for trig_t, j in triggers:
                 if trig_t == k:
-                    func()
+                    j.set_target_speed(0, 1.0, self.servo_max_torque)
+                    j.set_servo_target(j.current_position()[0], 0.1, 1.0, self.servo_max_torque)
 
         return cost, keys[-1]
 
