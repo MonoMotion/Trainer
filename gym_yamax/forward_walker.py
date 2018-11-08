@@ -56,8 +56,8 @@ class ForwardWalker(SharedMemoryClientEnv):
     def apply_action(self, action):
         assert(np.isfinite(action).all())
         cost = 0
-        triggers = []
-        for a, j in zip(action, self.ordered_joints):
+
+        def make_trigger(a, j):
             target = j.current_position()[0] + a
             target_clipped = max(-math.pi / 2, min(target, math.pi / 2))
             cost += abs(target - target_clipped)
@@ -65,7 +65,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             j.set_target_speed(math.copysign(self.servo_speed, a), 1.0, self.servo_max_torque)
             apply_sec = abs(a) / self.servo_speed
             step = min(int(round(apply_sec / self.scene.timestep)), self.scene.frame_skip)
-            triggers.append((step, j))
+        triggers = [make_trigger(a, j) for a, j in zip(action, self.ordered_joints)]
 
         def pairwise_z(iterable):
             "s -> (0, s0), (s0,s1), (s1,s2), (s2, s3), ..."
