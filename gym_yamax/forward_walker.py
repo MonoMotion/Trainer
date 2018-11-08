@@ -94,8 +94,12 @@ class ForwardWalker(SharedMemoryClientEnv):
 
     def get_position(self):
         self.cpp_robot.query_position()
-        pose = self.cpp_robot.root_part.pose()
-        return pose.xyz()
+        _, _, b_z = self.cpp_robot.root_part.pose().xyz()
+
+        part_poses = np.array([p.pose().xyz() for p in self.parts.values()])
+        p_x, p_y, _ = part_poses.mean(axis=0)
+
+        return p_x, p_y, b_z
 
     foot_collision_cost = -1
     foot_ground_object_names = set(["floor"])
