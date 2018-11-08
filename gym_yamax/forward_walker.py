@@ -11,7 +11,7 @@ from itertools import tee, chain
 class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
-        self.fail_ratio = 1 / 3
+        self.fail_ratio = 2 / 3
 
         # https://kondo-robot.com/product/krs-4031hv-ics
         # 0.16s/60°
