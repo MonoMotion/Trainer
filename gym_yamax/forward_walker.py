@@ -5,6 +5,7 @@ import numpy as np
 import math
 from functools import reduce
 from operator import mul
+from itertools import tee, chain
 
 
 class ForwardWalker(SharedMemoryClientEnv):
@@ -55,6 +56,7 @@ class ForwardWalker(SharedMemoryClientEnv):
     def apply_action(self, action):
         assert(np.isfinite(action).all())
         cost = 0
+        triggers = []
         for a, j in zip(action, self.ordered_joints):
             target = j.current_position()[0] + a
             target_clipped = max(-math.pi / 2, min(target, math.pi / 2))
@@ -62,7 +64,22 @@ class ForwardWalker(SharedMemoryClientEnv):
             # TODO: Calculate kp, kd, and maxForce correctly
             j.set_target_speed(math.copysign(self.servo_speed, a), 1.0, self.servo_max_torque)
             apply_sec = abs(a) / self.servo_speed
-            self.scene.cpp_world.step(int(round(apply_sec / self.scene.timestep)))
+            step = int(round(apply_sec / self.scene.timestep))
+            triggers.append((step, lambda: j.set_target_speed(0, 1.0, self.servo_max_torque)))
+
+        def pairwise_z(iterable):
+            "s -> (0, s0), (s0,s1), (s1,s2), (s2, s3), ..."
+            a, b = tee(iterable)
+            return zip(chain((0,), a), b)
+
+        keys = sorted(t[0] for t in triggers)
+        steps = (c - p for p, c in pairwise_z(keys))
+        for s, k in zip(steps, keys):
+            self.scene.cpp_world.step(s)
+
+            for trig_t, func in triggers:
+                if trig_t == k:
+                    func()
 
         return cost
 
