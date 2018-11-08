@@ -36,7 +36,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.feet_contact = np.array(
             [0.0 for f in self.foot_list], dtype=np.float32)
         self.scene.actor_introduce(self)
-        x, _, _ = self.get_position()
+        (x, _, _), _ = self.get_position()
         self._last_x = x
         self.current_ts = 0
         # self.initial_z = None
