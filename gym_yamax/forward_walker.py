@@ -25,7 +25,7 @@ class ForwardWalker(SharedMemoryClientEnv):
     def create_single_player_scene(self):
         return SinglePlayerStadiumScene(gravity=9.8,
                                         timestep=0.0165/4,
-                                        frame_skip=62)
+                                        frame_skip=8)
     random_initial_joints = False
 
     def robot_specific_reset(self):
@@ -64,7 +64,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             # TODO: Calculate kp, kd, and maxForce correctly
             j.set_target_speed(math.copysign(self.servo_speed, a), 1.0, self.servo_max_torque)
             apply_sec = abs(a) / self.servo_speed
-            step = min(int(round(apply_sec / self.scene.timestep)), self.scene.frame_skip)
+            step = int(round(apply_sec / self.scene.timestep))
         triggers = [make_trigger(a, j) for a, j in zip(action, self.ordered_joints)]
 
         def pairwise_z(iterable):
@@ -123,9 +123,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         if not self.scene.multiplayer:
             self.scene.cpp_world.step(1)
             out_of_range_cost, p_step = self.apply_action(action)
-            rest_step = self.scene.frame_skip - p_step
-            assert rest_step >= 0
-            self.scene.cpp_world.step(rest_step)
+            self.scene.global_step()
 
         state = self.calc_state()
         (part_x, y, _), (body_x, _, z) = self.get_position()
