@@ -12,10 +12,12 @@ make install
 popd
 
 # Include out model to the search path
-ln -vsr robot_models $roboschool_path/roboschool/models_robot/robot_models
+if [ ! -e $roboschool_path/roboschool/models_robot/robot_models ]; then
+  ln -vsr robot_models $roboschool_path/roboschool/models_robot/robot_models
+fi
 
 # Download and patch YamaX model
-wget -O robot_models/yamax.urdf https://github.com/Y-modify/YamaX/releases/download/v6.0/YamaX_v6.0.urdf
+wget -O robot_models/yamax.urdf https://github.com/Y-modify/YamaX/releases/download/v6.0.1/YamaX_v6.0.1.urdf
 patch robot_models/yamax.urdf < yamax.urdf.patch
 
 if type "nvidia-smi" > /dev/null 2>&1
