@@ -17,7 +17,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         # 0.16s/60°
         self.servo_speed = math.pi / 3 / 0.16
         # 13.0kgf・cm
-        self.servo_max_torque = 13.0
+        self.servo_max_torque = 13.0 / 0.0981
 
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
         self.camera_x = 0
