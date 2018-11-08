@@ -81,7 +81,7 @@ class ForwardWalker(SharedMemoryClientEnv):
                 if trig_t == k:
                     func()
 
-        return cost
+        return cost, keys[-1]
 
     def calc_state(self):
         body_pose = self.robot_body.pose()
@@ -117,8 +117,10 @@ class ForwardWalker(SharedMemoryClientEnv):
         # then global step() called, then _step() for all robots with the same actions
         if not self.scene.multiplayer:
             self.scene.cpp_world.step(1)
-            out_of_range_cost = self.apply_action(action)
-            self.scene.global_step()
+            out_of_range_cost, p_step = self.apply_action(action)
+            rest_step = self.scene.frame_skip - p_step
+            assert rest_step >= 0
+            self.scene.cpp_world.step(rest_step)
 
         state = self.calc_state()
         x, y, z = self.get_position()
