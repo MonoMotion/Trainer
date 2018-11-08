@@ -64,7 +64,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             # TODO: Calculate kp, kd, and maxForce correctly
             j.set_target_speed(math.copysign(self.servo_speed, a), 1.0, self.servo_max_torque)
             apply_sec = abs(a) / self.servo_speed
-            step = int(round(apply_sec / self.scene.timestep))
+            step = min(int(round(apply_sec / self.scene.timestep)), self.scene.frame_skip)
             triggers.append((step, lambda: j.set_target_speed(0, 1.0, self.servo_max_torque)))
 
         def pairwise_z(iterable):
