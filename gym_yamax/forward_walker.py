@@ -24,8 +24,8 @@ class ForwardWalker(SharedMemoryClientEnv):
 
     def create_single_player_scene(self):
         return SinglePlayerStadiumScene(gravity=9.8,
-                                        timestep=0.01,
-                                        frame_skip=18)
+                                        timestep=0.0165/8,
+                                        frame_skip=48)
     random_initial_joints = False
 
     def robot_specific_reset(self):
