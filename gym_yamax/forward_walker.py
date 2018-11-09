@@ -122,6 +122,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             if done:
                 logger.logkv_mean('last_' + k + '_mean', v)
 
+        logger.logkv_mean('zpos_mean', z)
         logger.logkv_mean('xpos_mean', x)
         if done:
             logger.logkv_mean('last_xpos_mean', x)
