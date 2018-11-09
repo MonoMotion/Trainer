@@ -66,7 +66,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         return jointStates + list(euler)
 
     def calc_energy_cost(self):
-        return sum(j.current_position()[1] for j in self.ordered_joints)
+        return sum(abs(j.current_position()[1]) for j in self.ordered_joints)
 
     def get_position(self):
         self.cpp_robot.query_position()
