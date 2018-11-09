@@ -68,6 +68,17 @@ class ForwardWalker(SharedMemoryClientEnv):
     def calc_energy_cost(self):
         return sum(abs(j.current_position()[1]) for j in self.ordered_joints)
 
+    def calc_tilt_cost(self):
+        def euler_to_axis(euler):
+            c = [math.cos(a / 2) for a in euler]
+            s = [math.sin(a / 2) for a in euler]
+            axis_angle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
+            return axis_angle
+
+        body_tilt = euler_to_axis(self.robot_body.pose().rpy())
+        foot_tilt_sum = sum(euler_to_axis(self.parts[name].pose().rpy()) for name in self.foot_list)
+        return body_tilt + foot_tilt_sum
+
     def get_position(self):
         self.cpp_robot.query_position()
         pose = self.cpp_robot.root_part.pose()
@@ -103,12 +114,14 @@ class ForwardWalker(SharedMemoryClientEnv):
         done = fell_over
         feetCollisionCost = self.calc_feet_collision_cost()
         energy_cost = self.calc_energy_cost()
+        tilt_cost = self.calc_tilt_cost()
 
         rewards_dict = {
             'height_cost': 5 * min(z - self.initial_z, 0),
             'out_of_range_cost': - 0.1 * out_of_range_cost,
             'feet_collision_cost': 0.1 * feetCollisionCost,
             'energy_cost': - 0.01 * energy_cost,
+            'tilt_cost': - 0.01 * tilt_cost,
             'progress': 10 * (x - self._last_x),
         }
 
