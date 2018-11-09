@@ -108,7 +108,7 @@ class ForwardWalker(SharedMemoryClientEnv):
             'height_cost': 5 * min(z - self.initial_z, 0),
             'out_of_range_cost': - 0.1 * out_of_range_cost,
             'feet_collision_cost': 0.1 * feetCollisionCost,
-            'energy_cost': - energy_cost,
+            'energy_cost': - 0.01 * energy_cost,
             'progress': 10 * (x - self._last_x),
         }
 
