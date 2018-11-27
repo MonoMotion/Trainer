@@ -32,6 +32,6 @@ if [ -f Pipfile.lock ]; then
   pipenv run pipenv install
 else
   pipenv install
-  pipenv install -e ./baselines
+  LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$HOME/.mujoco/mjpro150/bin" pipenv install -e ./baselines
   pipenv run pipenv install -e ./roboschool
 fi
