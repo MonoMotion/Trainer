@@ -4,8 +4,11 @@ from baselines import logger
 import numpy as np
 import math
 from functools import reduce
+from itertools import tee
 from operator import mul
 import json
+import os
+
 
 class ReferenceMotionIterator(object):
     def __init__(self, path):
@@ -19,7 +22,9 @@ class ReferenceMotionIterator(object):
         return iter(self.frames)
 
     def __iter__(self):
-        return self
+        iterator = self
+        iterator.frames_iter = iterator.make_frames_iter()
+        return iterator
 
     def __next__(self):
         try:
@@ -34,12 +39,33 @@ class ReferenceMotionIterator(object):
             else:
                 raise NotImplementedError('Unsupported loop mode "{}"'.format(self.loop_mode))
 
+
 class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_ratio = 1 / 3
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
         self.camera_x = 0
+
+        self.ref_motion = ReferenceMotionIterator(os.environ.get("DEEPL2_MOTION"))
+
+    def get_ideal_positions(self, t):
+
+        # https://docs.python.jp/3/library/itertools.html
+        def pairwise(iterable):
+            "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+            a, b = tee(iterable)
+            next(b, None)
+            return zip(a, b)
+
+        def dictzip(d1, d2):
+            for key in d1.keys():
+                yield key, (d1[key], d2[key])
+
+        def calc_gap(td, p1, p2):
+            return {j: td * (p2 - p1) + p1 for j, (p1, p2) in dictzip(p1, p2)}
+
+        return next(calc_gap((t2 - t1) / (t - t1), p1, p2) for (t1, p1), (t2, p2) in pairwise(self.ref_motion) if t1 <= t < t2)
 
     def create_single_player_scene(self):
         return SinglePlayerStadiumScene(gravity=9.8,
