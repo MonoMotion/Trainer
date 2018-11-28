@@ -69,7 +69,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         def calc_gap(td, p1, p2):
             return {j: td * (p2 - p1) + p1 for j, (p1, p2) in dictzip(p1, p2)}
 
-        return next(calc_gap((t2 - t1) / (t - t1), p1, p2) for (t1, p1), (t2, p2) in pairwise(self.ref_motion) if t1 <= t < t2)
+        return next(calc_gap((t1 - t) / (t2 - t1), p1, p2) for (t1, p1), (t2, p2) in pairwise(self.ref_motion) if t1 <= t < t2)
 
     def create_single_player_scene(self):
         return SinglePlayerStadiumScene(gravity=9.8,
