@@ -5,7 +5,34 @@ import numpy as np
 import math
 from functools import reduce
 from operator import mul
+import json
 
+class ReferenceMotionIterator(object):
+    def __init__(self, path):
+        with open(path) as f:
+            motion_data = json.load(f)
+        self.loop_mode = motion_data['loop']
+        self.frames = motion_data['frames']
+        self.frames_iter = self.make_frames_iter()
+
+    def make_frames_iter(self):
+        return iter(self.frames)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            frame = next(self.frames_iter)
+            return frame['timepoint'], frame['position']
+        except StopIteration:
+            if self.loop_mode == 'wrap':
+                self.frames_iter = self.make_frames_iter()
+                return next(self)
+            elif self.loop_mode == 'none':
+                raise StopIteration
+            else:
+                raise NotImplementedError('Unsupported loop mode "{}"'.format(self.loop_mode))
 
 class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, servo_angular_speed=0.14):
