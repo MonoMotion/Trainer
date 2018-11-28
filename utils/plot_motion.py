@@ -6,6 +6,8 @@ import json
 
 parser = ArgumentParser(description='Plot motion file')
 parser.add_argument('input', type=str, help='Input motion file')
+parser.add_argument('-l', '--loop', type=int, default=2,
+                    help='The number of repetitions when loop == wrap')
 parser.add_argument('-o', '--output', type=str, help='output plot file', required=True)
 args = parser.parse_args()
 
@@ -30,8 +32,10 @@ def plot_frames(frames):
 if loop == 'none':
     plot_frames(frames)
 elif loop == 'wrap':
-    looped = frames + [{'timepoint': frame['timepoint'] + frames[-1]
-                        ['timepoint'], 'position': frame['position']} for frame in frames]
+    looped = frames
+    for _ in range(args.loop - 1):
+        looped = looped + [{'timepoint': frame['timepoint'] + looped[-1]
+                            ['timepoint'], 'position': frame['position']} for frame in frames]
     plot_frames(looped)
 else:
     sys.exit("invalid loop value: {}".format(loop))
