@@ -10,17 +10,17 @@ args = parser.parse_args()
 
 with open(args.input) as f:
     data = json.load(f)
-num_joints = data['num_joints']
 
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 
-seq = data['sequence']
+frames = data['frames']
+joints = frames[0]['position'].keys()
 
-x = list(map(float, seq.keys()))
-ys = np.array(list(seq.values())).T
-for (i, y) in enumerate(ys):
-    ax.plot(x, y, label=str(i))
+x = [frame['timepoint'] for frame in frames]
+ys = [frame['position'] for frame in frames]
+for joint in joints:
+    ax.plot(x, [y[joint] for y in ys], label=joint)
 
 ax.legend()
 plt.savefig(args.output)
