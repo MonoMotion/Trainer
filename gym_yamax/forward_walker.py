@@ -126,7 +126,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         # current time in second
         current_tp = self.scene.cpp_world.ts
         ideal = self.get_ideal_positions(current_tp)
-        return math.exp(-2 * sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(ideal, self.ordered_joints)))
+        return math.exp(-2 * sum((p1 - j.current_position()[0]) ** 2 for _, (p1, j) in dictzip(ideal, self.jdict)))
 
     def calc_energy_cost(self):
         return sum(abs(j.current_position()[1]) for j in self.ordered_joints)
