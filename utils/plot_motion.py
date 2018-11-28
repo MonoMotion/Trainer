@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 import json
 
 parser = ArgumentParser(description='Plot motion file')
@@ -14,13 +15,26 @@ with open(args.input) as f:
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 
+loop = data['loop']
 frames = data['frames']
 joints = frames[0]['position'].keys()
 
-x = [frame['timepoint'] for frame in frames]
-ys = [frame['position'] for frame in frames]
-for joint in joints:
-    ax.plot(x, [y[joint] for y in ys], label=joint)
+
+def plot_frames(frames):
+    x = [frame['timepoint'] for frame in frames]
+    ys = [frame['position'] for frame in frames]
+    for joint in joints:
+        ax.plot(x, [y[joint] for y in ys], label=joint)
+
+
+if loop == 'none':
+    plot_frames(frames)
+elif loop == 'wrap':
+    looped = frames + [{'timepoint': frame['timepoint'] + frames[-1]
+                        ['timepoint'], 'position': frame['position']} for frame in frames]
+    plot_frames(looped)
+else:
+    sys.exit("invalid loop value: {}".format(loop))
 
 ax.legend()
 plt.savefig(args.output)
