@@ -9,6 +9,17 @@ from operator import mul
 import json
 import os
 
+# https://docs.python.jp/3/library/itertools.html
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+def dictzip(d1, d2):
+    for key in d1.keys():
+        yield key, (d1[key], d2[key])
+
 
 class ReferenceMotionIterator(object):
     def __init__(self, path):
@@ -54,17 +65,6 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.ref_motion = ReferenceMotionIterator(reference_motion)
 
     def get_ideal_positions(self, t):
-
-        # https://docs.python.jp/3/library/itertools.html
-        def pairwise(iterable):
-            "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-            a, b = tee(iterable)
-            next(b, None)
-            return zip(a, b)
-
-        def dictzip(d1, d2):
-            for key in d1.keys():
-                yield key, (d1[key], d2[key])
 
         def calc_gap(td, p1, p2):
             return {j: td * (p2 - p1) + p1 for j, (p1, p2) in dictzip(p1, p2)}
@@ -121,6 +121,12 @@ class ForwardWalker(SharedMemoryClientEnv):
         jointStates = [j.current_position()[0] for j in self.ordered_joints]
         euler = self.robot_body.pose().rpy()
         return jointStates + list(euler)
+
+    def calc_imitation_cost(self):
+        # current time in second
+        current_tp = self.scene.cpp_world.ts
+        ideal = self.get_ideal_positions(current_tp)
+        return math.exp(-2 * sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(ideal, self.ordered_joints)))
 
     def calc_energy_cost(self):
         return sum(abs(j.current_position()[1]) for j in self.ordered_joints)
