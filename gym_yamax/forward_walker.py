@@ -4,7 +4,7 @@ from baselines import logger
 import numpy as np
 import math
 from functools import reduce
-from itertools import tee
+from itertools import tee, islice
 from operator import mul
 import json
 import os
@@ -17,6 +17,8 @@ class ReferenceMotionIterator(object):
         self.loop_mode = motion_data['loop']
         self.frames = motion_data['frames']
         self.frames_iter = self.make_frames_iter()
+        self.tp_offset = 0
+        self.last_tp = self.frames[-1]['timepoint']
 
     def make_frames_iter(self):
         return iter(self.frames)
@@ -24,15 +26,17 @@ class ReferenceMotionIterator(object):
     def __iter__(self):
         iterator = self
         iterator.frames_iter = iterator.make_frames_iter()
+        iterator.tp_offset = 0
         return iterator
 
     def __next__(self):
         try:
             frame = next(self.frames_iter)
-            return frame['timepoint'], frame['position']
+            return self.tp_offset + frame['timepoint'], frame['position']
         except StopIteration:
             if self.loop_mode == 'wrap':
-                self.frames_iter = self.make_frames_iter()
+                self.frames_iter = islice(self.make_frames_iter(), 1, None)
+                self.tp_offset += self.last_tp
                 return next(self)
             elif self.loop_mode == 'none':
                 raise StopIteration
