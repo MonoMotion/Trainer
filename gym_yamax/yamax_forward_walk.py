@@ -13,7 +13,7 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
     num_joints = 10
 
     def __init__(self):
-        ForwardWalker.__init__(self)
+        ForwardWalker.__init__(self, "../example/motion/walk.yamax60.json")
         RoboschoolUrdfEnv.__init__(self,
                                    "robot_models/yamax.urdf",
                                    "hip",

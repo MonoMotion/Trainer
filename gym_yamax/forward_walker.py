@@ -45,13 +45,13 @@ class ReferenceMotionIterator(object):
 
 
 class ForwardWalker(SharedMemoryClientEnv):
-    def __init__(self, servo_angular_speed=0.14):
+    def __init__(self, reference_motion, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_ratio = 1 / 3
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
         self.camera_x = 0
 
-        self.ref_motion = ReferenceMotionIterator(os.environ.get("DEEPL2_MOTION"))
+        self.ref_motion = ReferenceMotionIterator(reference_motion)
 
     def get_ideal_positions(self, t):
 
