@@ -115,7 +115,7 @@ class ForwardWalker(SharedMemoryClientEnv):
 
     def calc_state(self):
         body_pose = self.robot_body.pose()
-        parts_xyz = np.array( [p.pose().xyz() for p in self.parts.values()] ).flatten()
+        parts_xyz = np.array([p.pose().xyz() for p in self.parts.values()]).flatten()
         self.body_xyz = (parts_xyz[0::3].mean(), parts_xyz[1::3].mean(), body_pose.xyz()[2])
 
         jointStates = [j.current_position()[0] for j in self.ordered_joints]
@@ -166,13 +166,11 @@ class ForwardWalker(SharedMemoryClientEnv):
         done = fell_over
         feetCollisionCost = self.calc_feet_collision_cost()
         energy_cost = self.calc_energy_cost()
+        imitation_cost = self.calc_imitation_cost()
 
         rewards_dict = {
-            'height_cost': 5 * abs(z - self.initial_z),
-            'out_of_range_cost': - 0.1 * out_of_range_cost,
-            'feet_collision_cost': 0.1 * feetCollisionCost,
-            'energy_cost': - 0.01 * energy_cost,
-            'progress': 10 * (x - self._last_x),
+            'imitation_cost': imitation_cost,
+            'progress': math.exp(5 * (x - self._last_x)),
         }
 
         self.rewards = list(rewards_dict.values())
