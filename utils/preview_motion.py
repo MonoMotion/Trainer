@@ -76,9 +76,7 @@ def reset(scene, path):
 
 def apply_joints(joints, positions):
     for _, (j, pos) in dictzip(joints, positions):
-        target = j.current_position()[0] + pos
-        target_clipped = max(-math.pi / 2, min(target, math.pi / 2))
-        j.set_servo_target(target_clipped, 0.1, 1.0, 100000)
+        j.set_servo_target(pos, 0.1, 1.0, 100000)
 
 def main(args):
     scene = create_scene(args.timestep, args.frame_skip)
@@ -93,7 +91,6 @@ def main(args):
         apply_joints(joints, frame)
 
         render(scene)
-        # TODO: Implement
 
 if __name__ == '__main__':
     args = parser.parse_args()
