@@ -19,7 +19,7 @@ ax = fig.add_subplot(1, 1, 1)
 
 loop = data['loop']
 frames = data['frames']
-joints = frames[0]['position'].keys()
+joints = [j for j in frames[0]['position'].keys() if not j.startswith('ignore_')]
 
 
 def plot_frames(frames):
