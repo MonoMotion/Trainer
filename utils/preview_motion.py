@@ -53,11 +53,30 @@ def render(scene):
     scene.human_render_detected = True
     return scene.cpp_world.test_window()
 
+def reset_position(cpp_robot, parts):
+    cpp_robot.query_position()
+
+    initial_z = - min(p.pose().xyz()[2] for p in parts.values()) + 0.01
+
+    cpose = cpp_household.Pose()
+    cpose.set_xyz(0, 0, initial_z)
+    cpose.set_rpy(0, 0, 0)
+    cpp_robot.set_pose_and_speed(cpose, 0, 0, 0)
+
+def reset(scene, path):
+    scene.episode_restart()
+
+    robot, parts, joints, _ = load_urdf(scene, path)
+
+    reset_position(robot, parts)
+
+    return robot, parts, joints
+
 def main(args):
     scene = create_scene(args.timestep, args.frame_skip)
     motion = create_motion_iterator(args.input)
 
-    robot, parts, joints, _ = load_urdf(scene, args.robot)
+    robot, parts, joints = reset(scene, args.robot)
 
     while True:
         scene.global_step()
