@@ -4,56 +4,12 @@ from baselines import logger
 import numpy as np
 import math
 from functools import reduce
-from itertools import tee, islice
 from operator import mul
 import json
 import os
 
-# https://docs.python.jp/3/library/itertools.html
-def pairwise(iterable):
-    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-    a, b = tee(iterable)
-    next(b, None)
-    return zip(a, b)
-
-def dictzip(d1, d2):
-    for key in d1.keys():
-        yield key, (d1[key], d2[key])
-
-
-class ReferenceMotionIterator(object):
-    def __init__(self, path):
-        with open(path) as f:
-            motion_data = json.load(f)
-        self.loop_mode = motion_data['loop']
-        self.frames = motion_data['frames']
-        self.frames_iter = self.make_frames_iter()
-        self.tp_offset = 0
-        self.last_tp = self.frames[-1]['timepoint']
-
-    def make_frames_iter(self):
-        return iter(self.frames)
-
-    def __iter__(self):
-        iterator = self
-        iterator.frames_iter = iterator.make_frames_iter()
-        iterator.tp_offset = 0
-        return iterator
-
-    def __next__(self):
-        try:
-            frame = next(self.frames_iter)
-            return self.tp_offset + frame['timepoint'], frame['position']
-        except StopIteration:
-            if self.loop_mode == 'wrap':
-                self.frames_iter = islice(self.make_frames_iter(), 1, None)
-                self.tp_offset += self.last_tp
-                return next(self)
-            elif self.loop_mode == 'none':
-                raise StopIteration
-            else:
-                raise NotImplementedError('Unsupported loop mode "{}"'.format(self.loop_mode))
-
+from .motion import MotionIterator, get_frame_at
+from .utils import dictzip
 
 class ForwardWalker(SharedMemoryClientEnv):
     def __init__(self, reference_motion, servo_angular_speed=0.14):
@@ -62,14 +18,7 @@ class ForwardWalker(SharedMemoryClientEnv):
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
         self.camera_x = 0
 
-        self.ref_motion = ReferenceMotionIterator(reference_motion)
-
-    def get_ideal_positions(self, t):
-
-        def calc_gap(td, p1, p2):
-            return {j: td * (p2 - p1) + p1 for j, (p1, p2) in dictzip(p1, p2)}
-
-        return next(calc_gap((t1 - t) / (t2 - t1), p1, p2) for (t1, p1), (t2, p2) in pairwise(self.ref_motion) if t1 <= t < t2)
+        self.motion_iter = MotionIterator(reference_motion)
 
     def create_single_player_scene(self):
         return SinglePlayerStadiumScene(gravity=9.8,
@@ -125,7 +74,7 @@ class ForwardWalker(SharedMemoryClientEnv):
     def calc_imitation_cost(self):
         # current time in second
         current_tp = self.scene.cpp_world.ts
-        ideal = self.get_ideal_positions(current_tp)
+        ideal = get_frame_at(current_tp, self.motion_iter)
         return math.exp(-2 * sum((p1 - j.current_position()[0]) ** 2 for _, (p1, j) in dictzip(ideal, self.jdict)))
 
     def calc_energy_cost(self):
