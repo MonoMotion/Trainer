@@ -1,4 +1,5 @@
 import json
+from itertools import islice
 
 from .utils import pairwise, dictzip
 

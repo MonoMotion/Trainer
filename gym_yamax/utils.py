@@ -1,4 +1,4 @@
-from itertools import tee, islice
+from itertools import tee
 
 # https://docs.python.jp/3/library/itertools.html
 def pairwise(iterable):
