@@ -3,9 +3,7 @@ import json
 from .utils import pairwise, dictzip
 
 class MotionIterator(object):
-    def __init__(self, path):
-        with open(path) as f:
-            motion_data = json.load(f)
+    def __init__(self, motion_data):
         self.loop_mode = motion_data['loop']
         self.frames = motion_data['frames']
         self.frames_iter = self.make_frames_iter()

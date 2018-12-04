@@ -12,13 +12,14 @@ from .motion import MotionIterator, get_frame_at
 from .utils import dictzip
 
 class ForwardWalker(SharedMemoryClientEnv):
-    def __init__(self, reference_motion, servo_angular_speed=0.14):
+    def __init__(self, motion_path, servo_angular_speed=0.14):
         self._angular_velocity_limit = math.pi / (servo_angular_speed * 3)
         self.fail_ratio = 1 / 3
         self.start_pos_x, self.start_pos_y, self.start_pos_z = 0, 0, 0
         self.camera_x = 0
 
-        self.motion_iter = MotionIterator(reference_motion)
+        with open(motion_path) as f:
+            self.motion_iter = MotionIterator(json.load(f))
 
     def create_single_player_scene(self):
         return SinglePlayerStadiumScene(gravity=9.8,
