@@ -49,13 +49,16 @@ def main(args):
             frame = get_frame_at(scene.cpp_world.ts, motion)
             apply_joints(joints, apply_weights(frame, frame_weight))
 
-            render(scene)
+            if enable_render:
+                render(scene)
 
         return reward_sum
 
     weights = np.zeros(shape=(321, 10), dtype='float')
     es = EvolutionStrategy(weights, step, population_size=20, sigma=0.1, learning_rate=0.03, decay=0.995, num_threads=1)
-    es.run(1000, print_step=100)
+    es.run(1000, print_step=10)
+    step(es.get_weights(), enable_render=True)
+
 
 if __name__ == '__main__':
     args = parser.parse_args()
