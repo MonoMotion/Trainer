@@ -17,7 +17,7 @@ class RoboschoolYamaXForwardWalk(ForwardWalker, RoboschoolUrdfEnv):
         RoboschoolUrdfEnv.__init__(self,
                                    "robot_models/yamax.urdf",
                                    "base_link",
-                                   action_dim=self.num_joints, obs_dim=self.num_joints + 3,
+                                   action_dim=self.num_joints, obs_dim=self.num_joints + 4,
                                    fixed_base=False,
                                    self_collision=True)
 

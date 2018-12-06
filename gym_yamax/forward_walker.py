@@ -70,7 +70,7 @@ class ForwardWalker(SharedMemoryClientEnv):
 
         jointStates = [j.current_position()[0] for j in self.ordered_joints]
         euler = self.robot_body.pose().rpy()
-        return jointStates + list(euler)
+        return [self.scene.cpp_world.ts] + jointStates + list(euler)
 
     def calc_imitation_cost(self):
         # current time in second
