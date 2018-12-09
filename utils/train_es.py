@@ -17,14 +17,14 @@ def apply_weights(frame, weights):
     # sort is required because frame order is nondeterministic
     return {k: v + w for w, (k, v) in zip(weights, sorted(frame.items()))}
 
-def calc_reward(robot, initial_z, last_x):
+def calc_reward(weight, robot, initial_z, last_x):
     robot.query_position()
     x, y, z = robot.root_part.pose().xyz()
     euler = robot.root_part.pose().rpy()
     c = [math.cos(a / 2) for a in euler]
     s = [math.sin(a / 2) for a in euler]
     axis_angle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-    return - (x - last_x) - abs(z - initial_z), x, axis_angle > math.pi / 4
+    return - (x - last_x) - abs(z - initial_z) - sum(w ** 2 for w in weight), x, axis_angle > math.pi / 4
 
 def main(args):
     scene = create_scene(args.timestep, args.frame_skip)
@@ -41,7 +41,7 @@ def main(args):
         for frame_weight in weights:
             scene.global_step()
 
-            reward, last_x, done = calc_reward(robot, initial_z, last_x)
+            reward, last_x, done = calc_reward(frame_weight, robot, initial_z, last_x)
             if done:
                 return - 0.2 * last_x
             reward_sum += reward
