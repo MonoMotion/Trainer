@@ -44,6 +44,7 @@ class LocationTargetValue(object):
     def __init__(self, space, weight, value):
         self.space = space
         self.weight = weight
+        assert isinstance(value, np.ndarray)
         self.value = value
 
     def interp(self, t, t1, t2, target):
@@ -87,13 +88,13 @@ class EffectorTarget(object):
 
 
 def make_effector_target(obj):
-        location = obj.get('location')
-        location_target = LocationTargetValue(location['space'], location['weight'], location['value']) if location is not None else None
+    location = obj.get('location')
+    location_target = LocationTargetValue(location['space'], location['weight'], np.array(location['value'])) if location is not None else None
 
-        rotation = obj.get('rotation')
-        rotation_target = RotationTargetValue(rotation['space'], rotation['weight'], np.quaternion(*rotation['value'])) if rotation is not None else None
+    rotation = obj.get('rotation')
+    rotation_target = RotationTargetValue(rotation['space'], rotation['weight'], np.quaternion(*rotation['value'])) if rotation is not None else None
 
-        return EffectorTarget(location_target, rotation_target)
+    return EffectorTarget(location_target, rotation_target)
 
 def get_frame_at(t, motion_iter):
     """
