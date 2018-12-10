@@ -74,13 +74,13 @@ class EffectorTarget(object):
         if self.location is not None:
             location = self.location.interp(target.location)
         else:
-            assert target.location is not None
+            assert target.location is None
             location = None
 
         if self.rotation is not None:
             rotation = self.rotation.interp(target.rotation)
         else:
-            assert target.rotation is not None
+            assert target.rotation is None
             rotation = None
 
         return EffectorTarget(location, rotation)
@@ -105,7 +105,7 @@ def get_frame_at(t, motion_iter):
         positions = {j: simple_interp(t, t1, t2, p1, p2) for j, (p1, p2) in dictzip(p1, p2)}
 
         def conv(eff):
-            return {l: make_effector_target(e1) for l, e in eff}
+            return {l: make_effector_target(e1) for l, e in eff.items()}
 
         effectors = {l: e1.interp(t, t1, t2, e2) for l, (e1, e2) in dictzip(conv(e1), conv(e2))}
 
