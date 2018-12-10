@@ -53,6 +53,12 @@ class LocationTargetValue(object):
         value = simple_interp(t, t1, t2, self.value, target.value)
         return LocationTargetValue(self.space, weight, value)
 
+    def canonical(self, base_location):
+        if self.space == 'world':
+            return self.value
+        elif self.space == 'local':
+            return self.value + base_location
+
 class RotationTargetValue(object):
     def __init__(self, space, weight, value):
         self.space = space
@@ -65,6 +71,12 @@ class RotationTargetValue(object):
         weight = simple_interp(t, t1, t2, self.weight, target.weight)
         value = quaternion.slerp(self.value, target.value, t1, t2, t)
         return RotationTargetValue(self.space, weight, value)
+
+    def canonical(self, base_rotation):
+        if self.space == 'world':
+            return self.value
+        elif self.space == 'local':
+            return base_location * self.value
 
 class EffectorTarget(object):
     def __init__(self, location, rotation):
