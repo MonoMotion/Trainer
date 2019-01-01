@@ -16,6 +16,7 @@ pick = "*"
 numpy = "*"
 numpy-quaternion = "==2018.11.3.1.0.41"
 numba = "*"
+flom = "*"
 
 [dev-packages]
 "flake8" = "*"
