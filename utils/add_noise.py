@@ -18,7 +18,7 @@ def add_noise(motion):
             k: v + random.random() * args.random
             for k, v in new_frame.positions.items()
         }
-        new_frame.positons = positions
+        new_frame.positions = positions
         frame.set(new_frame)
 
 motion = flom.load(args.input)
