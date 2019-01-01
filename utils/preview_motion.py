@@ -12,6 +12,10 @@ from roboschool.scene_stadium import SinglePlayerStadiumScene
 
 import flom
 
+def dictzip(d1, d2):
+    for k, v in d1.items():
+        yield k, (v, d2[k])
+
 parser = ArgumentParser(description='Plot motion file')
 parser.add_argument('-i', '--input', type=str, help='Input motion file', required=True)
 parser.add_argument('-r', '--robot', type=str, help='Input robot model file', required=True)
@@ -70,8 +74,8 @@ def reset(scene, path):
 
     return robot, parts, joints
 
-def apply_joints(joints, frame):
-    for _, (j, pos) in dictzip(joints, frame.positions):
+def apply_joints(joints, positions):
+    for _, (j, pos) in dictzip(joints, positions):
         j.set_servo_target(pos, 0.1, 1.0, 100000)
 
 def main(args):
@@ -84,7 +88,7 @@ def main(args):
         scene.global_step()
 
         frame = motion.frame_at(scene.cpp_world.ts)
-        apply_joints(joints, frame)
+        apply_joints(joints, frame.positions)
 
         render(scene)
 
