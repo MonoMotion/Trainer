@@ -5,7 +5,9 @@ from functools import reduce
 from operator import mul
 
 from evostra import EvolutionStrategy
-from preview_motion import create_motion_iterator, create_scene, reset, get_frame_at, apply_joints, render
+from preview_motion import create_motion_iterator, create_scene, reset, apply_joints, render
+
+import flom
 
 parser = ArgumentParser(description='Plot motion file')
 parser.add_argument('-i', '--input', type=str, help='Input motion file', required=True)
@@ -13,9 +15,9 @@ parser.add_argument('-r', '--robot', type=str, help='Input robot model file', re
 parser.add_argument('-t', '--timestep', type=float, help='Timestep', default=0.0165/8)
 parser.add_argument('-s', '--frame-skip', type=int, help='Frame skip', default=8)
 
-def apply_weights(frame, weights):
+def apply_weights(positions, weights):
     # sort is required because frame order is nondeterministic
-    return {k: v + w for w, (k, v) in zip(weights, sorted(frame.items()))}
+    return {k: v + w for w, (k, v) in zip(weights, sorted(positions.items()))}
 
 def calc_reward(weight, robot, initial_z, last_x):
     robot.query_position()
@@ -46,8 +48,8 @@ def main(args):
                 return - 0.2 * last_x
             reward_sum += reward
 
-            frame = get_frame_at(scene.cpp_world.ts, motion)
-            apply_joints(joints, apply_weights(frame, frame_weight))
+            frame = motion.frame_at(scene.cpp_world.ts)
+            apply_joints(joints, apply_weights(frame.positions, frame_weight))
 
             if enable_render:
                 render(scene)
