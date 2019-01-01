@@ -4,19 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-tensorflow = "*"
 pybullet = ">=2.1.7,!=2.1.8"
-gym = "*"
-scipy = "*"
-opencv-python = "*"
-joblib = "*"
-"mpi4py" = "*"
 matplotlib = "*"
 pick = "*"
 numpy = "*"
 numpy-quaternion = "==2018.11.3.1.0.41"
 numba = "*"
 flom = "*"
+evostra = "*"
 
 [dev-packages]
 "flake8" = "*"
