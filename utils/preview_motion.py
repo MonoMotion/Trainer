@@ -10,8 +10,7 @@ import math
 from roboschool.scene_abstract import cpp_household
 from roboschool.scene_stadium import SinglePlayerStadiumScene
 
-from gym_yamax.motion import MotionIterator, get_frame_at
-from gym_yamax.utils import dictzip
+import flom
 
 parser = ArgumentParser(description='Plot motion file')
 parser.add_argument('-i', '--input', type=str, help='Input motion file', required=True)
@@ -20,10 +19,7 @@ parser.add_argument('-t', '--timestep', type=float, help='Timestep', default=0.0
 parser.add_argument('-s', '--frame-skip', type=int, help='Frame skip', default=8)
 
 def create_motion_iterator(path):
-    with open(path) as f:
-        data = json.load(f)
-
-    return MotionIterator(data)
+    return flom.load(path)
 
 def create_scene(ts, skip):
     return SinglePlayerStadiumScene(gravity=9.8, timestep=ts, frame_skip=skip)
@@ -74,8 +70,8 @@ def reset(scene, path):
 
     return robot, parts, joints
 
-def apply_joints(joints, positions):
-    for _, (j, pos) in dictzip(joints, positions):
+def apply_joints(joints, frame):
+    for _, (j, pos) in dictzip(joints, frame.positions):
         j.set_servo_target(pos, 0.1, 1.0, 100000)
 
 def main(args):
@@ -87,7 +83,7 @@ def main(args):
     while True:
         scene.global_step()
 
-        frame = get_frame_at(scene.cpp_world.ts, motion)
+        frame = motion.frame_at(scene.cpp_world.ts)
         apply_joints(joints, frame)
 
         render(scene)
