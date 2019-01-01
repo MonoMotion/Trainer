@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
 import sys
-import json
 import random
+
+import flom
 
 parser = ArgumentParser(description='Add noise to motion file')
 parser.add_argument('input', type=str, help='Input motion file')
@@ -10,25 +11,18 @@ parser.add_argument('-r', '--random', type=float, default=-0.1,
 parser.add_argument('-o', '--output', type=str, help='output plot file', required=True)
 args = parser.parse_args()
 
-def add_noise(frame):
-    position = {
-        k: v + random.random() * args.random
-        for k, v in frame['position'].items()
-    }
+def add_noise(motion):
+    for t, frame in motion.keyframes():
+        new_frame = frame.get()
+        positions = {
+            k: v + random.random() * args.random
+            for k, v in new_frame.positions.items()
+        }
+        new_frame.positons = positions
+        frame.set(new_frame)
 
-    return {
-            'timepoint': frame['timepoint'],
-            'position': position
-            }
+motion = flom.load(args.input)
 
-with open(args.input) as f:
-    data = json.load(f)
+add_noise(motion)
 
-frames = data['frames']
-
-with_noise = [add_noise(frame) for frame in frames]
-
-data['frames'] = with_noise
-
-with open(args.output, 'w') as f:
-    json.dump(data, f, indent=2)
+motion.dump(args.output)
