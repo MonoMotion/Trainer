@@ -29,7 +29,7 @@ function build_boost_python() {
 function place_robot_model() {
   local models_path=third_party/roboschool/roboschool/models_robot/robot_models
   # Include out model to the search path
-  if [ ! -e $models_path ]; then
+  if [ ! -h $models_path ]; then
     ln -vsr robot_models $models_path
   fi
 
