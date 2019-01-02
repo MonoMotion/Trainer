@@ -4,3 +4,6 @@
 [submodule "bullet3"]
 	path = third_party/bullet3
 	url = https://github.com/olegklimov/bullet3
+[submodule "third_party/boost-python"]
+	path = third_party/boost-python
+	url = https://github.com/boostorg/python
