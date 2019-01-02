@@ -57,7 +57,7 @@ function install_roboschool() {
   local python_version=$(pipenv run python -V | awk '{print $2}')
   PKG_CONFIG_PATH=$HOME/.pyenv/versions/$python_version/lib/pkgconfig \
     CPLUS_INCLUDE_PATH=$boost_python_include \
-    LIBRARY_PATH="$(dirname $lib_dir)" \
+    LIBRARY_PATH=$lib_dir \
     pipenv run pipenv install
 }
 
