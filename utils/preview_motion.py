@@ -1,3 +1,8 @@
+# TODO: Remove this after organizing file structure
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).absolute().parent.parent))
+
 from argparse import ArgumentParser
 import flom
 from trainer import preview
