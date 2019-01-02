@@ -40,12 +40,12 @@ function place_robot_model() {
 
 function install_roboschool() {
   function ln_if_diff() {
-    if [ "$1" != "$2" ]; then
+    if [ "$1" != "$2" ] && [ ! -h "$2" ]; then
       ln -s $1 $2
     fi
   }
 
-  local boost_python_lib="$(realpath $(find third_party/boost-python -name '*boost_python*.so'))"
+  local boost_python_lib="$(realpath $(find third_party/boost-python -type f -name '*boost_python*.so'))"
   local lib_dir=$(dirname $boost_python_lib)
   local py_suffix=$(pipenv run python -c "import sys; print('%i%i' % sys.version_info[:2])")
   ln_if_diff $boost_python_lib $lib_dir/libboost_python${py_suffix}.so
