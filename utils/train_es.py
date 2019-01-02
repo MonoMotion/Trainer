@@ -61,7 +61,9 @@ def main(args):
 
         return reward_sum
 
-    weights = np.zeros(shape=(321, 10), dtype='float')
+    num_frames = int(motion.length() / scene.dt)
+    num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
+    weights = np.zeros(shape=(num_frames, num_joints), dtype='float')
     es = EvolutionStrategy(weights, step, population_size=20, sigma=0.1, learning_rate=0.03, decay=0.995, num_threads=1)
     es.run(1000, print_step=10)
     while True:
