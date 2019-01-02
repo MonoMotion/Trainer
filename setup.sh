@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 # Bullet installation for roboschool
 roboschool_path=$(realpath ./third_party/roboschool)
