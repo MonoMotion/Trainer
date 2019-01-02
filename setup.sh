@@ -39,14 +39,24 @@ function place_robot_model() {
 }
 
 function install_roboschool() {
+  function ln_if_diff() {
+    if [ "$1" != "$2" ]; then
+      ln -s $1 $2
+    fi
+  }
+
   local boost_python_lib="$(realpath $(find third_party/boost-python -name '*boost_python*.so'))"
+  local lib_dir=$(dirname $boost_python_lib)
+  ln_if_diff $boost_python_lib $lib_dir/libboost_python35.so
+  ln_if_diff $boost_python_lib $lib_dir/libboost_python-py35.so
+
   local boost_python_include="$(realpath third_party/boost-python/include)"
 
   # Roboschool installation needs to be done in virtualenv
   local python_version=$(pipenv run python -V | awk '{print $2}')
   PKG_CONFIG_PATH=$HOME/.pyenv/versions/$python_version/lib/pkgconfig \
     CPLUS_INCLUDE_PATH=$boost_python_include \
-    LIBRARY_PATH="$(dirname $boost_python_lib)" \
+    LIBRARY_PATH="$(dirname $lib_dir)" \
     pipenv run pipenv install
 }
 
