@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 import math
 import numpy as np
+import quaternion
 from functools import reduce
 from operator import mul
 
@@ -19,14 +20,21 @@ def apply_weights(positions, weights):
     # sort is required because frame order is nondeterministic
     return {k: v + w for w, (k, v) in zip(weights, sorted(positions.items()))}
 
-def calc_reward(weight, robot, initial_z, last_x):
+def calc_reward(weight, robot, frame, parts):
     robot.query_position()
-    x, y, z = robot.root_part.pose().xyz()
-    euler = robot.root_part.pose().rpy()
-    c = [math.cos(a / 2) for a in euler]
-    s = [math.sin(a / 2) for a in euler]
-    axis_angle = 2 * math.acos(reduce(mul, c) - reduce(mul, s))
-    return - (x - last_x) - abs(z - initial_z) - sum(w ** 2 for w in weight), x, axis_angle > math.pi / 4
+    diff = 0
+    for name, effector in frame.effectors.items():
+        pose = parts[name].pose() if name != 'base_link' else robot.root_part.pose()
+        if effector.location:
+            diff += np.linalg.norm(pose.xyz() - effector.location.vec) ** 2 * effector.location.weight
+        if effector.rotation:
+            quat1 = np.quaternion(*effector.rotation.quat)
+            quat2 = np.quaternion(*pose.quatertion())
+            diff += quaternion.rotation_intrinsic_distance(quat1, quat2) ** 2 * effector.rotation.weight
+    k = 1
+    normalized = k * diff / len(frame.effectors)
+    return - math.exp(normalized) + 1
+
 
 def main(args):
     scene = create_scene(args.timestep, args.frame_skip)
@@ -39,16 +47,13 @@ def main(args):
         robot, parts, joints = reset(scene, args.robot)
 
         reward_sum = 0
-        last_x = 0
         for frame_weight in weights:
             scene.global_step()
 
-            reward, last_x, done = calc_reward(frame_weight, robot, initial_z, last_x)
-            if done:
-                return - 0.2 * last_x
-            reward_sum += reward
-
             frame = motion.frame_at(scene.cpp_world.ts)
+
+            reward_sum += calc_reward(frame_weight, robot, frame, parts)
+
             apply_joints(joints, apply_weights(frame.positions, frame_weight))
 
             if enable_render:
