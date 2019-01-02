@@ -44,7 +44,10 @@ function install_all() {
 
   # Roboschool installation needs to be done in virtualenv
   local python_version=$(pipenv run python -V | awk '{print $2}')
-  PKG_CONFIG_PATH=$HOME/.pyenv/versions/$python_version/lib/pkgconfig CPLUS_INCLUDE_PATH=$boost_python_include LIBRARY_PATH="$(dirname $boost_python_lib)" pipenv run pipenv install
+  PKG_CONFIG_PATH=$HOME/.pyenv/versions/$python_version/lib/pkgconfig \
+    CPLUS_INCLUDE_PATH=$boost_python_include \
+    LIBRARY_PATH="$(dirname $boost_python_lib)" \
+    pipenv run pipenv install
 }
 
 function main() {
