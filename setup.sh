@@ -47,8 +47,12 @@ function install_all() {
   PKG_CONFIG_PATH=$HOME/.pyenv/versions/$python_version/lib/pkgconfig CPLUS_INCLUDE_PATH=$boost_python_include LIBRARY_PATH="$(dirname $boost_python_lib)" pipenv run pipenv install
 }
 
-build_bullet3
-install_without_roboschool
-build_boost_python
-place_robot_model
-install_all
+function main() {
+  build_bullet3
+  install_without_roboschool
+  build_boost_python
+  place_robot_model
+  install_all
+}
+
+main
