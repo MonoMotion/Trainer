@@ -20,7 +20,7 @@ def apply_weights(positions, weights):
     # sort is required because frame order is nondeterministic
     return {k: v + w for w, (k, v) in zip(weights, sorted(positions.items()))}
 
-def calc_reward(weight, robot, frame, parts):
+def calc_reward(robot, parts, frame):
     robot.query_position()
     diff = 0
     for name, effector in frame.effectors.items():
@@ -52,7 +52,7 @@ def main(args):
 
             frame = motion.frame_at(scene.cpp_world.ts)
 
-            reward_sum += calc_reward(frame_weight, robot, frame, parts)
+            reward_sum += calc_reward(robot, parts, frame)
 
             apply_joints(joints, apply_weights(frame.positions, frame_weight))
 
