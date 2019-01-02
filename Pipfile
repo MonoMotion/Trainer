@@ -12,6 +12,8 @@ numpy-quaternion = "==2018.11.3.1.0.41"
 numba = "*"
 flom = "*"
 evostra = "*"
+roboschool = {editable = true,path = "./third_party/roboschool"}
+faber = {git = "https://github.com/stefanseefeld/faber.git"}
 
 [dev-packages]
 "flake8" = "*"

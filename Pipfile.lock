@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a7849b8586faa298968b389eb3c982cf5c24ea82bac31a11d1ea8c3b1cdcd371"
+            "sha256": "951475f96baea49e67bce339ec5f115677ce140688dd58afa66ec910811e19b1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -29,6 +29,10 @@
             ],
             "index": "pypi",
             "version": "==2.5.2"
+        },
+        "faber": {
+            "git": "https://github.com/stefanseefeld/faber.git",
+            "ref": "75da0c8c65c6a81158bc84173b4adbd78286c0c8"
         },
         "flom": {
             "hashes": [
@@ -219,6 +223,10 @@
                 "sha256:88f9287c0174266bb0d8cedd395cfba9c58e87e5ad86b2ce58859bc11be3cf02"
             ],
             "version": "==2.7.5"
+        },
+        "roboschool": {
+            "editable": true,
+            "path": "./third_party/roboschool"
         },
         "six": {
             "hashes": [
