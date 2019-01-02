@@ -41,7 +41,6 @@ def main(args):
     motion = create_motion_iterator(args.input)
     robot, parts, joints = reset(scene, args.robot)
     robot.query_position()
-    _, _, initial_z = robot.root_part.pose().xyz()
 
     def step(weights, enable_render=False):
         robot, parts, joints = reset(scene, args.robot)
