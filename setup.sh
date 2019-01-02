@@ -47,8 +47,9 @@ function install_roboschool() {
 
   local boost_python_lib="$(realpath $(find third_party/boost-python -name '*boost_python*.so'))"
   local lib_dir=$(dirname $boost_python_lib)
-  ln_if_diff $boost_python_lib $lib_dir/libboost_python35.so
-  ln_if_diff $boost_python_lib $lib_dir/libboost_python-py35.so
+  local py_suffix=$(pipenv run python -c "import sys; print('%i%i' % sys.version_info[:2])")
+  ln_if_diff $boost_python_lib $lib_dir/libboost_python${py_suffix}.so
+  ln_if_diff $boost_python_lib $lib_dir/libboost_python-py${py_suffix}.so
 
   local boost_python_include="$(realpath third_party/boost-python/include)"
 
