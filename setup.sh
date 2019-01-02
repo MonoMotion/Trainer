@@ -38,7 +38,7 @@ function place_robot_model() {
   patch robot_models/yamax.urdf < yamax.urdf.patch
 }
 
-function install_all() {
+function install_roboschool() {
   local boost_python_lib="$(realpath $(find third_party/boost-python -name '*boost_python*.so'))"
   local boost_python_include="$(realpath third_party/boost-python/include)"
 
@@ -50,12 +50,20 @@ function install_all() {
     pipenv run pipenv install
 }
 
-function main() {
+function install_all() {
   build_bullet3
   install_without_roboschool
   build_boost_python
   place_robot_model
-  install_all
+  install_roboschool
 }
 
-main
+function main() {
+  if [ "$#" == "0" ]; then
+    install_all
+  else
+    $@
+  fi
+}
+
+main $@
