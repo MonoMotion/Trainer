@@ -1,6 +1,6 @@
 [submodule "roboschool"]
-	path = roboschool
+	path = third_party/roboschool
 	url = https://github.com/openai/roboschool
 [submodule "bullet3"]
-	path = bullet3
+	path = third_party/bullet3
 	url = https://github.com/olegklimov/bullet3
