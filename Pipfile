@@ -21,10 +21,8 @@ trainer = {editable = true,version = "*"}
 [scripts]
 fix = "autopep8 -ivr ."
 lint = "flake8 ."
-train = "./rlenv/scripts/run.sh"
-play = "./rlenv/scripts/play.sh"
-experiment = "./rlenv/scripts/experiment.sh"
-plot = "python ./rlenv/scripts/plot.py"
+train = "python -m trainer"
+preview = "python utils/preview_motion.py"
 
 [requires]
 python_version = "3.5"
