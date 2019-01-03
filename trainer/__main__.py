@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import flom
 
-from trainer import train
+from trainer import train, preview
 
 
 def make_parser():
@@ -15,8 +15,8 @@ def make_parser():
 
 def main(args):
     motion = flom.load(args.input)
-    weights = train(motion, args.robot, args.timestep, args.frame_skip)
-    print(weights)
+    trained = train(motion, args.robot, args.timestep, args.frame_skip)
+    preview(trained, args.robot)
 
 if __name__ == '__main__':
     parser = make_parser()

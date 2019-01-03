@@ -58,4 +58,11 @@ def train(motion, robot_file, timestep=0.0165/8, frame_skip=8):
     es = EvolutionStrategy(weights, step, population_size=20, sigma=0.1, learning_rate=0.03, decay=0.995, num_threads=1)
     es.run(1000, print_step=1)
 
-    return es.get_weights()
+    new_motion = flom.Motion(set(motion.joint_names()), set(motion.effector_names()), motion.model_id())
+    new_motion.set_loop(motion.loop())
+    for i, frame_weight in enumerate(es.get_weights()):
+        t = i * scene.dt
+        new_frame = motion.frame_at(t)
+        new_frame.positions = apply_weights(new_frame.positions, frame_weight)
+        new_motion.insert_keyframe(t, new_frame)
+    return new_motion
