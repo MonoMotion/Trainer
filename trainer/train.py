@@ -17,7 +17,7 @@ def calc_reward(robot, parts, frame):
     robot.query_position()
     diff = 0
     for name, effector in frame.effectors.items():
-        pose = parts[name].pose() if name != 'base_link' else robot.root_part.pose()
+        pose = parts[name].pose()
         if effector.location:
             diff += np.linalg.norm(pose.xyz() - effector.location.vec) ** 2 * effector.location.weight
         if effector.rotation:
