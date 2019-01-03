@@ -7,7 +7,7 @@ import math
 EFFECTOR_SPHERE_RADIUS_RATIO = 0.05
 EFFECTOR_SPHERE_COLOR_RATIO = 1000
 
-def create_effector_visualizer(scene, motion, robot, parts, effectors):
+def create_effector_marker(scene, motion, robot, parts, effectors):
     def calc_color(differ):
         r =  - math.exp(-differ * EFFECTOR_SPHERE_COLOR_RATIO) + 1
         color_red = int(0xff * r)
@@ -44,12 +44,11 @@ def preview(motion, robot_file, timestep=0.0165/8, frame_skip=8):
 
     robot, parts, joints = reset(scene, robot_file)
 
-    effector_vis = None
     while True:
         scene.global_step()
 
         frame = motion.frame_at(scene.cpp_world.ts)
         apply_joints(joints, frame.positions)
-        effector_vis = create_effector_visualizer(scene, motion, robot, parts, frame.effectors)
+        effector_marks = create_effector_marker(scene, motion, robot, parts, frame.effectors)
 
         render(scene)
