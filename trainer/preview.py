@@ -8,8 +8,8 @@ EFFECTOR_SPHERE_RADIUS_RATIO = 0.05
 EFFECTOR_SPHERE_COLOR_RATIO = 1000
 
 def create_effector_marker(scene, motion, robot, parts, effectors):
-    def calc_color(differ):
-        r =  - math.exp(-differ * EFFECTOR_SPHERE_COLOR_RATIO) + 1
+    def calc_color(diff):
+        r =  - math.exp(-diff * EFFECTOR_SPHERE_COLOR_RATIO) + 1
         color_red = int(0xff * r)
         color_blue = int(0xff + 1 - r)
         color = color_blue | color_red * (0xFFFF + 1)
