@@ -1,4 +1,6 @@
 # DeepL2.Trainer
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FDeepL2%2FTrainer.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FDeepL2%2FTrainer?ref=badge_shield)
+
 
 An experiment to make [YamaX](https://y-modify.org/yamax) walk in the simulation environment using Bullet physics engine.
 
@@ -28,3 +30,7 @@ pipenv run train -i input.fom -r robot.urdf
 ```shell
 pipenv run preview -i trained.fom -r robot.urdf
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FDeepL2%2FTrainer.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FDeepL2%2FTrainer?ref=badge_large)
