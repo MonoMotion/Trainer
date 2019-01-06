@@ -17,6 +17,7 @@ def load_urdf(scene, path, with_self_collision=True):
         with_self_collision)
 
     parts = {part.name: part for part in urdf.parts}
+    parts['base_link'] = urdf.root_part
 
     def configure_joint(j):
         if j.name.startswith('ignore'):
