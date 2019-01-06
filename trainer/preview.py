@@ -1,5 +1,5 @@
-from roboschool.scene_abstract import cpp_household
 from .simulation import create_scene, reset, apply_joints, render
+from .utils import select_location
 
 import flom
 
@@ -16,22 +16,12 @@ def create_effector_marker(scene, motion, robot, parts, effectors):
         color = color_blue | color_red * (0xFFFF + 1)
         return color
 
-    def select_pose(ty, pose, root):
-        if ty == flom.CoordinateSystem.World:
-            return pose
-        elif ty == flom.CoordinateSystem.Local:
-            cpose = cpp_household.Pose()
-            cpose.set_xyz(*pose)
-            return root.dot(cpose).xyz()
-        else:
-            assert False  # unreachable
-
     def create(name, eff):
         part = parts[name]
         ty = motion.effector_type(name)
         if eff.location:
             current = part.pose().xyz()
-            target = select_pose(ty.location, eff.location.vec, robot.root_part.pose())
+            target = select_location(ty.location, eff.location.vec, robot.root_part.pose())
             differ = sum((c - t) ** 2 for c, t in zip(current, target)) / 3
 
             color = calc_color(differ)

@@ -6,6 +6,7 @@ from operator import mul
 
 from evostra import EvolutionStrategy
 from .simulation import create_scene, reset, apply_joints, render
+from .utils import select_location, select_rotation
 
 import flom
 
@@ -13,15 +14,18 @@ def apply_weights(positions, weights):
     # sort is required because frame order is nondeterministic
     return {k: v + w for w, (k, v) in zip(weights, sorted(positions.items()))}
 
-def calc_reward(robot, parts, frame):
+def calc_reward(motion, robot, parts, frame):
     robot.query_position()
     diff = 0
     for name, effector in frame.effectors.items():
         pose = parts[name].pose()
+        ty = motion.effector_type(name)
         if effector.location:
-            diff += np.linalg.norm(pose.xyz() - effector.location.vec) ** 2 * effector.location.weight
+            target = select_location(ty.location, effector.location.vec, robot.root_part.pose())
+            diff += np.linalg.norm(pose.xyz() - np.array(target)) ** 2 * effector.location.weight
         if effector.rotation:
-            quat1 = np.quaternion(*effector.rotation.quat)
+            target = select_rotation(ty.rotation, effector.rotation.quat, robot.root_part.pose())
+            quat1 = np.quaternion(*target)
             quat2 = np.quaternion(*pose.quatertion())
             diff += quaternion.rotation_intrinsic_distance(quat1, quat2) ** 2 * effector.rotation.weight
     k = 1
@@ -43,7 +47,7 @@ def train(motion, robot_file, timestep=0.0165/8, frame_skip=8):
 
             frame = motion.frame_at(scene.cpp_world.ts)
 
-            reward_sum += calc_reward(robot, parts, frame)
+            reward_sum += calc_reward(motion, robot, parts, frame)
 
             apply_joints(joints, apply_weights(frame.positions, frame_weight))
 
