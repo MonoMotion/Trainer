@@ -31,6 +31,5 @@ pipenv run train -i input.fom -r robot.urdf
 pipenv run preview -i trained.fom -r robot.urdf
 ```
 
-
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FDeepL2%2FTrainer.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FDeepL2%2FTrainer?ref=badge_large)
