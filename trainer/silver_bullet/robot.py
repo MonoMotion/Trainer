@@ -4,6 +4,7 @@ from pybullet_utils import bullet_client
 import numpy as np
 from .scene import Scene
 
+import functools
 from typing import Optional, Dict
 
 @dataclasses.dataclass
