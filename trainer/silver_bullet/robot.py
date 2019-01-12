@@ -55,10 +55,29 @@ class Robot:
             self.joints[joint_name] = idx
 
     def joint_state(self, name: str) -> JointState:
-        joint_id = joints[str]
-        pos, vel, _, _ = self.client.getJointState(joint_id)
+        joint_id = self.joints[name]
+        pos, vel, _, _ = self.client.getJointState(jointIndex=joint_id)
         return JointState(pos, vel)
 
+    def link_state(self, name: str, compute_velocity=False) -> LinkState:
+        link_id = self.links[name]
+        if link_id == -1:
+            pos, ori = self.client.getBasePositionAndOrientation()
+            if compute_velocity:
+                a_vel, l_vel = self.client.getBaseVelocity()
+            else:
+                a_vel = None
+                l_vel = None
+        else:
+            pos, ori, _, _, l_vel, a_vel = self.client.getLinkState(linkIndex=link_id, computeLinkVelocity=compute_velocity)
+        pose = Pose(np.array(pos), np.quaternion(*ori))
+        return LinkState(pose, l_vel, a_vel)
+
+    def bring_on_the_ground(self, padding: float = 0):
+        h = min(self.link_state(name).pose.vector[2] for name in self.links.keys())
+        if h > 0:
+            raise RuntimeError("Robot is already on the ground")
+        self.client.resetBasePositionAndOrientation(posObj=[0, 0, -h + padding], ornObj=[0, 0, 0, 1])
 
 def load_urdf(scene, path, flags=pybullet.URDF_USE_SELF_COLLISION):
     body_id = scene.client.loadURDF(path, [0, 0, 0], flags=flags)
