@@ -44,11 +44,13 @@ class Robot:
     def __post_init__(self, scene):
         self.client = ClientWithBody(scene.client, self.body_id)
         nr_joints = self.client.getNumJoints()
+        self.links = {}
+        self.joints = {}
         for idx in range(nr_joints):
-            result = self.client.getJointInfo(idx)
+            result = self.client.getJointInfo(jointIndex=idx)
             joint_name = result[1]
-            link_name = result[13]
-            link_idx = result[17]
+            link_name = result[12]
+            link_idx = result[16]
             self.links[link_name] = link_idx
             self.joints[joint_name] = idx
 
