@@ -1,4 +1,5 @@
 from pybullet_utils import bullet_client
+import pybullet_data
 
 class Scene(object):
     def __init__(self, gravity, timestep, frame_skip, client=None):
@@ -21,6 +22,7 @@ class Scene(object):
         self.configure_simulation()
 
     def configure_simulation(self):
+        self.client.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.client.setGravity(0, 0, -self.gravity)
         self.client.setPhysicsEngineParameter(fixedTimeStep=self.dt, numSubSteps=self.frame_skip)
 
