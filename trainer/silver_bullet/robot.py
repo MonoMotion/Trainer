@@ -4,6 +4,8 @@ from pybullet_utils import bullet_client
 import numpy as np
 from .scene import Scene
 
+from typing import Optional, Dict
+
 @dataclasses.dataclass
 class Pose:
     vector: np.ndarray
@@ -17,7 +19,7 @@ class JointState:
 @dataclasses.dataclass
 class LinkState:
     pose: Pose
-    linear_velocity: Optinal[np.ndarray]
+    linear_velocity: Optional[np.ndarray]
     angular_velocity: Optional[np.ndarray]
 
 @dataclasses.dataclass
