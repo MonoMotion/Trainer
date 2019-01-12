@@ -79,6 +79,10 @@ class Robot:
         pose = Pose(np.array(pos), np.quaternion(*ori))
         return LinkState(pose, l_vel, a_vel)
 
+    def set_joint_position(self, name: str, target: float, kp: float, kd: float, force: float):
+        joint_id = self.joints[name]
+        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.POSITION_CONTROL, targetPosition=target, positionGain=kp, velocityGain=kd)
+
     def bring_on_the_ground(self, padding: float = 0):
         h = min(self.link_state(name).pose.vector[2] for name in self.links.keys())
         if h > 0:
