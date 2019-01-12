@@ -1,3 +1,5 @@
+from pybullet_utils import bullet_client
+
 class Scene(object):
     def __init__(self, gravity, timestep, frame_skip, client=None):
         self.gravity = gravity
