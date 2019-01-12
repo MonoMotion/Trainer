@@ -47,15 +47,18 @@ class Robot:
         nr_joints = self.client.getNumJoints()
         self.links = {}
         self.joints = {}
+
+        root, _ = self.client.getBodyInfo()
+        root_name = root.decode()
+        self.links[root_name] = -1
+        self.root_link = root_name
+
         for idx in range(nr_joints):
             result = self.client.getJointInfo(jointIndex=idx)
-            joint_name = result[1]
-            link_name = result[12]
-            link_idx = result[16]
-            self.links[link_name] = link_idx
+            joint_name = result[1].decode()
+            link_name = result[12].decode()
+            self.links[link_name] = idx
             self.joints[joint_name] = idx
-            if link_idx == -1:
-                self.root_link = link_name
 
     def joint_state(self, name: str) -> JointState:
         joint_id = self.joints[name]
