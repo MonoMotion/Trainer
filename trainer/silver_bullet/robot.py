@@ -40,6 +40,7 @@ class Robot:
     joints: Dict[str, int] = dataclasses.field(init=False)
     links: Dict[str, int] = dataclasses.field(init=False)
     client: ClientWithBody = dataclasses.field(init=False)
+    root_link: str = dataclasses.field(init=False)
 
     def __post_init__(self, scene):
         self.client = ClientWithBody(scene.client, self.body_id)
@@ -53,6 +54,8 @@ class Robot:
             link_idx = result[16]
             self.links[link_name] = link_idx
             self.joints[joint_name] = idx
+            if link_idx == -1:
+                self.root_link = link_name
 
     def joint_state(self, name: str) -> JointState:
         joint_id = self.joints[name]
