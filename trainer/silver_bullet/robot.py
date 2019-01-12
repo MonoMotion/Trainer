@@ -58,5 +58,5 @@ class Robot:
 
 
 def load_urdf(scene, path, flags=pybullet.URDF_USE_SELF_COLLISION):
-    body_id = scene.client.loadURDF(path, [0, 0, 0], flags)
+    body_id = scene.client.loadURDF(path, [0, 0, 0], flags=flags)
     return Robot(body_id, scene)
