@@ -1,19 +1,19 @@
 import math
 
-from silver_bullet import scene, robot
+import trainer.silver_bullet as bullet
 import pybullet
 
 from .utils import dictzip
 
 def create_scene(ts, skip):
-    return scene.Scene(gravity=9.8, timestep=ts, frame_skip=skip)
+    return bullet.Scene(gravity=9.8, timestep=ts, frame_skip=skip)
 
 def load_urdf(scene, path, with_self_collision=True):
     if with_self_collision:
         flags = pybullet.URDF_USE_SELF_COLLISION
     else:
         flags = 0
-    robot = robot.load_urdf(scene, path, flags)
+    robot = bullet.robot.load_urdf(scene, path, flags)
     return robot
 
 def reset_position(robot):
@@ -29,6 +29,6 @@ def reset(scene, path):
     return robot
 
 def apply_joints(robot, positions):
-    for name, (_, pos) in dictzip(robot.joints, positions):
+    for name, pos in positions.items():
         robot.set_joint_position(name, pos, 0.1, 1.0, 100000)
 
