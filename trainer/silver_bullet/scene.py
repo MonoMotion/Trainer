@@ -43,6 +43,7 @@ class Scene:
     client: bullet_client.BulletClient = None
 
     dt: float = dataclasses.field(init=False)
+    ts: float = dataclasses.field(init=False)
 
     def __post_init__(self):
         self.dt = self.timestep * self.frame_skip
@@ -70,10 +71,12 @@ class Scene:
 
     def episode_restart(self):
         self.clean_everything()
+        self.ts = 0
         self.load_plane()
 
     def step(self):
         self.client.stepSimulation()
+        self.ts += self.dt
 
     def draw_line(self, from_pos: Sequence[float], to_pos: Sequence[float], color: Optional[Color] = None, width: Optional[float] = None, replace: Optional[DebugItem] = None) -> DebugLine:
         args = {
