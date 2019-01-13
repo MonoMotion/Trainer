@@ -10,7 +10,13 @@ from typing import Optional, Dict
 @dataclasses.dataclass
 class Pose:
     vector: np.ndarray
-    quaternion: np.quaternion
+    quaternion: np.ndarray
+
+    def dot(self, pose):
+        # TODO: annotate pose with Pose
+        vector, quaternion = pybullet.multiplyTransforms(self.vector, self.quaternion, pose.vector, pose.quaternion)
+        return Pose(vector, quaternion)
+
 
 @dataclasses.dataclass
 class JointState:
@@ -76,7 +82,7 @@ class Robot:
                 l_vel = None
         else:
             pos, ori, _, _, l_vel, a_vel = self.client.getLinkState(linkIndex=link_id, computeLinkVelocity=compute_velocity)
-        pose = Pose(np.array(pos), np.quaternion(*ori))
+        pose = Pose(np.array(pos), np.array(ori))
         return LinkState(pose, l_vel, a_vel)
 
     def set_joint_position(self, name: str, target: float, kp: float, kd: float, force: float):
