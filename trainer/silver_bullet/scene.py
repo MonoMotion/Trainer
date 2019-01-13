@@ -3,23 +3,35 @@ import pybullet_data
 import pybullet
 
 import dataclasses
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Union
 
 from .color import Color
 
-@dataclasses.dataclass
-class DebugSphere:
+@dataclasses.dataclass(frozen=True)
+class DebugBody:
     body_id: int
 
-@dataclasses.dataclass
+    def remove_from_scene(self, scene):
+        # TODO: annotate scene with Scene type
+        scene.client.removeBody(self.body_id)
+
+@dataclasses.dataclass(frozen=True)
+class DebugSphere(DebugBody):
+    pass
+
+@dataclasses.dataclass(frozen=True)
 class DebugItem:
     item_id: int
 
-@dataclasses.dataclass
+    def remove_from_scene(self, scene):
+        # TODO: annotate scene with Scene type
+        scene.client.removeUserDebugItem(self.item_id)
+
+@dataclasses.dataclass(frozen=True)
 class DebugLine(DebugItem):
     pass
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class DebugText(DebugItem):
     pass
 
@@ -111,3 +123,6 @@ class Scene(object):
         visual_id = self.client.createVisualShape(**args)
         body_id = self.client.createMultiBody(baseVisualShapeIndex=visual_id, basePosition=pos)
         return DebugSphere(body_id)
+
+    def remove_debug_object(self, o: Union[DebugItem, DebugBody]):
+        o.remove_from_scene(self)
