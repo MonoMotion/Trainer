@@ -1,8 +1,6 @@
 import math
 import numpy as np
 import quaternion
-from functools import reduce
-from operator import mul
 
 from evostra import EvolutionStrategy
 from .simulation import reset, apply_joints

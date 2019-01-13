@@ -3,8 +3,6 @@ import math
 from .silver_bullet import Robot
 import pybullet
 
-from .utils import dictzip
-
 def load_urdf(scene, path, with_self_collision=True):
     if with_self_collision:
         flags = pybullet.URDF_USE_SELF_COLLISION

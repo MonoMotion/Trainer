@@ -4,8 +4,6 @@ from .silver_bullet import Color, Scene
 from pybullet_utils import bullet_client
 import pybullet
 
-import flom
-
 import math
 
 EFFECTOR_SPHERE_SIZE_RATIO = 2.5
