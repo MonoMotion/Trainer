@@ -1,10 +1,15 @@
 from pybullet_utils import bullet_client
 import pybullet_data
+import pybullet
 
 import dataclasses
 from typing import Sequence, Optional
 
 from .color import Color
+
+@dataclasses.dataclass
+class DebugSphere:
+    body_id: int
 
 @dataclasses.dataclass
 class DebugItem:
@@ -91,3 +96,18 @@ class Scene(object):
 
         item_id = self.client.addUserDebugText(**args)
         return DebugText(item_id)
+
+    def draw_sphere(self, pos: Sequence[float], radius: Optional[float] = None, color: Optional[Color] = None) -> DebugSphere:
+        args = {
+            'shapeType': pybullet.GEOM_SPHERE
+        }
+
+        if color is not None:
+            args['rgbaColor'] = color.as_rgba()
+
+        if radius is not None:
+            args['radius'] = radius
+
+        visual_id = self.client.createVisualShape(**args)
+        body_id = self.client.createMultiBody(baseVisualShapeIndex=visual_id, basePosition=pos)
+        return DebugSphere(body_id)
