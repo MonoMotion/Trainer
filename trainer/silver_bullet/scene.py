@@ -132,5 +132,8 @@ class Scene:
         body_id = self.client.createMultiBody(baseVisualShapeIndex=visual_id, basePosition=pos)
         return DebugSphere(body_id)
 
+    def move_debug_body(self, body: DebugBody, position: Sequence[float], orientation: Sequence[float]):
+        self.client.resetBasePositionAndOrientation(body.body_id, pos, ori)
+
     def remove_debug_object(self, o: Union[DebugItem, DebugBody]):
         o.remove_from_scene(self)
