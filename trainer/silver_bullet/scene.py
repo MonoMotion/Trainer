@@ -37,9 +37,9 @@ class DebugText(DebugItem):
 
 @dataclasses.dataclass
 class Scene:
-    gravity: float
     timestep: float
     frame_skip: int
+    gravity: float = 9.8
     client: bullet_client.BulletClient = None
 
     dt: float = dataclasses.field(init=False)

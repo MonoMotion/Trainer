@@ -5,7 +5,7 @@ from functools import reduce
 from operator import mul
 
 from evostra import EvolutionStrategy
-from .simulation import create_scene, reset, apply_joints, render
+from .simulation import reset, apply_joints
 from .utils import select_location, select_rotation
 
 import flom
@@ -34,7 +34,7 @@ def calc_reward(motion, robot, parts, frame):
 
 
 def train(motion, robot_file, timestep=0.0165/8, frame_skip=8):
-    scene = create_scene(timestep, frame_skip)
+    scene = Scene(timestep, frame_skip)
     robot, parts, joints = reset(scene, robot_file)
     robot.query_position()
 
@@ -52,7 +52,7 @@ def train(motion, robot_file, timestep=0.0165/8, frame_skip=8):
             apply_joints(joints, apply_weights(frame.positions, frame_weight))
 
             if enable_render:
-                render(scene)
+                pass
 
         return reward_sum
 

@@ -1,12 +1,9 @@
 import math
 
-from .silver_bullet import Robot, Scene
+from .silver_bullet import Robot
 import pybullet
 
 from .utils import dictzip
-
-def create_scene(ts, skip):
-    return Scene(gravity=9.8, timestep=ts, frame_skip=skip)
 
 def load_urdf(scene, path, with_self_collision=True):
     if with_self_collision:
