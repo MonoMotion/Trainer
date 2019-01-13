@@ -37,7 +37,6 @@ def calc_reward(motion, robot, frame):
 
 def train(motion, robot_file, timestep=0.0165/8, frame_skip=8):
     scene = Scene(timestep, frame_skip)
-    robot = reset(scene, robot_file)
 
     def step(weights, enable_render=False):
         robot = reset(scene, robot_file)
