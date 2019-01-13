@@ -2,30 +2,6 @@
 
 set -euo pipefail
 
-function build_bullet3() {
-  local roboschool_path=$(realpath ./third_party/roboschool)
-  # Bullet installation for roboschool
-  mkdir -p third_party/bullet3/build
-  pushd    third_party/bullet3/build
-  cmake -DBUILD_SHARED_LIBS=ON -DUSE_DOUBLE_PRECISION=1 -DCMAKE_INSTALL_PREFIX:PATH=$roboschool_path/roboschool/cpp-household/bullet_local_install -DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_EXTRAS=OFF  -DBUILD_UNIT_TESTS=OFF -DBUILD_CLSOCKET=OFF -DBUILD_ENET=OFF -DBUILD_OPENGL3_DEMOS=OFF ..
-  make -j"$(nproc)"
-  make install
-  popd
-}
-
-function install_without_roboschool() {
-  mv Pipfile Pipfile.bak
-  sed '/roboschool = /d' Pipfile.bak > Pipfile
-  pipenv install --skip-lock
-  mv Pipfile.bak Pipfile
-}
-
-function build_boost_python() {
-  pushd third_party/boost-python
-  pipenv run faber
-  popd
-}
-
 function place_robot_model() {
   local models_path=third_party/roboschool/roboschool/models_robot/robot_models
   # Include out model to the search path
@@ -38,35 +14,9 @@ function place_robot_model() {
   patch robot_models/yamax.urdf < yamax.urdf.patch
 }
 
-function install_roboschool() {
-  function ln_if_diff() {
-    if [ "$1" != "$2" ] && [ ! -h "$2" ]; then
-      ln -s $1 $2
-    fi
-  }
-
-  local boost_python_lib="$(realpath $(find third_party/boost-python -type f -name '*boost_python*.so'))"
-  local lib_dir=$(dirname $boost_python_lib)
-  local py_suffix=$(pipenv run python -c "import sys; print('%i%i' % sys.version_info[:2])")
-  ln_if_diff $boost_python_lib $lib_dir/libboost_python${py_suffix}.so
-  ln_if_diff $boost_python_lib $lib_dir/libboost_python-py${py_suffix}.so
-
-  local boost_python_include="$(realpath third_party/boost-python/include)"
-
-  # Roboschool installation needs to be done in virtualenv
-  local python_version=$(pipenv run python -V | awk '{print $2}')
-  PKG_CONFIG_PATH=$HOME/.pyenv/versions/$python_version/lib/pkgconfig \
-    CPLUS_INCLUDE_PATH=$boost_python_include \
-    LIBRARY_PATH=$lib_dir \
-    pipenv run pipenv install
-}
-
 function install_all() {
-  build_bullet3
-  install_without_roboschool
-  build_boost_python
   place_robot_model
-  install_roboschool
+  install
 }
 
 function main() {
