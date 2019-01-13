@@ -11,7 +11,6 @@ numpy-quaternion = "==2018.11.3.1.0.41"
 numba = "*"
 flom = "*"
 evostra = "*"
-faber = {git = "https://github.com/stefanseefeld/faber.git"}
 
 [dev-packages]
 "flake8" = "*"
