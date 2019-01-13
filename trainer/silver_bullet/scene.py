@@ -1,6 +1,19 @@
 from pybullet_utils import bullet_client
 import pybullet_data
 
+import dataclasses
+from typing import Sequence, Optional
+
+from .color import Color
+
+@dataclasses.dataclass
+class DebugItem:
+    item_id: int
+
+@dataclasses.dataclass
+class DebugLine(DebugItem):
+    pass
+
 class Scene(object):
     def __init__(self, gravity, timestep, frame_skip, client=None):
         self.gravity = gravity
@@ -35,3 +48,21 @@ class Scene(object):
 
     def step(self):
         self.client.stepSimulation()
+
+    def draw_line(self, from_pos: Sequence[float], to_pos: Sequence[float], color: Optional[Color] = None, width: Optional[float] = None, replace: Optional[DebugItem] = None) -> DebugLine:
+        args = {
+            'lineFromXYZ': from_pos,
+            'lineToXYZ': to_pos
+        }
+
+        if color is not None:
+            args['lineColorRGB'] = color.as_rgb()
+
+        if replace is not None:
+            args['replaceItemUniqueId'] = replace.item_id
+
+        if width is not None:
+            args['lineWidth'] = width
+
+        item_id = self.client.addUserDebugLine(**args)
+        return DebugLine(item_id)
