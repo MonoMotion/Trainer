@@ -8,7 +8,7 @@ import flom
 
 import math
 
-EFFECTOR_SPHERE_RADIUS_RATIO = 0.05
+EFFECTOR_SPHERE_SIZE_RATIO = 2.5
 EFFECTOR_SPHERE_COLOR_RATIO = 1000
 
 def create_effector_marker(scene, motion, robot, effectors, pre):
@@ -25,9 +25,9 @@ def create_effector_marker(scene, motion, robot, effectors, pre):
             differ = sum((c - t) ** 2 for c, t in zip(current, target)) / 3
 
             color = calc_color(differ)
-            radius = motion.effector_weight(name).location * EFFECTOR_SPHERE_RADIUS_RATIO
+            size = motion.effector_weight(name).location * EFFECTOR_SPHERE_SIZE_RATIO
             x, y, z = target
-            return scene.draw_text(name, [x, y, z], color=color, replace=pre[name] if pre else None)
+            return scene.draw_text(name, [x, y, z], size=size, color=color, replace=pre[name] if pre else None)
 
     return {name: create(name, eff) for name, eff in effectors.items()}
 
