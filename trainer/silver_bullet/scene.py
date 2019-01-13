@@ -35,14 +35,19 @@ class DebugLine(DebugItem):
 class DebugText(DebugItem):
     pass
 
-class Scene(object):
-    def __init__(self, gravity, timestep, frame_skip, client=None):
-        self.gravity = gravity
-        self.timestep = timestep
-        self.frame_skip = frame_skip
-        self.dt = timestep * frame_skip
+@dataclasses.dataclass
+class Scene:
+    gravity: float
+    timestep: float
+    frame_skip: int
+    client: bullet_client.BulletClient = None
 
-        self.connect(client)
+    dt: float = dataclasses.field(init=False)
+
+    def __post_init__(self):
+        self.dt = self.timestep * self.frame_skip
+
+        self.connect(self.client)
         self.episode_restart()
 
     def connect(self, client):
