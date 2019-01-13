@@ -14,6 +14,10 @@ class DebugItem:
 class DebugLine(DebugItem):
     pass
 
+@dataclasses.dataclass
+class DebugText(DebugItem):
+    pass
+
 class Scene(object):
     def __init__(self, gravity, timestep, frame_skip, client=None):
         self.gravity = gravity
@@ -66,3 +70,24 @@ class Scene(object):
 
         item_id = self.client.addUserDebugLine(**args)
         return DebugLine(item_id)
+
+    def draw_text(self, text: str, pos: Sequence[float], orientation: Optional[Sequence[float]] = None, color: Optional[Color] = None, size: Optional[float] = None, replace: Optional[DebugItem] = None) -> DebugText:
+        args = {
+            'text': text,
+            'textPosition': pos,
+        }
+
+        if color is not None:
+            args['textColorRGB'] = color.as_rgb()
+
+        if orientation is not None:
+            args['textOrientation'] = orientation
+
+        if replace is not None:
+            args['replaceItemUniqueId'] = replace.item_id
+
+        if size is not None:
+            args['textSize'] = size
+
+        item_id = self.client.addUserDebugText(**args)
+        return DebugText(item_id)
