@@ -95,6 +95,7 @@ class Robot:
             raise RuntimeError("Robot is already on the ground")
         self.client.resetBasePositionAndOrientation(posObj=[0, 0, -h + padding], ornObj=[0, 0, 0, 1])
 
-def load_urdf(scene, path, flags=pybullet.URDF_USE_SELF_COLLISION):
-    body_id = scene.client.loadURDF(path, [0, 0, 0], flags=flags)
-    return Robot(body_id, scene)
+    @staticmethod
+    def load_urdf(scene, path, flags=pybullet.URDF_USE_SELF_COLLISION):
+        body_id = scene.client.loadURDF(path, [0, 0, 0], flags=flags)
+        return Robot(body_id, scene)

@@ -1,19 +1,19 @@
 import math
 
-import trainer.silver_bullet as bullet
+from .silver_bullet import Robot, Scene
 import pybullet
 
 from .utils import dictzip
 
 def create_scene(ts, skip):
-    return bullet.Scene(gravity=9.8, timestep=ts, frame_skip=skip)
+    return Scene(gravity=9.8, timestep=ts, frame_skip=skip)
 
 def load_urdf(scene, path, with_self_collision=True):
     if with_self_collision:
         flags = pybullet.URDF_USE_SELF_COLLISION
     else:
         flags = 0
-    robot = bullet.robot.load_urdf(scene, path, flags)
+    robot = Robot.load_urdf(scene, path, flags)
     return robot
 
 def reset_position(robot):
