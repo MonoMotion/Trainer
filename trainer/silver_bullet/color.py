@@ -11,7 +11,7 @@ class Color:
         return self.as_rgba()[:3]
 
     def as_rgba(self):
-        return [self.r, self.g, self.b, self.a]
+        return dataclasses.astuple(self)
 
     @staticmethod
     def red():
