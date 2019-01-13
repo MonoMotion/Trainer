@@ -133,7 +133,7 @@ class Scene:
         return DebugSphere(body_id)
 
     def move_debug_body(self, body: DebugBody, position: Sequence[float], orientation: Sequence[float]):
-        self.client.resetBasePositionAndOrientation(body.body_id, pos, ori)
+        self.client.resetBasePositionAndOrientation(body.body_id, position, orientation)
 
     def remove_debug_object(self, o: Union[DebugItem, DebugBody]):
         o.remove_from_scene(self)
