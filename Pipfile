@@ -6,15 +6,11 @@ name = "pypi"
 [packages]
 pybullet = ">=2.1.7,!=2.1.8"
 matplotlib = "*"
-pick = "*"
 numpy = "*"
 numpy-quaternion = "==2018.11.3.1.0.41"
 numba = "*"
 flom = "*"
 evostra = "*"
-gym = "*"  # required by roboschool
-roboschool = {editable = true,path = "./third_party/roboschool"}
-faber = {git = "https://github.com/stefanseefeld/faber.git"}
 
 [dev-packages]
 "flake8" = "*"
@@ -27,4 +23,4 @@ train = "python -m trainer"
 preview = "python utils/preview_motion.py"
 
 [requires]
-python_version = "3.5"
+python_version = "3.7"
