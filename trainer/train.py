@@ -6,7 +6,7 @@ from typing import Optional
 from evostra import EvolutionStrategy
 from .simulation import reset, apply_joints
 from .utils import select_location, select_rotation
-from .silver_bullet import Scene
+from .silver_bullet import Scene, Robot
 from .silver_bullet.scene import SavedState
 
 import flom
@@ -34,11 +34,9 @@ def calc_reward(motion, robot, frame):
     normalized = k * diff / len(frame.effectors)
     return - math.exp(normalized) + 1
 
-def train_chunk(motion: flom.Motion, scene: Scene, robot_file: str, start: float, init_weights: np.ndarray, init_state: Optional[SavedState] = None, num_iteration: int = 100):
+def train_chunk(motion: flom.Motion, scene: Scene, robot: Robot, start: float, init_weights: np.ndarray, init_state: SavedState, num_iteration: int = 100):
     def step(weights):
-        robot = reset(scene, robot_file)
-        if init_state is not None:
-            scene.restore_state(init_state)
+        scene.restore_state(init_state)
 
         reward_sum = 0
         for frame_weight in weights:
@@ -69,14 +67,16 @@ def train(motion, robot_file, timestep=0.0165/8, frame_skip=8, chunk_length=1, n
     num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
     weights = np.zeros(shape=(num_frames, num_joints))
 
-    last_state = None  # type: Optional[SavedState]
+    robot = reset(scene, robot_file)
+    last_state = scene.save_state()
     for chunk_idx in range(num_chunk):
         start = chunk_idx * chunk_duration
         start_idx = chunk_idx * chunk_length
 
         s = slice(start_idx, start_idx + chunk_length)
-        reward, weights[s], last_state = train_chunk(motion, scene, robot_file, start, weights[s], last_state, num_iteration)
-        print("chunk {} ({}~): {}".format(chunk_idx, start, reward))
+        print("start training chunk {} ({}~)".format(chunk_idx, start))
+        reward, weights[s], last_state = train_chunk(motion, scene, robot, start, weights[s], last_state, num_iteration)
+        print("chunk {}: {}".format(chunk_idx, reward))
 
     # Use copy ctor after DeepL2/flom-py#23
     types = {n: motion.effector_type(n) for n in motion.effector_names()}
