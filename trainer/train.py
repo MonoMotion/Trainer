@@ -93,7 +93,7 @@ def train(motion, robot_file, timestep=0.0165/8, frame_skip=8, chunk_length=1, n
     for name in motion.effector_names():
         new_motion.set_effector_weight(name, motion.effector_weight(name))
 
-    for i, frame_weight in enumerate(es.get_weights()):
+    for i, frame_weight in enumerate(weights):
         t = i * scene.dt
         new_frame = motion.frame_at(t)
         new_frame.positions = apply_weights(new_frame.positions, frame_weight)
