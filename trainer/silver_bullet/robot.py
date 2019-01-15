@@ -22,6 +22,7 @@ class Pose:
 class JointState:
     position: float
     velocity: float
+    applied_torque: float
 
 @dataclasses.dataclass
 class LinkState:
@@ -68,8 +69,8 @@ class Robot:
 
     def joint_state(self, name: str) -> JointState:
         joint_id = self.joints[name]
-        pos, vel, _, _ = self.client.getJointState(jointIndex=joint_id)
-        return JointState(pos, vel)
+        pos, vel, _, torque = self.client.getJointState(jointIndex=joint_id)
+        return JointState(pos, vel, torque)
 
     def link_state(self, name: str, compute_velocity=False) -> LinkState:
         link_id = self.links[name]
