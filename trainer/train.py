@@ -1,7 +1,8 @@
 import math
 import numpy as np
 import quaternion
-from typing import Optional
+from typing import Optional, Dict
+import dataclasses
 
 from evostra import EvolutionStrategy
 from .simulation import reset, apply_joints
@@ -34,13 +35,24 @@ def calc_reward(motion, robot, frame):
     normalized = k * diff / len(frame.effectors)
     return - math.exp(normalized) + 1
 
-def train_chunk(motion: flom.Motion, scene: Scene, robot: Robot, start: float, init_weights: np.ndarray, init_state: SavedState, num_iteration: int = 100):
-    def step(weights):
-        # TODO: Reset joint application correctly
-        for name in robot.joints.keys():
-            robot.set_joint_velocity(name, 0, 100000)
+@dataclasses.dataclass
+class StateWithJoints:
+    saved_state: SavedState
+    joint_torques: Dict[str, float]
 
-        scene.restore_state(init_state)
+    def restore(self, scene: Scene, robot: Robot):
+        scene.restore_state(self.saved_state)
+        for name, force in self.joint_torques.items():
+            robot.set_joint_torque(name, force)
+
+    @staticmethod
+    def save(scene: Scene, robot: Robot):
+        torques = {name: robot.joint_state(name).applied_torque for name in robot.joints.keys()}
+        return StateWithJoints(scene.save_state(), torques)
+
+def train_chunk(motion: flom.Motion, scene: Scene, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, num_iteration: int = 100):
+    def step(weights):
+        init_state.restore(scene, robot)
 
         reward_sum = 0
         for frame_weight in weights:
@@ -59,7 +71,8 @@ def train_chunk(motion: flom.Motion, scene: Scene, robot: Robot, start: float, i
 
     weights = es.get_weights()
     reward = step(weights)
-    state = scene.save_state()
+
+    state = StateWithJoints.save(scene, robot)
     return reward, weights, state
 
 def train(motion, robot_file, timestep=0.0165/8, frame_skip=8, chunk_length=1, num_iteration=100, num_chunk=10):
@@ -72,7 +85,7 @@ def train(motion, robot_file, timestep=0.0165/8, frame_skip=8, chunk_length=1, n
     weights = np.zeros(shape=(num_frames, num_joints))
 
     robot = reset(scene, robot_file)
-    last_state = scene.save_state()
+    last_state = StateWithJoints.save(scene, robot)
     for chunk_idx in range(num_chunk):
         start = chunk_idx * chunk_duration
         start_idx = chunk_idx * chunk_length % num_frames
