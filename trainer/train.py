@@ -75,11 +75,15 @@ def train(motion, robot_file, timestep=0.0165/8, frame_skip=8, chunk_length=1, n
     last_state = scene.save_state()
     for chunk_idx in range(num_chunk):
         start = chunk_idx * chunk_duration
-        start_idx = chunk_idx * chunk_length
+        start_idx = chunk_idx * chunk_length % num_frames
 
-        s = slice(start_idx, start_idx + chunk_length)
+        r = range(start_idx, start_idx + chunk_length)
+        in_weights = [weights[i % num_frames] for i in r]
         print("start training chunk {} ({}~)".format(chunk_idx, start))
-        reward, weights[s], last_state = train_chunk(motion, scene, robot, start, weights[s], last_state, num_iteration)
+        reward, out_weights, last_state = train_chunk(motion, scene, robot, start, in_weights, last_state, num_iteration)
+        for i, w in zip(r, out_weights):
+            weights[i % num_frames] = w
+
         print("chunk {}: {}".format(chunk_idx, reward))
 
     # Use copy ctor after DeepL2/flom-py#23
