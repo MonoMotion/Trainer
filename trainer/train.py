@@ -36,6 +36,10 @@ def calc_reward(motion, robot, frame):
 
 def train_chunk(motion: flom.Motion, scene: Scene, robot: Robot, start: float, init_weights: np.ndarray, init_state: SavedState, num_iteration: int = 100):
     def step(weights):
+        # TODO: Reset joint application correctly
+        for name in robot.joints.keys():
+            robot.set_joint_velocity(name, 0, 100000)
+
         scene.restore_state(init_state)
 
         reward_sum = 0
