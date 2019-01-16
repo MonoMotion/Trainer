@@ -30,7 +30,7 @@ def calc_stabilization_reward(frame, pre_positions, ks):
     if pre_positions is None:
         return 0
 
-    change_sum = - sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(frame.positions, pre_positions))
+    change_sum = sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(frame.positions, pre_positions))
     normalized = ks * change_sum / len(frame.positions)
     return - math.exp(normalized) + 1
 
