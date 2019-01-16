@@ -45,14 +45,15 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
         for frame_weight in weights:
             frame = motion.frame_at(start + scene.ts - start_ts)
 
-            reward_sum += calc_reward(motion, robot, frame, pre_positions, **kwargs)
-
-            positions = apply_weights(frame.positions, frame_weight * weight_factor)
-            apply_joints(robot, positions)
-
-            pre_positions = positions
+            frame.positions = apply_weights(frame.positions, frame_weight * weight_factor)
+            apply_joints(robot, frame.positions)
 
             scene.step()
+
+            reward_sum += calc_reward(motion, robot, frame, pre_positions, **kwargs)
+
+            pre_positions = frame.positions
+
 
         return reward_sum
 
