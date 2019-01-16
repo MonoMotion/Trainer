@@ -22,13 +22,13 @@ cd deepl2
 ### Train
 
 ```shell
-pipenv run train -i input.fom -r robot.urdf
+pipenv run train --motion input.fom --robot robot.urdf --output trained.fom
 ```
 
 ### Preview the trained motion
 
 ```shell
-pipenv run preview -i trained.fom -r robot.urdf
+pipenv run preview --motion trained.fom --robot robot.urdf
 ```
 
 ## License

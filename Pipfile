@@ -11,6 +11,7 @@ numpy-quaternion = "==2018.11.3.1.0.41"
 numba = "*"
 flom = "*"
 evostra = "*"
+fire = "*"
 
 [dev-packages]
 "flake8" = "*"
@@ -19,8 +20,8 @@ evostra = "*"
 [scripts]
 fix = "autopep8 -ivr ."
 lint = "flake8 ."
-train = "python -m trainer"
-preview = "python utils/preview_motion.py"
+train = "python -m trainer trainer train"
+preview = "python -m trainer trainer preview"
 
 [requires]
 python_version = "3.7"
