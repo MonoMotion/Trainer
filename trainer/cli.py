@@ -1,6 +1,10 @@
 import flom
 
 import trainer
+from trainer import simulation
+from .silver_bullet import Scene, Robot
+from pybullet_utils.bullet_client import BulletClient
+import pybullet
 
 import dataclasses
 
@@ -12,22 +16,31 @@ class Trainer:
     timestep: float = 0.0165/4
     frame_skip: int = 4
 
-    input_motion: flom.Motion = dataclasses.field(init=False)
+    _motion: flom.Motion = dataclasses.field(init=False)
+    _scene: Scene = dataclasses.field(init=False)
+    _robot: Robot = dataclasses.field(init=False)
 
     def __post_init__(self, motion):
-        self.input_motion = flom.load(motion)
+        self._motion = flom.load(motion)
+        self._scene = Scene(self.timestep, self.frame_skip)
+        self._load_robot()
+
+    def _load_robot(self):
+        self._robot = simulation.reset(self._scene, self.robot)
 
     def train(self, output, chunk_length=3, num_iteration=1000, num_chunk=50, weight_factor=0.01):
-        trained = trainer.train(self.input_motion, self.robot, self.timestep,
-                                self.frame_skip, chunk_length, num_iteration, num_chunk, weight_factor)
+        trained = trainer.train(self._scene, self._motion, self._robot, chunk_length, num_iteration, num_chunk, weight_factor)
         trained.dump(output)
 
     def preview(self):
-        trainer.preview(self.input_motion, self.robot, self.timestep, self.frame_skip)
+        gui_client = BulletClient(connection_mode=pybullet.GUI)
+        self._scene = Scene(self.timestep, self.frame_skip, client=gui_client)
+        self._load_robot()
+        trainer.preview(self._scene, self._motion, self._robot)
 
     def evaluate(self, loop=2):
         from trainer import evaluation
-        score = evaluation.evaluate(self.input_motion, self.robot, self.timestep, self.frame_skip, loop)
+        score = evaluation.evaluate(self._scene, self._motion, self._robot)
         print(score)
 
 
