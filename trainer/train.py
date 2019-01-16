@@ -29,7 +29,7 @@ class StateWithJoints:
         torques = {name: robot.joint_state(name).applied_torque for name in robot.joints.keys()}
         return StateWithJoints(scene.save_state(), torques)
 
-def train_chunk(motion: flom.Motion, scene: Scene, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, num_iteration: int = 100, weight_factor: float = 0.01):
+def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, num_iteration: int = 100, weight_factor: float = 0.01):
     def step(weights):
         init_state.restore(scene, robot)
 
@@ -55,16 +55,13 @@ def train_chunk(motion: flom.Motion, scene: Scene, robot: Robot, start: float, i
     state = StateWithJoints.save(scene, robot)
     return reward, weights, state
 
-def train(motion, robot_file, timestep=0.0165/8, frame_skip=8, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01):
-    scene = Scene(timestep, frame_skip)
-
+def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01):
     chunk_duration = scene.dt * chunk_length
 
     num_frames = int(motion.length() / scene.dt)
     num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
     weights = np.zeros(shape=(num_frames, num_joints))
 
-    robot = reset(scene, robot_file)
     last_state = StateWithJoints.save(scene, robot)
     for chunk_idx in range(num_chunk):
         start = chunk_idx * chunk_duration
@@ -73,7 +70,7 @@ def train(motion, robot_file, timestep=0.0165/8, frame_skip=8, chunk_length=3, n
         r = range(start_idx, start_idx + chunk_length)
         in_weights = [weights[i % num_frames] for i in r]
         print("start training chunk {} ({}~)".format(chunk_idx, start))
-        reward, out_weights, last_state = train_chunk(motion, scene, robot, start, in_weights, last_state, num_iteration, weight_factor)
+        reward, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 

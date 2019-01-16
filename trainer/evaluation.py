@@ -28,11 +28,7 @@ def calc_reward(motion, robot, frame):
     return - math.exp(normalized) + 1
 
 
-def evaluate(motion, robot_file, timestep=0.0165/8, frame_skip=8, loop=2):
-    scene = Scene(timestep, frame_skip)
-
-    robot = reset(scene, robot_file)
-
+def evaluate(scene, motion, robot, loop=2):
     reward_sum = 0
     for t, frame in motion.frames(scene.dt):
         apply_joints(robot, frame.positions)

@@ -29,11 +29,8 @@ def create_effector_marker(scene, motion, robot, effectors, pre):
 
     return {name: create(name, eff) for name, eff in effectors.items()}
 
-def preview(motion, robot_file, timestep=0.0165/8, frame_skip=8):
-    gui_client = bullet_client.BulletClient(connection_mode=pybullet.GUI)
-    scene = Scene(timestep, frame_skip, client=gui_client)
-
-    robot = reset(scene, robot_file)
+def preview(scene, motion, robot):
+    # TODO: print warning if this is not GUI-enabled scene
 
     effector_marks = None
     c = 0
