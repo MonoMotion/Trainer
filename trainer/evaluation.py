@@ -39,12 +39,18 @@ def calc_reward(motion, robot, frame, pre_frame, k=1, wl=1, wr=0.005, ws=1):
 
 def evaluate(scene, motion, robot, loop=2, **kwargs):
     reward_sum = 0
+
+    if scene.ts >= scene.dt:
+        pre_frame = motion.frame_at(scene.ts - scene.dt)
+    else:
+        pre_frame = None
     for t, frame in motion.frames(scene.dt):
         apply_joints(robot, frame.positions)
 
         scene.step()
 
-        reward_sum += calc_reward(motion, robot, frame, **kwargs)
+        reward_sum += calc_reward(motion, robot, frame, pre_frame, **kwargs)
+        pre_frame = frame
 
         if t > motion.length() * loop:
             break
