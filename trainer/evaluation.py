@@ -7,7 +7,8 @@ from .utils import select_location, select_rotation
 from .simulation import apply_joints
 
 
-def calc_reward(motion, robot, frame, k=1, wl=1, wr=0.001):
+def calc_reward(motion, robot, frame, k=1, wl=1, wr=0.005):
+    # TODO: Use more clear naming of hyperparameters
     diff = 0
     for name, effector in frame.effectors.items():
         pose = robot.link_state(name).pose
