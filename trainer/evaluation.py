@@ -3,11 +3,11 @@ import quaternion
 
 import math
 
-from .utils import select_location, select_rotation
+from .utils import select_location, select_rotation, dictzip
 from .simulation import apply_joints
 
 
-def calc_reward(motion, robot, frame, k=1, wl=1, wr=0.005):
+def calc_reward(motion, robot, frame, pre_frame, k=1, wl=1, wr=0.005, ws=1):
     # TODO: Use more clear naming of hyperparameters
     diff = 0
     for name, effector in frame.effectors.items():
@@ -24,7 +24,17 @@ def calc_reward(motion, robot, frame, k=1, wl=1, wr=0.005):
             quat2 = np.quaternion(*pose.quaternion)
             diff += wr * quaternion.rotation_intrinsic_distance(quat1, quat2) ** 2 * weight.rotation
     normalized = k * diff / len(frame.effectors)
-    return - math.exp(normalized) + 1
+    effector_reward = - math.exp(normalized) + 1
+
+    if pre_frame is not None:
+        change_sum = - sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(frame.positions, pre_frame.positions))
+        normalized = ws * change_sum / len(frame.positions)
+        stabilization_reward = - math.exp(normalized) + 1
+    else:
+        stabilization_reward = 0
+
+    return effector_reward + stabilization_reward
+
 
 
 def evaluate(scene, motion, robot, loop=2, **kwargs):
