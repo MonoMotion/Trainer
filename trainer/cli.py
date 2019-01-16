@@ -15,3 +15,17 @@ def add_noise(motion, output, random=0.1):
     m = flom.load(motion)
     trainer.utils.add_noise(m, random)
     m.dump(output)
+
+def plot(motion, output, fps=0.01, loop=1):
+    from trainer import plot
+    import matplotlib.pyplot as plt
+
+    m = flom.load(motion)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    plot.plot_frames(m, ax, loop, fps)
+
+    ax.legend()
+    plt.savefig(output)
