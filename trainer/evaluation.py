@@ -3,7 +3,7 @@ import quaternion
 
 import math
 
-from .utils import select_location, select_rotation, dictzip
+from .utils import select_location, select_rotation, dictzip, try_get_pre_positions
 from .simulation import apply_joints
 
 
@@ -46,10 +46,7 @@ def calc_reward(motion, robot, frame, pre_positions, ke=1, ks=10, wl=1, wr=0.005
 def evaluate(scene, motion, robot, loop=2, **kwargs):
     reward_sum = 0
 
-    if scene.ts >= scene.dt:
-        pre_positions = motion.frame_at(scene.ts - scene.dt).positions
-    else:
-        pre_positions = None
+    pre_positions = try_get_pre_positions(scene, motion)
 
     for t, frame in motion.frames(scene.dt):
         apply_joints(robot, frame.positions)

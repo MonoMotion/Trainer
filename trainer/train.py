@@ -7,6 +7,7 @@ from .simulation import apply_joints
 from .evaluation import calc_reward
 from .silver_bullet import Scene, Robot
 from .silver_bullet.scene import SavedState
+from .utils import try_get_pre_positions
 
 import flom
 
@@ -39,10 +40,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
         reward_sum = 0
         start_ts = scene.ts
 
-        if start_ts >= scene.dt:
-            pre_positions = motion.frame_at(start_ts - scene.dt).positions
-        else:
-            pre_positions = None
+        pre_positions = try_get_pre_positions(scene, motion)
 
         for frame_weight in weights:
             frame = motion.frame_at(start + scene.ts - start_ts)
