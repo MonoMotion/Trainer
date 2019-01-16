@@ -4,6 +4,8 @@ import quaternion
 import math
 
 from .utils import select_location, select_rotation
+from .simulation import reset, apply_joints
+from .silver_bullet import Scene
 
 
 def calc_reward(motion, robot, frame):
@@ -25,3 +27,21 @@ def calc_reward(motion, robot, frame):
     normalized = k * diff / len(frame.effectors)
     return - math.exp(normalized) + 1
 
+
+def evaluate(motion, robot_file, timestep=0.0165/8, frame_skip=8, loop=2):
+    scene = Scene(timestep, frame_skip)
+
+    robot = reset(scene, robot_file)
+
+    reward_sum = 0
+    for t, frame in motion.frames(scene.dt):
+        apply_joints(robot, frame.positions)
+
+        scene.step()
+
+        reward_sum += calc_reward(motion, robot, frame)
+
+        if t > motion.length() * loop:
+            break
+
+    return reward_sum
