@@ -20,8 +20,8 @@ fire = "*"
 [scripts]
 fix = "autopep8 -ivr ."
 lint = "flake8 ."
-train = "python -m trainer train"
-preview = "python -m trainer preview"
+train = "python -m trainer trainer train"
+preview = "python -m trainer trainer preview"
 
 [requires]
 python_version = "3.7"

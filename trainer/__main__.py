@@ -1,6 +1,6 @@
 import fire
 
-from trainer import cli
+from trainer.cli import Trainer, Utility
 
 if __name__ == '__main__':
-    fire.Fire(cli)
+    fire.Fire({'trainer': Trainer, 'util': Utility})
