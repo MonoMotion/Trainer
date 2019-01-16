@@ -35,12 +35,12 @@ def calc_stabilization_reward(frame, pre_positions, ks):
     return - math.exp(normalized) + 1
 
 
-def calc_reward(motion, robot, frame, pre_positions, ke=1, ks=10, wl=1, wr=0.005):
+def calc_reward(motion, robot, frame, pre_positions, we=1, ws=0.1, ke=1, ks=1, wl=1, wr=0.005):
     # TODO: Use more clear naming of hyperparameters
 
     e = calc_effector_reward(motion, robot, frame, ke, wl, wr)
     s = calc_stabilization_reward(frame, pre_positions, ks)
-    return e + s
+    return e * we + s * ws
 
 
 def evaluate(scene, motion, robot, loop=2, **kwargs):
