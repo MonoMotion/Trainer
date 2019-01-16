@@ -7,6 +7,7 @@ from .simulation import apply_joints
 from .evaluation import calc_reward
 from .silver_bullet import Scene, Robot
 from .silver_bullet.scene import SavedState
+from .utils import try_get_pre_positions
 
 import flom
 
@@ -38,14 +39,21 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         reward_sum = 0
         start_ts = scene.ts
+
+        pre_positions = try_get_pre_positions(scene, motion, start=start)
+
         for frame_weight in weights:
             frame = motion.frame_at(start + scene.ts - start_ts)
 
-            reward_sum += calc_reward(motion, robot, frame, **kwargs)
-
-            apply_joints(robot, apply_weights(frame.positions, frame_weight * weight_factor))
+            frame.positions = apply_weights(frame.positions, frame_weight * weight_factor)
+            apply_joints(robot, frame.positions)
 
             scene.step()
+
+            reward_sum += calc_reward(motion, robot, frame, pre_positions, **kwargs)
+
+            pre_positions = frame.positions
+
 
         return reward_sum
 
@@ -60,7 +68,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     return reward, weights, state
 
 
-def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01):
+def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01, **kwargs):
     chunk_duration = scene.dt * chunk_length
 
     num_frames = int(motion.length() / scene.dt)
@@ -76,7 +84,7 @@ def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100
         in_weights = [weights[i % num_frames] for i in r]
         print("start training chunk {} ({}~)".format(chunk_idx, start))
         reward, out_weights, last_state = train_chunk(
-            scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor)
+                scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 

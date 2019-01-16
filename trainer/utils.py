@@ -1,9 +1,10 @@
 import flom
 
-from .silver_bullet import Pose
+from .silver_bullet import Pose, Scene
 import numpy as np
 
 import random
+from typing import Optional, Dict
 
 
 def dictzip(d1, d2):
@@ -40,3 +41,13 @@ def add_noise(motion, randomness):
         }
         new_frame.positions = positions
         frame.set(new_frame)
+
+
+def try_get_pre_positions(scene: Scene, motion: flom.Motion, start: Optional[float] = None) -> Optional[Dict[str, float]]:
+    if start is None:
+        start = scene.ts
+
+    if start >= scene.dt:
+        return motion.frame_at(start - scene.dt).positions
+    else:
+        return None
