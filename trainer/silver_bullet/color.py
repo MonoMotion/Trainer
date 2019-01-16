@@ -1,5 +1,6 @@
 import dataclasses
 
+
 @dataclasses.dataclass
 class Color:
     r: float
@@ -24,4 +25,3 @@ class Color:
     @staticmethod
     def blue():
         return Color(0, 0, 1, 1)
-

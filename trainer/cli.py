@@ -1,5 +1,6 @@
 import flom
 
+
 import trainer
 from trainer import simulation
 from .silver_bullet import Scene, Robot
@@ -29,7 +30,8 @@ class Trainer:
         self._robot = simulation.reset(self._scene, self.robot)
 
     def train(self, output, chunk_length=3, num_iteration=1000, num_chunk=50, weight_factor=0.01):
-        trained = trainer.train(self._scene, self._motion, self._robot, chunk_length, num_iteration, num_chunk, weight_factor)
+        trained = trainer.train(self._scene, self._motion, self._robot,
+                                chunk_length, num_iteration, num_chunk, weight_factor)
         trained.dump(output)
 
     def preview(self):

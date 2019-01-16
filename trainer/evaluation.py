@@ -4,8 +4,7 @@ import quaternion
 import math
 
 from .utils import select_location, select_rotation
-from .simulation import reset, apply_joints
-from .silver_bullet import Scene
+from .simulation import apply_joints
 
 
 def calc_reward(motion, robot, frame):

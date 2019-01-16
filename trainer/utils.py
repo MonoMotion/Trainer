@@ -5,27 +5,31 @@ import numpy as np
 
 import random
 
+
 def dictzip(d1, d2):
     for k, v in d1.items():
         yield k, (v, d2[k])
+
 
 def select_location(ty, vec, root_pose):
     if ty == flom.CoordinateSystem.World:
         return vec
     elif ty == flom.CoordinateSystem.Local:
-        pose = Pose(np.array(vec), np.array([0,0,0,0]))
+        pose = Pose(np.array(vec), np.array([0, 0, 0, 0]))
         return root_pose.dot(pose).vector
     else:
         assert False  # unreachable
+
 
 def select_rotation(ty, quat, root_pose):
     if ty == flom.CoordinateSystem.World:
         return quat
     elif ty == flom.CoordinateSystem.Local:
-        pose = Pose(np.array([0,0,0]), np.array(quat))
+        pose = Pose(np.array([0, 0, 0]), np.array(quat))
         return root_pose.dot(pose).quatertion
     else:
         assert False  # unreachable
+
 
 def add_noise(motion, randomness):
     for t, frame in motion.keyframes():

@@ -1,17 +1,16 @@
-from .simulation import reset, apply_joints
+from .simulation import apply_joints
 from .utils import select_location
-from .silver_bullet import Color, Scene
-from pybullet_utils import bullet_client
-import pybullet
+from .silver_bullet import Color
 
 import math
 
 EFFECTOR_SPHERE_SIZE_RATIO = 2.5
 EFFECTOR_SPHERE_COLOR_RATIO = 1000
 
+
 def create_effector_marker(scene, motion, robot, effectors, pre):
     def calc_color(diff):
-        r =  - math.exp(-diff * EFFECTOR_SPHERE_COLOR_RATIO) + 1
+        r = - math.exp(-diff * EFFECTOR_SPHERE_COLOR_RATIO) + 1
         return Color(r, 0, 1 - r)
 
     def create(name, eff):
@@ -29,6 +28,7 @@ def create_effector_marker(scene, motion, robot, effectors, pre):
 
     return {name: create(name, eff) for name, eff in effectors.items()}
 
+
 def preview(scene, motion, robot):
     # TODO: print warning if this is not GUI-enabled scene
 
@@ -40,5 +40,6 @@ def preview(scene, motion, robot):
         frame = motion.frame_at(scene.ts)
         apply_joints(robot, frame.positions)
         if c % 10 == 0:
-            effector_marks = create_effector_marker(scene, motion, robot, frame.effectors, effector_marks)
+            effector_marks = create_effector_marker(
+                scene, motion, robot, frame.effectors, effector_marks)
         c += 1

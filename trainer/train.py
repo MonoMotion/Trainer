@@ -1,18 +1,20 @@
 import numpy as np
-from typing import Optional, Dict
+from typing import Dict
 import dataclasses
 
 from evostra import EvolutionStrategy
-from .simulation import reset, apply_joints
+from .simulation import apply_joints
 from .evaluation import calc_reward
 from .silver_bullet import Scene, Robot
 from .silver_bullet.scene import SavedState
 
 import flom
 
+
 def apply_weights(positions, weights):
     # sort is required because frame order is nondeterministic
     return {k: v + w for w, (k, v) in zip(weights, sorted(positions.items()))}
+
 
 @dataclasses.dataclass
 class StateWithJoints:
@@ -28,6 +30,7 @@ class StateWithJoints:
     def save(scene: Scene, robot: Robot):
         torques = {name: robot.joint_state(name).applied_torque for name in robot.joints.keys()}
         return StateWithJoints(scene.save_state(), torques)
+
 
 def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, num_iteration: int = 100, weight_factor: float = 0.01):
     def step(weights):
@@ -46,7 +49,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         return reward_sum
 
-    es = EvolutionStrategy(init_weights, step, population_size=20, sigma=0.1, learning_rate=0.03, decay=0.995, num_threads=1)
+    es = EvolutionStrategy(init_weights, step, population_size=20, sigma=0.1,
+                           learning_rate=0.03, decay=0.995, num_threads=1)
     es.run(num_iteration, print_step=1)
 
     weights = es.get_weights()
@@ -54,6 +58,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
     state = StateWithJoints.save(scene, robot)
     return reward, weights, state
+
 
 def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01):
     chunk_duration = scene.dt * chunk_length
@@ -70,7 +75,8 @@ def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100
         r = range(start_idx, start_idx + chunk_length)
         in_weights = [weights[i % num_frames] for i in r]
         print("start training chunk {} ({}~)".format(chunk_idx, start))
-        reward, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor)
+        reward, out_weights, last_state = train_chunk(
+            scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 

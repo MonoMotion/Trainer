@@ -7,6 +7,7 @@ from typing import Sequence, Optional, Union
 
 from .color import Color
 
+
 @dataclasses.dataclass(frozen=True)
 class DebugBody:
     body_id: int
@@ -15,9 +16,11 @@ class DebugBody:
         # TODO: annotate scene with Scene type
         scene.client.removeBody(self.body_id)
 
+
 @dataclasses.dataclass(frozen=True)
 class DebugSphere(DebugBody):
     pass
+
 
 @dataclasses.dataclass(frozen=True)
 class DebugItem:
@@ -27,17 +30,21 @@ class DebugItem:
         # TODO: annotate scene with Scene type
         scene.client.removeUserDebugItem(self.item_id)
 
+
 @dataclasses.dataclass(frozen=True)
 class DebugLine(DebugItem):
     pass
+
 
 @dataclasses.dataclass(frozen=True)
 class DebugText(DebugItem):
     pass
 
+
 @dataclasses.dataclass(frozen=True)
 class SavedState:
     state_id: int
+
 
 @dataclasses.dataclass
 class Scene:

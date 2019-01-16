@@ -7,6 +7,7 @@ from .scene import Scene
 import functools
 from typing import Optional, Dict
 
+
 @dataclasses.dataclass
 class Pose:
     vector: np.ndarray
@@ -14,7 +15,8 @@ class Pose:
 
     def dot(self, pose):
         # TODO: annotate pose with Pose
-        vector, quaternion = pybullet.multiplyTransforms(self.vector, self.quaternion, pose.vector, pose.quaternion)
+        vector, quaternion = pybullet.multiplyTransforms(
+            self.vector, self.quaternion, pose.vector, pose.quaternion)
         return Pose(vector, quaternion)
 
 
@@ -24,11 +26,13 @@ class JointState:
     velocity: float
     applied_torque: float
 
+
 @dataclasses.dataclass
 class LinkState:
     pose: Pose
     linear_velocity: Optional[np.ndarray]
     angular_velocity: Optional[np.ndarray]
+
 
 @dataclasses.dataclass
 class ClientWithBody:
@@ -38,6 +42,7 @@ class ClientWithBody:
     def __getattr__(self, name):
         method = getattr(self.client, name)
         return functools.partial(method, bodyUniqueId=self.body_id)
+
 
 @dataclasses.dataclass
 class Robot:
@@ -82,27 +87,32 @@ class Robot:
                 a_vel = None
                 l_vel = None
         else:
-            pos, ori, _, _, l_vel, a_vel = self.client.getLinkState(linkIndex=link_id, computeLinkVelocity=compute_velocity)
+            pos, ori, _, _, l_vel, a_vel = self.client.getLinkState(
+                linkIndex=link_id, computeLinkVelocity=compute_velocity)
         pose = Pose(np.array(pos), np.array(ori))
         return LinkState(pose, l_vel, a_vel)
 
     def set_joint_position(self, name: str, target: float, kp: float, kd: float, force: float):
         joint_id = self.joints[name]
-        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.POSITION_CONTROL, targetPosition=target, positionGain=kp, velocityGain=kd, force=force)
+        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.POSITION_CONTROL,
+                                          targetPosition=target, positionGain=kp, velocityGain=kd, force=force)
 
     def set_joint_velocity(self, name: str, target: float, force: float):
         joint_id = self.joints[name]
-        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.VELOCITY_CONTROL, targetVelocity=target, force=force)
+        self.client.setJointMotorControl2(
+            jointIndex=joint_id, controlMode=pybullet.VELOCITY_CONTROL, targetVelocity=target, force=force)
 
     def set_joint_torque(self, name: str, force: float):
         joint_id = self.joints[name]
-        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.TORQUE_CONTROL, force=force)
+        self.client.setJointMotorControl2(
+            jointIndex=joint_id, controlMode=pybullet.TORQUE_CONTROL, force=force)
 
     def bring_on_the_ground(self, padding: float = 0):
         h = min(self.link_state(name).pose.vector[2] for name in self.links.keys())
         if h > 0:
             raise RuntimeError("Robot is already on the ground")
-        self.client.resetBasePositionAndOrientation(posObj=[0, 0, -h + padding], ornObj=[0, 0, 0, 1])
+        self.client.resetBasePositionAndOrientation(
+            posObj=[0, 0, -h + padding], ornObj=[0, 0, 0, 1])
 
     @staticmethod
     def load_urdf(scene, path, flags=pybullet.URDF_USE_SELF_COLLISION):
