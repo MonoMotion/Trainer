@@ -29,9 +29,9 @@ class Trainer:
     def _load_robot(self):
         self._robot = simulation.reset(self._scene, self.robot)
 
-    def train(self, output, chunk_length=3, num_iteration=1000, num_chunk=50, weight_factor=0.01):
+    def train(self, output, chunk_length=3, num_iteration=1000, num_chunk=50, **kwargs):
         trained = trainer.train(self._scene, self._motion, self._robot,
-                                chunk_length, num_iteration, num_chunk, weight_factor)
+                                chunk_length, num_iteration, num_chunk, **kwargs)
         trained.dump(output)
 
     def preview(self):
@@ -40,9 +40,9 @@ class Trainer:
         self._load_robot()
         trainer.preview(self._scene, self._motion, self._robot)
 
-    def evaluate(self, loop=2):
+    def evaluate(self, loop=2, **kwargs):
         from trainer import evaluation
-        score = evaluation.evaluate(self._scene, self._motion, self._robot)
+        score = evaluation.evaluate(self._scene, self._motion, self._robot, **kwargs)
         print(score)
 
 
