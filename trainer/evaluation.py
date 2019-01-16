@@ -7,8 +7,7 @@ from .utils import select_location, select_rotation, dictzip
 from .simulation import apply_joints
 
 
-def calc_reward(motion, robot, frame, pre_positions, ke=1, ks=10, wl=1, wr=0.005):
-    # TODO: Use more clear naming of hyperparameters
+def calc_effector_reward(motion, robot, frame, ke, wl, wr):
     diff = 0
     for name, effector in frame.effectors.items():
         pose = robot.link_state(name).pose
@@ -24,17 +23,24 @@ def calc_reward(motion, robot, frame, pre_positions, ke=1, ks=10, wl=1, wr=0.005
             quat2 = np.quaternion(*pose.quaternion)
             diff += wr * quaternion.rotation_intrinsic_distance(quat1, quat2) ** 2 * weight.rotation
     normalized = ke * diff / len(frame.effectors)
-    effector_reward = - math.exp(normalized) + 1
+    return - math.exp(normalized) + 1
 
-    if pre_positions is not None:
-        change_sum = - sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(frame.positions, pre_positions))
-        normalized = ks * change_sum / len(frame.positions)
-        stabilization_reward = - math.exp(normalized) + 1
-    else:
-        stabilization_reward = 0
 
-    return effector_reward + stabilization_reward
+def calc_stabilization_reward(frame, pre_positions, ks):
+    if pre_positions is None:
+        return 0
 
+    change_sum = - sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(frame.positions, pre_positions))
+    normalized = ks * change_sum / len(frame.positions)
+    return - math.exp(normalized) + 1
+
+
+def calc_reward(motion, robot, frame, pre_positions, ke=1, ks=10, wl=1, wr=0.005):
+    # TODO: Use more clear naming of hyperparameters
+
+    e = calc_effector_reward(motion, robot, frame, ke, wl, wr)
+    s = calc_stabilization_reward(frame, pre_positions, ks)
+    return e + s
 
 
 def evaluate(scene, motion, robot, loop=2, **kwargs):
