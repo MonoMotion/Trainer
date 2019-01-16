@@ -22,6 +22,7 @@ class Pose:
 class JointState:
     position: float
     velocity: float
+    applied_torque: float
 
 @dataclasses.dataclass
 class LinkState:
@@ -68,8 +69,8 @@ class Robot:
 
     def joint_state(self, name: str) -> JointState:
         joint_id = self.joints[name]
-        pos, vel, _, _ = self.client.getJointState(jointIndex=joint_id)
-        return JointState(pos, vel)
+        pos, vel, _, torque = self.client.getJointState(jointIndex=joint_id)
+        return JointState(pos, vel, torque)
 
     def link_state(self, name: str, compute_velocity=False) -> LinkState:
         link_id = self.links[name]
@@ -87,7 +88,15 @@ class Robot:
 
     def set_joint_position(self, name: str, target: float, kp: float, kd: float, force: float):
         joint_id = self.joints[name]
-        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.POSITION_CONTROL, targetPosition=target, positionGain=kp, velocityGain=kd)
+        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.POSITION_CONTROL, targetPosition=target, positionGain=kp, velocityGain=kd, force=force)
+
+    def set_joint_velocity(self, name: str, target: float, force: float):
+        joint_id = self.joints[name]
+        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.VELOCITY_CONTROL, targetVelocity=target, force=force)
+
+    def set_joint_torque(self, name: str, force: float):
+        joint_id = self.joints[name]
+        self.client.setJointMotorControl2(jointIndex=joint_id, controlMode=pybullet.TORQUE_CONTROL, force=force)
 
     def bring_on_the_ground(self, padding: float = 0):
         h = min(self.link_state(name).pose.vector[2] for name in self.links.keys())

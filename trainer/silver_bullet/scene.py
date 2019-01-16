@@ -35,6 +35,10 @@ class DebugLine(DebugItem):
 class DebugText(DebugItem):
     pass
 
+@dataclasses.dataclass(frozen=True)
+class SavedState:
+    state_id: int
+
 @dataclasses.dataclass
 class Scene:
     timestep: float
@@ -137,3 +141,10 @@ class Scene:
 
     def remove_debug_object(self, o: Union[DebugItem, DebugBody]):
         o.remove_from_scene(self)
+
+    def save_state(self) -> SavedState:
+        state_id = self.client.saveState()
+        return SavedState(state_id)
+
+    def restore_state(self, state: SavedState):
+        self.client.restoreState(state.state_id)
