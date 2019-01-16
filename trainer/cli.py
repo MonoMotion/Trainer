@@ -10,3 +10,8 @@ def train(motion, output, robot, timestep=0.0165/4, frame_skip=4, chunk_length=3
 def preview(motion, robot, timestep=0.0165/4, frame_skip=4):
     m = flom.load(motion)
     trainer.preview(m, robot, timestep, frame_skip)
+
+def add_noise(motion, output, random=0.1):
+    m = flom.load(motion)
+    trainer.utils.add_noise(m, random)
+    m.dump(output)
