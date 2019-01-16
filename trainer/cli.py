@@ -6,3 +6,7 @@ def train(motion, output, robot, timestep=0.0165/4, frame_skip=4, chunk_length=3
     m = flom.load(motion)
     trained = trainer.train(m, robot, timestep, frame_skip, chunk_length, num_iteration, num_chunk, weight_factor)
     trained.dump(output)
+
+def preview(motion, robot, timestep=0.0165/4, frame_skip=4):
+    m = flom.load(motion)
+    trainer.preview(m, robot, timestep, frame_skip)
