@@ -40,7 +40,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
         reward_sum = 0
         start_ts = scene.ts
 
-        pre_positions = try_get_pre_positions(scene, motion)
+        pre_positions = try_get_pre_positions(scene, motion, start=start)
 
         for frame_weight in weights:
             frame = motion.frame_at(start + scene.ts - start_ts)

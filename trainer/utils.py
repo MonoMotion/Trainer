@@ -43,8 +43,11 @@ def add_noise(motion, randomness):
         frame.set(new_frame)
 
 
-def try_get_pre_positions(scene: Scene, motion: flom.Motion) -> Optional[Dict[str, float]]:
-    if scene.ts >= scene.dt:
-        return motion.frame_at(scene.ts - scene.dt).positions
+def try_get_pre_positions(scene: Scene, motion: flom.Motion, start: Optional[float] = None) -> Optional[Dict[str, float]]:
+    if start is None:
+        start = scene.ts
+
+    if start >= scene.dt:
+        return motion.frame_at(start - scene.dt).positions
     else:
         return None
