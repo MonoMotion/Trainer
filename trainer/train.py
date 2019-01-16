@@ -68,7 +68,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     return reward, weights, state
 
 
-def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01):
+def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01, **kwargs):
     chunk_duration = scene.dt * chunk_length
 
     num_frames = int(motion.length() / scene.dt)
@@ -84,7 +84,7 @@ def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100
         in_weights = [weights[i % num_frames] for i in r]
         print("start training chunk {} ({}~)".format(chunk_idx, start))
         reward, out_weights, last_state = train_chunk(
-            scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor)
+                scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
