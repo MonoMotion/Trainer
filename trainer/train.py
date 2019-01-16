@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Dict
 import dataclasses
+from logging import getLogger
 
 from evostra import EvolutionStrategy
 from .simulation import apply_joints
@@ -11,6 +12,7 @@ from .utils import try_get_pre_positions
 
 import flom
 
+log = getLogger(__name__)
 
 def apply_weights(positions, weights):
     # sort is required because frame order is nondeterministic
@@ -82,13 +84,13 @@ def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100
 
         r = range(start_idx, start_idx + chunk_length)
         in_weights = [weights[i % num_frames] for i in r]
-        print("start training chunk {} ({}~)".format(chunk_idx, start))
+        log.info(f"start training chunk {chunk_idx} ({start}~)")
         reward, out_weights, last_state = train_chunk(
                 scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
-        print("chunk {}: {}".format(chunk_idx, reward))
+        log.info(f"chunk {chunk_idx}: {reward}")
 
     # Use copy ctor after DeepL2/flom-py#23
     types = {n: motion.effector_type(n) for n in motion.effector_names()}
