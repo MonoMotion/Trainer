@@ -25,6 +25,11 @@ class Trainer:
     def preview(self):
         trainer.preview(self.input_motion, self.robot, self.timestep, self.frame_skip)
 
+    def evaluate(self, loop=2):
+        from trainer import evaluation
+        score = evaluation.evaluate(self.input_motion, self.robot, self.timestep, self.frame_skip, loop)
+        print(score)
+
 
 # TODO: Move these utilities to the new package
 @dataclasses.dataclass
