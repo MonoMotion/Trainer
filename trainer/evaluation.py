@@ -7,7 +7,7 @@ from .utils import select_location, select_rotation, dictzip
 from .simulation import apply_joints
 
 
-def calc_reward(motion, robot, frame, pre_frame, ke=1, ks=10, wl=1, wr=0.005):
+def calc_reward(motion, robot, frame, pre_positions, ke=1, ks=10, wl=1, wr=0.005):
     # TODO: Use more clear naming of hyperparameters
     diff = 0
     for name, effector in frame.effectors.items():
@@ -26,8 +26,8 @@ def calc_reward(motion, robot, frame, pre_frame, ke=1, ks=10, wl=1, wr=0.005):
     normalized = ke * diff / len(frame.effectors)
     effector_reward = - math.exp(normalized) + 1
 
-    if pre_frame is not None:
-        change_sum = - sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(frame.positions, pre_frame.positions))
+    if pre_positions is not None:
+        change_sum = - sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(frame.positions, pre_positions))
         normalized = ks * change_sum / len(frame.positions)
         stabilization_reward = - math.exp(normalized) + 1
     else:
@@ -41,16 +41,17 @@ def evaluate(scene, motion, robot, loop=2, **kwargs):
     reward_sum = 0
 
     if scene.ts >= scene.dt:
-        pre_frame = motion.frame_at(scene.ts - scene.dt)
+        pre_positions = motion.frame_at(scene.ts - scene.dt).positions
     else:
-        pre_frame = None
+        pre_positions = None
+
     for t, frame in motion.frames(scene.dt):
         apply_joints(robot, frame.positions)
 
         scene.step()
 
-        reward_sum += calc_reward(motion, robot, frame, pre_frame, **kwargs)
-        pre_frame = frame
+        reward_sum += calc_reward(motion, robot, frame, pre_positions, **kwargs)
+        pre_positions = frame.positions
 
         if t > motion.length() * loop:
             break
