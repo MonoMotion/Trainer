@@ -64,7 +64,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
             pre_positions = frame.positions
 
-        return -reward_sum
+        score = reward_sum / len(weights)
+        return -score
 
     weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
