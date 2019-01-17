@@ -50,10 +50,10 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         pre_positions = try_get_pre_positions(scene, motion, start=start)
 
-        for frame_weight in weights:
+        for init_weight, frame_weight in zip(init_weights, weights):
             frame = motion.frame_at(start + scene.ts - start_ts)
 
-            frame.positions = apply_weights(frame.positions, frame_weight * weight_factor)
+            frame.positions = apply_weights(frame.positions, (init_weight + frame_weight) * weight_factor)
             apply_joints(robot, frame.positions)
 
             scene.step()
