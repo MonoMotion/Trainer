@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 import dataclasses
 from logging import getLogger
 import math
@@ -41,10 +41,11 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
+def train_chunk(scene: Scene, motion: flom.Motion, robots: List[Robot], start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     weight_shape = np.array(init_weights).shape
 
     def step(weights):
+        robot = threading.local().robot
         init_state.restore(scene, robot)
 
         reward_sum = 0
@@ -67,11 +68,16 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         return -reward_sum
 
+    def register_thread():
+        robot = next(r for r in robots if r not in thread_robots.values())
+        threading.local().robot = robot
+
     weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
     optimizer = optimizerlib.registry[algorithm](
-        dimension=inst_step.dimension, budget=num_iteration, num_workers=5)
-    with futures.ThreadPoolExecutor(max_workers=optimizer.num_workers) as executor:
+        dimension=inst_step.dimension, budget=num_iteration, num_workers=len(robots))
+
+    with futures.ThreadPoolExecutor(max_workers=optimizer.num_workers, initializer=register_thread) as executor:
         recommendation = optimizer.optimize(inst_step, executor=executor)
     weights = np.reshape(recommendation, weight_shape)
 
