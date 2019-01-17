@@ -60,7 +60,12 @@ class Trainer:
         self._robot = simulation.reset(self._scene, self.robot)
 
     def train(self, output, **kwargs):
-        trained = trainer.train(self._scene, self._motion, self._robot, **kwargs)
+        def make_scene(_):
+            gui_client = BulletClient(connection_mode=pybullet.DIRECT)
+            scene = Scene(self.timestep, self.frame_skip, client=gui_client)
+            robot = simulation.reset(self._scene, self.robot)
+            return scene, robot
+        trained = trainer.train(self._motion, make_scene, **kwargs)
         trained.dump(output)
 
     def preview(self):

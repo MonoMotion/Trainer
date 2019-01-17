@@ -1,9 +1,10 @@
 import numpy as np
-from typing import Dict, Optional, List, Callable
+from typing import Dict, Optional, List, Callable, Tuple
 import dataclasses
 from logging import getLogger
 import math
 from concurrent import futures
+import threading
 
 from nevergrad.optimization import optimizerlib
 from nevergrad.instrumentation import InstrumentedFunction
@@ -44,8 +45,10 @@ class StateWithJoints:
 def train_chunk(motion: flom.Motion, scenes_robots: List[Tuple[Scene, Robot]], start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     weight_shape = np.array(init_weights).shape
 
+    thread_scene_robot = {}  # type: Dict[int, Tuple[Scene, Robot]]
+
     def step(weights, scene_robot: Tuple[Scene, Robot] = None):
-        scene_robot = scene_robot or threading.local().scene_robot
+        scene_robot = scene_robot or thread_scene_robot[threading.get_ident()]
 
         scene, robot = scene_robot
         init_state.restore(scene, robot)
@@ -70,14 +73,18 @@ def train_chunk(motion: flom.Motion, scenes_robots: List[Tuple[Scene, Robot]], s
 
         return -reward_sum
 
+    used_idx = 0
+    lock = threading.Lock()
     def register_thread():
-        scene_robot = next(r for r in scenes_robots if r not in thread_robots.values())
-        threading.local().scene_robot = scene_robot
+        nonlocal used_idx, thread_scene_robot
+        with lock:
+            thread_scene_robot[threading.get_ident()] = scenes_robots[used_idx]
+            used_idx += 1
 
     weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
     optimizer = optimizerlib.registry[algorithm](
-        dimension=inst_step.dimension, budget=num_iteration, num_workers=len(robots))
+        dimension=inst_step.dimension, budget=num_iteration, num_workers=len(scenes_robots))
 
     with futures.ThreadPoolExecutor(max_workers=optimizer.num_workers, initializer=register_thread) as executor:
         recommendation = optimizer.optimize(inst_step, executor=executor)
@@ -91,7 +98,10 @@ def train_chunk(motion: flom.Motion, scenes_robots: List[Tuple[Scene, Robot]], s
 
 
 def train(motion: flom.Motion, make_scene: Callable[[int], Tuple[Scene, Robot]], *, num_workers: int = 5, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
-    chunk_duration = scene.dt * chunk_length
+    scenes_robots = [make_scene(i) for i in range(num_workers)]
+    first_scene, first_robot = scenes_robots[0]
+
+    chunk_duration = first_scene.dt * chunk_length
 
     if num_chunk is None:
         num_chunk = math.ceil(motion.length() / chunk_duration)
@@ -104,15 +114,13 @@ def train(motion: flom.Motion, make_scene: Callable[[int], Tuple[Scene, Robot]],
     if total_length < motion.length():
         log.warning(f"A total length to train is shorter than the length of motion")
 
-    num_frames = int(motion.length() / scene.dt)
+    num_frames = int(motion.length() / first_scene.dt)
     num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
     weights = np.zeros(shape=(num_frames, num_joints))
     log.info(f"shape of weights: {weights.shape}")
     log.debug(f"kwargs: {kwargs}")
 
-    scenes_robots = [make_scene(i) for i in range(num_workers)]
-
-    last_state = StateWithJoints.save(scene, robot)
+    last_state = StateWithJoints.save(first_scene, first_robot)
     for chunk_idx in range(num_chunk):
         start = chunk_idx * chunk_duration
         start_idx = chunk_idx * chunk_length % num_frames
