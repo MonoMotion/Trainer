@@ -1,7 +1,8 @@
 import numpy as np
-from typing import Dict
+from typing import Dict, Optional
 import dataclasses
 from logging import getLogger
+import math
 
 from nevergrad.optimization import optimizerlib
 from nevergrad.instrumentation import InstrumentedFunction
@@ -78,8 +79,12 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     return reward, weights * weight_factor, state
 
 
-def train(scene, motion, robot, chunk_length=3, num_chunk=100, **kwargs):
+def train(scene: Scene, motion: flom.Motion, robot: Robot, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
     chunk_duration = scene.dt * chunk_length
+
+    if num_chunk is None:
+        num_chunk = math.ceil(motion.length() / chunk_duration)
+
     total_length = chunk_duration * num_chunk
     log.info(f"chunk duration: {chunk_duration} s")
     log.info(f"motion length: {motion.length()} s")
