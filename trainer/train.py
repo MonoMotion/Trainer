@@ -97,7 +97,7 @@ def build_motion(base: flom.Motion, weights: np.ndarray, dt: float) -> flom.Moti
     return new_motion
 
 
-def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
+def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, callback: Callable[..., None] = None, **kwargs):
     chunk_duration = scene.dt * chunk_length
 
     if num_chunk is None:
@@ -130,5 +130,8 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
             weights[i % num_frames] = w
 
         log.info(f"[chunk {chunk_idx}] score: {score}")
+
+        if callback:
+            callback(chunk_idx, lambda: build_motion(motion, weights, scene.dt))
 
     return build_motion(motion, weights, scene.dt)
