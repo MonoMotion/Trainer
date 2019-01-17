@@ -139,7 +139,11 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
     trained_motion = build_motion(motion, weights, scene.dt)
     init_score = evaluate(scene, motion, robot)
     final_score = evaluate(scene, trained_motion, robot)
+    improvement = final_score - init_score
     log.info('Done.')
-    log.info(f'score: {init_score} -> {final_score} ({final_score - init_score:+f})')
+    log.info(f'score: {init_score} -> {final_score} ({improvement:+f})')
+
+    if improvement <= 0:
+        log.error('Failed to train the motion')
 
     return trained_motion
