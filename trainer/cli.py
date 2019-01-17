@@ -6,11 +6,13 @@ from trainer import simulation
 from .silver_bullet import Scene, Robot
 from pybullet_utils.bullet_client import BulletClient
 import pybullet
+import numpy as np
 
 import dataclasses
 import logging
 from colorlog import ColoredFormatter
 from typing import Union, Optional
+import random
 
 
 def configure_logger(raw_level: Union[int, str], log_file: Optional[str] = None):
@@ -42,6 +44,8 @@ class Trainer:
     timestep: float = 0.0165/4
     frame_skip: int = 4
 
+    seed: Optional[int] = None
+
     log_level: dataclasses.InitVar[str] = 'INFO'
     log_file: dataclasses.InitVar[str] = None
 
@@ -52,12 +56,18 @@ class Trainer:
     def __post_init__(self, motion, log_level, log_file):
         configure_logger(log_level, log_file)
 
+        self._seed()
+
         self._motion = flom.load(motion)
         self._scene = Scene(self.timestep, self.frame_skip)
         self._load_robot()
 
     def _load_robot(self):
         self._robot = simulation.reset(self._scene, self.robot)
+
+    def _seed(self):
+        np.random.seed(self.seed)
+        random.seed(self.seed)
 
     def train(self, output, **kwargs):
         trained = trainer.train(self._scene, self._motion, self._robot, **kwargs)
