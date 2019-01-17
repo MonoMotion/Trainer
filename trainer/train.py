@@ -53,7 +53,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
         for init_weight, frame_weight in zip(init_weights, weights):
             frame = motion.frame_at(start + scene.ts - start_ts)
 
-            frame.positions = apply_weights(frame.positions, (init_weight + frame_weight) * weight_factor)
+            frame.positions = apply_weights(
+                frame.positions, (init_weight + frame_weight) * weight_factor)
             apply_joints(robot, frame.positions)
 
             scene.step()
@@ -62,12 +63,12 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
             pre_positions = frame.positions
 
-
         return -reward_sum
 
     weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
-    optimizer = optimizerlib.registry[algorithm](dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
+    optimizer = optimizerlib.registry[algorithm](
+        dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
     recommendation = optimizer.optimize(inst_step)
     weights = np.reshape(recommendation, weight_shape)
 
@@ -102,7 +103,7 @@ def train(scene, motion, robot, chunk_length=3, num_chunk=100, weight_factor=0.0
         in_weights = [weights[i % num_frames] for i in r]
         log.info(f"start training chunk {chunk_idx} ({start}~)")
         reward, out_weights, last_state = train_chunk(
-                scene, motion, robot, start, in_weights, last_state, weight_factor=weight_factor, **kwargs)
+            scene, motion, robot, start, in_weights, last_state, weight_factor=weight_factor, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
