@@ -10,9 +10,9 @@ import pybullet
 import dataclasses
 import logging
 from colorlog import ColoredFormatter
-from typing import Union
+from typing import Union, Optional
 
-def configure_logger(raw_level: Union[int, str]):
+def configure_logger(raw_level: Union[int, str], log_file: Optional[str] = None):
     if isinstance(raw_level, str):
         level = getattr(logging, raw_level.upper(), None)
     else:
@@ -21,7 +21,11 @@ def configure_logger(raw_level: Union[int, str]):
     if not isinstance(level, int):
         raise ValueError(f'Invalid log level: {raw_level}')
 
-    handler = logging.StreamHandler()
+    if log_file is None:
+        handler = logging.StreamHandler()
+    else:
+        handler = logging.FileHandler(log_file)
+
     handler.setFormatter(ColoredFormatter('%(green)s%(asctime)s %(blue)s%(name)s[%(process)d] %(log_color)s%(levelname)-8s %(message)s'))
 
     logger = logging.getLogger()
@@ -36,13 +40,14 @@ class Trainer:
     frame_skip: int = 4
 
     log_level: dataclasses.InitVar[str] = 'INFO'
+    log_file: dataclasses.InitVar[str] = None
 
     _motion: flom.Motion = dataclasses.field(init=False)
     _scene: Scene = dataclasses.field(init=False)
     _robot: Robot = dataclasses.field(init=False)
 
-    def __post_init__(self, motion, log_level):
-        configure_logger(log_level)
+    def __post_init__(self, motion, log_level, log_file):
+        configure_logger(log_level, log_file)
 
         self._motion = flom.load(motion)
         self._scene = Scene(self.timestep, self.frame_skip)
@@ -75,11 +80,12 @@ class Utility:
     output: str
 
     log_level: dataclasses.InitVar[str] = 'INFO'
+    log_file: dataclasses.InitVar[str] = None
 
     input_motion: flom.Motion = dataclasses.field(init=False)
 
-    def __post_init__(self, motion, log_level):
-        configure_logger(log_level)
+    def __post_init__(self, motion, log_level, log_file):
+        configure_logger(log_level, log_file)
 
         self.input_motion = flom.load(motion)
 
