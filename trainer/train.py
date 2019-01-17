@@ -41,11 +41,13 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def train_chunk(scene: Scene, motion: flom.Motion, robots: List[Robot], start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
+def train_chunk(motion: flom.Motion, scenes_robots: List[Tuple[Scene, Robot]], start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     weight_shape = np.array(init_weights).shape
 
-    def step(weights):
-        robot = threading.local().robot
+    def step(weights, scene_robot: Tuple[Scene, Robot] = None):
+        scene_robot = scene_robot or threading.local().scene_robot
+
+        scene, robot = scene_robot
         init_state.restore(scene, robot)
 
         reward_sum = 0
@@ -69,8 +71,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robots: List[Robot], start: f
         return -reward_sum
 
     def register_thread():
-        robot = next(r for r in robots if r not in thread_robots.values())
-        threading.local().robot = robot
+        scene_robot = next(r for r in scenes_robots if r not in thread_robots.values())
+        threading.local().scene_robot = scene_robot
 
     weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
@@ -81,13 +83,14 @@ def train_chunk(scene: Scene, motion: flom.Motion, robots: List[Robot], start: f
         recommendation = optimizer.optimize(inst_step, executor=executor)
     weights = np.reshape(recommendation, weight_shape)
 
-    reward = step(weights)
+    scene, robot = scenes_robots[0]
+    reward = step(weights, (scene, robot))
 
     state = StateWithJoints.save(scene, robot)
     return reward, weights * weight_factor, state
 
 
-def train(scene: Scene, motion: flom.Motion, make_robot: Callable[[int], Robot], *, num_workers: int = 5, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
+def train(motion: flom.Motion, make_scene: Callable[[int], Tuple[Scene, Robot]], *, num_workers: int = 5, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
     chunk_duration = scene.dt * chunk_length
 
     if num_chunk is None:
@@ -107,7 +110,7 @@ def train(scene: Scene, motion: flom.Motion, make_robot: Callable[[int], Robot],
     log.info(f"shape of weights: {weights.shape}")
     log.debug(f"kwargs: {kwargs}")
 
-    robots = [make_robot(i) for i in range(num_workers)]
+    scenes_robots = [make_scene(i) for i in range(num_workers)]
 
     last_state = StateWithJoints.save(scene, robot)
     for chunk_idx in range(num_chunk):
@@ -117,7 +120,7 @@ def train(scene: Scene, motion: flom.Motion, make_robot: Callable[[int], Robot],
         r = range(start_idx, start_idx + chunk_length)
         in_weights = [weights[i % num_frames] for i in r]
         log.info(f"start training chunk {chunk_idx} ({start}~)")
-        reward, out_weights, last_state = train_chunk(scene, motion, robots, start, in_weights, last_state, **kwargs)
+        reward, out_weights, last_state = train_chunk(motion, scenes_robots, start, in_weights, last_state, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
