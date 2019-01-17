@@ -9,7 +9,7 @@ from nevergrad.instrumentation import InstrumentedFunction
 from nevergrad.instrumentation.variables import Gaussian
 
 from .simulation import apply_joints
-from .evaluation import calc_reward
+from .evaluation import calc_reward, evaluate
 from .silver_bullet import Scene, Robot
 from .silver_bullet.scene import SavedState
 from .utils import try_get_pre_positions
@@ -119,7 +119,10 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
     log.info(f"shape of weights: {weights.shape}")
     log.debug(f"kwargs: {kwargs}")
 
-    last_state = StateWithJoints.save(scene, robot)
+
+    init_state = StateWithJoints.save(scene, robot)
+
+    last_state = init_state
     for chunk_idx in range(num_chunk):
         start = chunk_idx * chunk_duration
         start_idx = chunk_idx * chunk_length % num_frames
@@ -137,8 +140,13 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
             callback(chunk_idx, lambda: build_motion(motion, weights, scene.dt))
 
     trained_motion = build_motion(motion, weights, scene.dt)
+
+    init_state.restore(scene, robot)
     init_score = evaluate(scene, motion, robot)
+
+    init_state.restore(scene, robot)
     final_score = evaluate(scene, trained_motion, robot)
+
     improvement = final_score - init_score
     log.info('Done.')
     log.info(f'score: {init_score} -> {final_score} ({improvement:+f})')
