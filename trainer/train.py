@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Dict, Optional
+from typing import Dict, Optional, Callable
 import dataclasses
 from logging import getLogger
 import math
@@ -80,7 +80,25 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     return score, weights * weight_factor, state
 
 
-def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
+def build_motion(base: flom.Motion, weights: np.ndarray, dt: float) -> flom.Motion:
+    # Use copy ctor after DeepL2/flom-py#23
+    types = {n: base.effector_type(n) for n in base.effector_names()}
+    new_motion = flom.Motion(set(base.joint_names()), types, base.model_id())
+    new_motion.set_loop(base.loop())
+    for name in base.effector_names():
+        new_motion.set_effector_weight(name, base.effector_weight(name))
+
+    for i, frame_weight in enumerate(weights):
+        t = i * dt
+        new_frame = base.frame_at(t)
+        new_frame.positions = apply_weights(new_frame.positions, frame_weight)
+        new_motion.insert_keyframe(t, new_frame)
+
+    return new_motion
+
+
+Callback = Callable[[int, Callable[[], flom.Motion]], None]
+def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, callback: Optional[Callback] = None, **kwargs):
     chunk_duration = scene.dt * chunk_length
 
     if num_chunk is None:
@@ -114,16 +132,7 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
 
         log.info(f"[chunk {chunk_idx}] score: {score}")
 
-    # Use copy ctor after DeepL2/flom-py#23
-    types = {n: motion.effector_type(n) for n in motion.effector_names()}
-    new_motion = flom.Motion(set(motion.joint_names()), types, motion.model_id())
-    new_motion.set_loop(motion.loop())
-    for name in motion.effector_names():
-        new_motion.set_effector_weight(name, motion.effector_weight(name))
+        if callback:
+            callback(chunk_idx, lambda: build_motion(motion, weights, scene.dt))
 
-    for i, frame_weight in enumerate(weights):
-        t = i * scene.dt
-        new_frame = motion.frame_at(t)
-        new_frame.positions = apply_weights(new_frame.positions, frame_weight)
-        new_motion.insert_keyframe(t, new_frame)
-    return new_motion
+    return build_motion(motion, weights, scene.dt)
