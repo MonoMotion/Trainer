@@ -3,7 +3,10 @@ from typing import Dict
 import dataclasses
 from logging import getLogger
 
-from evostra import EvolutionStrategy
+from nevergrad.optimization import optimizerlib
+from nevergrad.instrumentation import InstrumentedFunction
+from nevergrad.instrumentation.variables import Gaussian
+
 from .simulation import apply_joints
 from .evaluation import calc_reward
 from .silver_bullet import Scene, Robot
@@ -36,7 +39,9 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, num_iteration: int = 100, weight_factor: float = 0.01, **kwargs):
+def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
+    weight_shape = np.array(init_weights).shape
+
     def step(weights):
         init_state.restore(scene, robot)
 
@@ -45,10 +50,11 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         pre_positions = try_get_pre_positions(scene, motion, start=start)
 
-        for frame_weight in weights:
+        for init_weight, frame_weight in zip(init_weights, weights):
             frame = motion.frame_at(start + scene.ts - start_ts)
 
-            frame.positions = apply_weights(frame.positions, frame_weight * weight_factor)
+            frame.positions = apply_weights(
+                frame.positions, (init_weight + frame_weight) * weight_factor)
             apply_joints(robot, frame.positions)
 
             scene.step()
@@ -57,21 +63,22 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
             pre_positions = frame.positions
 
+        return -reward_sum
 
-        return reward_sum
+    weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
+    inst_step = InstrumentedFunction(step, weights_param)
+    optimizer = optimizerlib.registry[algorithm](
+        dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
+    recommendation = optimizer.optimize(inst_step)
+    weights = np.reshape(recommendation, weight_shape)
 
-    es = EvolutionStrategy(init_weights, step, population_size=20, sigma=0.1,
-                           learning_rate=0.03, decay=0.995, num_threads=1)
-    es.run(num_iteration, print_step=1)
-
-    weights = es.get_weights()
     reward = step(weights)
 
     state = StateWithJoints.save(scene, robot)
     return reward, weights, state
 
 
-def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01, **kwargs):
+def train(scene, motion, robot, chunk_length=3, num_chunk=100, weight_factor=0.01, **kwargs):
     chunk_duration = scene.dt * chunk_length
     total_length = chunk_duration * num_chunk
     log.info(f"chunk duration: {chunk_duration} s")
@@ -85,6 +92,7 @@ def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100
     num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
     weights = np.zeros(shape=(num_frames, num_joints))
     log.info(f"shape of weights: {weights.shape}")
+    log.debug(f"kwargs: {kwargs}")
 
     last_state = StateWithJoints.save(scene, robot)
     for chunk_idx in range(num_chunk):
@@ -95,7 +103,7 @@ def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100
         in_weights = [weights[i % num_frames] for i in r]
         log.info(f"start training chunk {chunk_idx} ({start}~)")
         reward, out_weights, last_state = train_chunk(
-                scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor, **kwargs)
+            scene, motion, robot, start, in_weights, last_state, weight_factor=weight_factor, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
