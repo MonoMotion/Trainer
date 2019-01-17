@@ -9,7 +9,7 @@ import pybullet
 
 import dataclasses
 import logging
-from colorlog import ColoredFormatter, StreamHandler
+from colorlog import ColoredFormatter
 from typing import Union
 
 def configure_logger(raw_level: Union[int, str]):
@@ -21,7 +21,7 @@ def configure_logger(raw_level: Union[int, str]):
     if not isinstance(level, int):
         raise ValueError(f'Invalid log level: {raw_level}')
 
-    handler = StreamHandler()
+    handler = logging.StreamHandler()
     handler.setFormatter(ColoredFormatter('%(green)s%(asctime)s %(blue)s%(name)s[%(process)d] %(log_color)s%(levelname)-8s %(message)s'))
 
     logger = logging.getLogger()
