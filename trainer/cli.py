@@ -49,7 +49,7 @@ class Trainer:
     seed: Optional[int] = None
 
     save_snapshot: Optional[int] = None  # save snapshot every x times
-    snapshot_pattern: Optional[str] = None
+    snapshot_pattern: str = 'snapshot{}.fom'
 
     log_level: dataclasses.InitVar[str] = 'INFO'
     log_file: dataclasses.InitVar[str] = None
