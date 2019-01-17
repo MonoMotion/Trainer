@@ -22,7 +22,7 @@ def configure_logger(raw_level: Union[int, str]):
         raise ValueError(f'Invalid log level: {raw_level}')
 
     handler = StreamHandler()
-    handler.setFormatter(ColoredFormatter())
+    handler.setFormatter(ColoredFormatter('%(green)s%(asctime)s %(blue)s%(name)s[%(process)d] %(log_color)s%(levelname)-8s %(message)s'))
 
     logger = logging.getLogger()
     logger.addHandler(handler)
