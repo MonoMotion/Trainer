@@ -91,6 +91,7 @@ def train(scene, motion, robot, chunk_length=3, num_chunk=100, weight_factor=0.0
     num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
     weights = np.zeros(shape=(num_frames, num_joints))
     log.info(f"shape of weights: {weights.shape}")
+    log.debug(f"kwargs: {kwargs}")
 
     last_state = StateWithJoints.save(scene, robot)
     for chunk_idx in range(num_chunk):
