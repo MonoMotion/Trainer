@@ -59,9 +59,9 @@ class Trainer:
     def _load_robot(self):
         self._robot = simulation.reset(self._scene, self.robot)
 
-    def train(self, output, chunk_length=3, num_iteration=1000, num_chunk=50, **kwargs):
+    def train(self, output, chunk_length=3, num_chunk=50, **kwargs):
         trained = trainer.train(self._scene, self._motion, self._robot,
-                                chunk_length, num_iteration, num_chunk, **kwargs)
+                                chunk_length, num_chunk, **kwargs)
         trained.dump(output)
 
     def preview(self):

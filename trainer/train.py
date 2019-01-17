@@ -39,7 +39,7 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, algorithm: str = 'OnePlusOne', num_iteration: int = 100, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
+def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     weight_shape = np.array(init_weights).shape
 
     def step(weights):
@@ -77,7 +77,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     return reward, weights, state
 
 
-def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01, **kwargs):
+def train(scene, motion, robot, chunk_length=3, num_chunk=100, weight_factor=0.01, **kwargs):
     chunk_duration = scene.dt * chunk_length
     total_length = chunk_duration * num_chunk
     log.info(f"chunk duration: {chunk_duration} s")
@@ -101,7 +101,7 @@ def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100
         in_weights = [weights[i % num_frames] for i in r]
         log.info(f"start training chunk {chunk_idx} ({start}~)")
         reward, out_weights, last_state = train_chunk(
-                scene, motion, robot, start, in_weights, last_state, num_iteration=num_iteration, weight_factor=weight_factor, **kwargs)
+                scene, motion, robot, start, in_weights, last_state, weight_factor=weight_factor, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
