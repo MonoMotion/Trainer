@@ -9,6 +9,12 @@ from .color import Color
 
 
 @dataclasses.dataclass(frozen=True)
+class ConnectionInfo:
+    is_connected: bool
+    method: int
+
+
+@dataclasses.dataclass(frozen=True)
 class DebugBody:
     body_id: int
 
@@ -155,3 +161,13 @@ class Scene:
 
     def restore_state(self, state: SavedState):
         self.client.restoreState(state.state_id)
+
+    def connection_info(self) -> ConnectionInfo:
+        result = self.client.getConnectionInfo()
+        return ConnectionInfo(bool(result['isConnected']), result['connectionMethod'])
+
+    def is_connected(self) -> bool:
+        return self.connection_info().is_connected
+
+    def is_gui(self) -> bool:
+        return self.connection_info().method == pybullet.GUI

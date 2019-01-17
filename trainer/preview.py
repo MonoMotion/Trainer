@@ -3,10 +3,12 @@ from .utils import select_location
 from .silver_bullet import Color
 
 import math
+from logging import getLogger
 
 EFFECTOR_SPHERE_SIZE_RATIO = 2.5
 EFFECTOR_SPHERE_COLOR_RATIO = 1000
 
+log = getLogger(__name__)
 
 def create_effector_marker(scene, motion, robot, effectors, pre):
     def calc_color(diff):
@@ -30,7 +32,8 @@ def create_effector_marker(scene, motion, robot, effectors, pre):
 
 
 def preview(scene, motion, robot):
-    # TODO: print warning if this is not GUI-enabled scene
+    if not scene.is_gui():
+        log.warning('Non-GUI scene is passed to preview()')
 
     effector_marks = None
     c = 0
