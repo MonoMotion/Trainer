@@ -8,6 +8,31 @@ from pybullet_utils.bullet_client import BulletClient
 import pybullet
 
 import dataclasses
+import logging
+from colorlog import ColoredFormatter
+from typing import Union, Optional
+
+
+def configure_logger(raw_level: Union[int, str], log_file: Optional[str] = None):
+    if isinstance(raw_level, str):
+        level = getattr(logging, raw_level.upper(), None)
+    else:
+        level = raw_level
+
+    if not isinstance(level, int):
+        raise ValueError(f'Invalid log level: {raw_level}')
+
+    if log_file is None:
+        handler = logging.StreamHandler()
+    else:
+        handler = logging.FileHandler(log_file)
+
+    fmt = ColoredFormatter('%(green)s%(asctime)s %(blue)s%(name)s[%(process)d] %(log_color)s%(levelname)-8s %(message)s')
+    handler.setFormatter(fmt)
+
+    logger = logging.getLogger()
+    logger.addHandler(handler)
+    logger.setLevel(level)
 
 
 @dataclasses.dataclass
@@ -17,11 +42,16 @@ class Trainer:
     timestep: float = 0.0165/4
     frame_skip: int = 4
 
+    log_level: dataclasses.InitVar[str] = 'INFO'
+    log_file: dataclasses.InitVar[str] = None
+
     _motion: flom.Motion = dataclasses.field(init=False)
     _scene: Scene = dataclasses.field(init=False)
     _robot: Robot = dataclasses.field(init=False)
 
-    def __post_init__(self, motion):
+    def __post_init__(self, motion, log_level, log_file):
+        configure_logger(log_level, log_file)
+
         self._motion = flom.load(motion)
         self._scene = Scene(self.timestep, self.frame_skip)
         self._load_robot()
@@ -52,9 +82,14 @@ class Utility:
     motion: dataclasses.InitVar[str]
     output: str
 
+    log_level: dataclasses.InitVar[str] = 'INFO'
+    log_file: dataclasses.InitVar[str] = None
+
     input_motion: flom.Motion = dataclasses.field(init=False)
 
-    def __post_init__(self, motion):
+    def __post_init__(self, motion, log_level, log_file):
+        configure_logger(log_level, log_file)
+
         self.input_motion = flom.load(motion)
 
     def add_noise(self, random=0.1):

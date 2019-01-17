@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Dict
 import dataclasses
+from logging import getLogger
 
 from evostra import EvolutionStrategy
 from .simulation import apply_joints
@@ -10,6 +11,8 @@ from .silver_bullet.scene import SavedState
 from .utils import try_get_pre_positions
 
 import flom
+
+log = getLogger(__name__)
 
 
 def apply_weights(positions, weights):
@@ -70,10 +73,18 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
 def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01, **kwargs):
     chunk_duration = scene.dt * chunk_length
+    total_length = chunk_duration * num_chunk
+    log.info(f"chunk duration: {chunk_duration} s")
+    log.info(f"motion length: {motion.length()} s")
+    log.info(f"total length of train: {total_length} s")
+
+    if total_length < motion.length():
+        log.warning(f"A total length to train is shorter than the length of motion")
 
     num_frames = int(motion.length() / scene.dt)
     num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
     weights = np.zeros(shape=(num_frames, num_joints))
+    log.info(f"shape of weights: {weights.shape}")
 
     last_state = StateWithJoints.save(scene, robot)
     for chunk_idx in range(num_chunk):
@@ -82,13 +93,13 @@ def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100
 
         r = range(start_idx, start_idx + chunk_length)
         in_weights = [weights[i % num_frames] for i in r]
-        print("start training chunk {} ({}~)".format(chunk_idx, start))
+        log.info(f"start training chunk {chunk_idx} ({start}~)")
         reward, out_weights, last_state = train_chunk(
                 scene, motion, robot, start, in_weights, last_state, num_iteration, weight_factor, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
-        print("chunk {}: {}".format(chunk_idx, reward))
+        log.info(f"chunk {chunk_idx}: {reward}")
 
     # Use copy ctor after DeepL2/flom-py#23
     types = {n: motion.effector_type(n) for n in motion.effector_names()}
