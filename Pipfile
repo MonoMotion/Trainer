@@ -12,6 +12,7 @@ numba = "*"
 flom = "*"
 evostra = "*"
 fire = "*"
+colorlog = "*"
 
 [dev-packages]
 "flake8" = "*"

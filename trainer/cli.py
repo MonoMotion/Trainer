@@ -9,6 +9,7 @@ import pybullet
 
 import dataclasses
 import logging
+from colorlog import ColoredFormatter, StreamHandler
 from typing import Union
 
 def configure_logger(raw_level: Union[int, str]):
@@ -20,7 +21,12 @@ def configure_logger(raw_level: Union[int, str]):
     if not isinstance(level, int):
         raise ValueError(f'Invalid log level: {raw_level}')
 
-    logging.basicConfig(level=level)
+    handler = StreamHandler()
+    handler.setFormatter(ColoredFormatter())
+
+    logger = logging.getLogger()
+    logger.addHandler(handler)
+    logger.setLevel(level)
 
 @dataclasses.dataclass
 class Trainer:
