@@ -42,6 +42,20 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
+@dataclasses.dataclass
+class Env:
+    scene: Scene
+    robot: Robot
+
+    state: Optional[StateWithJoints] = None
+
+    def save(self):
+        self.state = StateWithJoints.save(self.scene, self.robot)
+
+    def restore(self):
+        self.state.restore(self.scene, self.robot)
+
+
 def train_chunk(motion: flom.Motion, scenes_robots: List[Tuple[Scene, Robot]], start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     weight_shape = np.array(init_weights).shape
 
