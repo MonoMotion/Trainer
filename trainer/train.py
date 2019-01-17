@@ -4,6 +4,8 @@ import dataclasses
 from logging import getLogger
 
 from nevergrad.optimization import optimizerlib
+from nevergrad.instrumentation import InstrumentedFunction
+from nevergrad.instrumentation.variables import Gaussian
 
 from .simulation import apply_joints
 from .evaluation import calc_reward
@@ -40,9 +42,7 @@ class StateWithJoints:
 def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, num_iteration: int = 100, weight_factor: float = 0.01, **kwargs):
     weight_shape = np.array(init_weights).shape
 
-    def step(x):
-        weights = np.reshape(x, weight_shape)
-
+    def step(weights):
         init_state.restore(scene, robot)
 
         reward_sum = 0
@@ -65,8 +65,10 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         return reward_sum
 
-    optimizer = optimizerlib.OnePlusOne(dimension=np.prod(weight_shape), budget=num_iteration, num_workers=1)
-    weights = optimizer.optimize(step)
+    weights_param = Gaussian(mean=0, std=1.75, shape=weight_shape)
+    inst_step = InstrumentedFunction(step, weights_param)
+    optimizer = optimizerlib.OnePlusOne(dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
+    weights = optimizer.optimize(inst_step)
 
     reward = step(weights)
 
