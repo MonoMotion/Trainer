@@ -54,7 +54,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
             frame = motion.frame_at(start + scene.ts - start_ts)
 
             frame.positions = apply_weights(
-                frame.positions, (init_weight + frame_weight) * weight_factor)
+                frame.positions, init_weight + frame_weight * weight_factor)
             apply_joints(robot, frame.positions)
 
             scene.step()
@@ -75,10 +75,10 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     reward = step(weights)
 
     state = StateWithJoints.save(scene, robot)
-    return reward, weights, state
+    return reward, weights * weight_factor, state
 
 
-def train(scene, motion, robot, chunk_length=3, num_chunk=100, weight_factor=0.01, **kwargs):
+def train(scene, motion, robot, chunk_length=3, num_chunk=100, **kwargs):
     chunk_duration = scene.dt * chunk_length
     total_length = chunk_duration * num_chunk
     log.info(f"chunk duration: {chunk_duration} s")
@@ -102,8 +102,7 @@ def train(scene, motion, robot, chunk_length=3, num_chunk=100, weight_factor=0.0
         r = range(start_idx, start_idx + chunk_length)
         in_weights = [weights[i % num_frames] for i in r]
         log.info(f"start training chunk {chunk_idx} ({start}~)")
-        reward, out_weights, last_state = train_chunk(
-            scene, motion, robot, start, in_weights, last_state, weight_factor=weight_factor, **kwargs)
+        reward, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
@@ -119,6 +118,6 @@ def train(scene, motion, robot, chunk_length=3, num_chunk=100, weight_factor=0.0
     for i, frame_weight in enumerate(weights):
         t = i * scene.dt
         new_frame = motion.frame_at(t)
-        new_frame.positions = apply_weights(new_frame.positions, frame_weight * weight_factor)
+        new_frame.positions = apply_weights(new_frame.positions, frame_weight)
         new_motion.insert_keyframe(t, new_frame)
     return new_motion
