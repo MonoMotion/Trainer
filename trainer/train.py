@@ -72,10 +72,18 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
 def train(scene, motion, robot, chunk_length=3, num_iteration=500, num_chunk=100, weight_factor=0.01, **kwargs):
     chunk_duration = scene.dt * chunk_length
+    total_length = chunk_duration * num_chunk
+    log.info(f"chunk duration: {chunk_duration} s")
+    log.info(f"motion length: {motion.length()} s")
+    log.info(f"total length of train: {total_length} s")
+
+    if total_length < motion.length():
+        log.warning(f"A total length to train is shorter than the length of motion")
 
     num_frames = int(motion.length() / scene.dt)
     num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
     weights = np.zeros(shape=(num_frames, num_joints))
+    log.info(f"shape of weights: {weights.shape}")
 
     last_state = StateWithJoints.save(scene, robot)
     for chunk_idx in range(num_chunk):
