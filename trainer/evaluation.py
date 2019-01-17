@@ -7,7 +7,7 @@ from .utils import select_location, select_rotation, dictzip, try_get_pre_positi
 from .simulation import apply_joints
 
 
-def calc_effector_reward(motion, robot, frame, ke, wl, wr):
+def calc_effector_reward(motion, robot, frame, *, ke, wl, wr):
     diff = 0
     for name, effector in frame.effectors.items():
         pose = robot.link_state(name).pose
@@ -26,7 +26,7 @@ def calc_effector_reward(motion, robot, frame, ke, wl, wr):
     return - math.exp(normalized) + 1
 
 
-def calc_stabilization_reward(frame, pre_positions, ks):
+def calc_stabilization_reward(frame, pre_positions, *, ks):
     if pre_positions is None:
         return 0
 
@@ -35,11 +35,11 @@ def calc_stabilization_reward(frame, pre_positions, ks):
     return - math.exp(normalized) + 1
 
 
-def calc_reward(motion, robot, frame, pre_positions, we=1, ws=0.1, ke=1, ks=1, wl=1, wr=0.005):
+def calc_reward(motion, robot, frame, pre_positions, *, we=1, ws=0.1, ke=1, ks=1, wl=1, wr=0.005):
     # TODO: Use more clear naming of hyperparameters
 
-    e = calc_effector_reward(motion, robot, frame, ke, wl, wr)
-    s = calc_stabilization_reward(frame, pre_positions, ks)
+    e = calc_effector_reward(motion, robot, frame, ke=ke, wl=wl, wr=wr)
+    s = calc_stabilization_reward(frame, pre_positions, ks=ks)
     return e * we + s * ws
 
 
