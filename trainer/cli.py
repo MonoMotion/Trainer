@@ -12,6 +12,7 @@ import logging
 from colorlog import ColoredFormatter
 from typing import Union, Optional
 
+
 def configure_logger(raw_level: Union[int, str], log_file: Optional[str] = None):
     if isinstance(raw_level, str):
         level = getattr(logging, raw_level.upper(), None)
@@ -26,11 +27,13 @@ def configure_logger(raw_level: Union[int, str], log_file: Optional[str] = None)
     else:
         handler = logging.FileHandler(log_file)
 
-    handler.setFormatter(ColoredFormatter('%(green)s%(asctime)s %(blue)s%(name)s[%(process)d] %(log_color)s%(levelname)-8s %(message)s'))
+    fmt = ColoredFormatter('%(green)s%(asctime)s %(blue)s%(name)s[%(process)d] %(log_color)s%(levelname)-8s %(message)s')
+    handler.setFormatter(fmt)
 
     logger = logging.getLogger()
     logger.addHandler(handler)
     logger.setLevel(level)
+
 
 @dataclasses.dataclass
 class Trainer:

@@ -14,6 +14,7 @@ import flom
 
 log = getLogger(__name__)
 
+
 def apply_weights(positions, weights):
     # sort is required because frame order is nondeterministic
     return {k: v + w for w, (k, v) in zip(weights, sorted(positions.items()))}
