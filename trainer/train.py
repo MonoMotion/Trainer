@@ -39,7 +39,7 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, num_iteration: int = 100, weight_factor: float = 0.01, **kwargs):
+def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, num_iteration: int = 100, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     weight_shape = np.array(init_weights).shape
 
     def step(weights):
@@ -65,7 +65,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         return -reward_sum
 
-    weights_param = Gaussian(mean=0, std=1.75, shape=weight_shape)
+    weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
     optimizer = optimizerlib.OnePlusOne(dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
     recommendation = optimizer.optimize(inst_step)
