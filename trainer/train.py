@@ -97,7 +97,8 @@ def build_motion(base: flom.Motion, weights: np.ndarray, dt: float) -> flom.Moti
     return new_motion
 
 
-def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, callback: Callable[..., None] = None, **kwargs):
+Callback = Callable[[int, Callable[[], flom.Motion]], None]
+def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, callback: Optional[Callback] = None, **kwargs):
     chunk_duration = scene.dt * chunk_length
 
     if num_chunk is None:
