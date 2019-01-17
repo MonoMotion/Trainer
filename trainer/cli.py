@@ -15,6 +15,8 @@ from typing import Union, Optional
 import random
 
 
+log = logging.getLogger(__name__)
+
 def configure_logger(raw_level: Union[int, str], log_file: Optional[str] = None):
     if isinstance(raw_level, str):
         level = getattr(logging, raw_level.upper(), None)
@@ -46,6 +48,9 @@ class Trainer:
 
     seed: Optional[int] = None
 
+    save_snapshot: Optional[int] = None  # save snapshot every x times
+    snapshot_pattern: Optional[str] = None
+
     log_level: dataclasses.InitVar[str] = 'INFO'
     log_file: dataclasses.InitVar[str] = None
 
@@ -70,7 +75,16 @@ class Trainer:
         random.seed(self.seed)
 
     def train(self, output, **kwargs):
-        trained = trainer.train(self._scene, self._motion, self._robot, **kwargs)
+        def snapshot(chunk_idx, build_motion):
+            if chunk_idx % self.save_snapshot != 0:
+                return
+            path = self.snapshot_pattern.format(chunk_idx)
+
+            log.info(f'Saving snapshot to {path}')
+            build_motion().dump(path)
+
+        callback = snapshot if self.save_snapshot else None
+        trained = trainer.train(self._scene, self._motion, self._robot, callback=callback, **kwargs)
         trained.dump(output)
 
     def preview(self):

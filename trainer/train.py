@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Dict, Optional
+from typing import Dict, Optional, Callable
 import dataclasses
 from logging import getLogger
 import math
