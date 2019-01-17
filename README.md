@@ -12,11 +12,10 @@ DeepL2 Project: [https://blog.y-modify.org/2018/01/04/deepl2-start/](https://blo
 
 ```shell
 # Clone this repo
-git clone https://github.com/Y-modify/deepl2.git --recursive
+git clone https://github.com/Y-modify/deepl2.git
 cd deepl2
 
-# Setup
-./setup.sh
+pipenv install
 ```
 
 ### Train
