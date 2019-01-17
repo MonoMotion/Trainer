@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Callable
 import dataclasses
 from logging import getLogger
 import math
@@ -87,7 +87,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, robots: List[Robot], start: f
     return reward, weights * weight_factor, state
 
 
-def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
+def train(scene: Scene, motion: flom.Motion, make_robot: Callable[[int], Robot], *, num_workers: int = 5, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
     chunk_duration = scene.dt * chunk_length
 
     if num_chunk is None:
@@ -107,6 +107,8 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
     log.info(f"shape of weights: {weights.shape}")
     log.debug(f"kwargs: {kwargs}")
 
+    robots = [make_robot(i) for i in range(num_workers)]
+
     last_state = StateWithJoints.save(scene, robot)
     for chunk_idx in range(num_chunk):
         start = chunk_idx * chunk_duration
@@ -115,7 +117,7 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         r = range(start_idx, start_idx + chunk_length)
         in_weights = [weights[i % num_frames] for i in r]
         log.info(f"start training chunk {chunk_idx} ({start}~)")
-        reward, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, **kwargs)
+        reward, out_weights, last_state = train_chunk(scene, motion, robots, start, in_weights, last_state, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
