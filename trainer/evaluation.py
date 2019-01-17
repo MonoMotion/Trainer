@@ -49,6 +49,9 @@ def evaluate(scene, motion, robot, loop=2, **kwargs):
     pre_positions = try_get_pre_positions(scene, motion)
 
     for t, frame in motion.frames(scene.dt):
+        if t > motion.length() * loop:
+            break
+
         apply_joints(robot, frame.positions)
 
         scene.step()
@@ -56,7 +59,5 @@ def evaluate(scene, motion, robot, loop=2, **kwargs):
         reward_sum += calc_reward(motion, robot, frame, pre_positions, **kwargs)
         pre_positions = frame.positions
 
-        if t > motion.length() * loop:
-            break
-
-    return reward_sum
+    score = reward_sum / math.ceil(motion.length() / scene.dt * loop)
+    return score

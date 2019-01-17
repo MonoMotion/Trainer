@@ -64,7 +64,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
             pre_positions = frame.positions
 
-        return -reward_sum
+        score = reward_sum / len(weights)
+        return -score
 
     weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
@@ -73,10 +74,10 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     recommendation = optimizer.optimize(inst_step)
     weights = np.reshape(recommendation, weight_shape)
 
-    reward = step(weights)
+    score = -step(weights)
 
     state = StateWithJoints.save(scene, robot)
-    return reward, weights * weight_factor, state
+    return score, weights * weight_factor, state
 
 
 def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, **kwargs):
@@ -106,12 +107,12 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
 
         r = range(start_idx, start_idx + chunk_length)
         in_weights = [weights[i % num_frames] for i in r]
-        log.info(f"start training chunk {chunk_idx} ({start}~)")
-        reward, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, **kwargs)
+        log.info(f"[chunk {chunk_idx}] start training ({start}~)")
+        score, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, **kwargs)
         for i, w in zip(r, out_weights):
             weights[i % num_frames] = w
 
-        log.info(f"chunk {chunk_idx}: {reward}")
+        log.info(f"[chunk {chunk_idx}] score: {score}")
 
     # Use copy ctor after DeepL2/flom-py#23
     types = {n: motion.effector_type(n) for n in motion.effector_names()}
