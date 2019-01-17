@@ -68,7 +68,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     weights_param = Gaussian(mean=0, std=1.75, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
     optimizer = optimizerlib.OnePlusOne(dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
-    weights = optimizer.optimize(inst_step)
+    recommendation = optimizer.optimize(inst_step)
+    weights = np.reshape(recommendation, weight_shape)
 
     reward = step(weights)
 
