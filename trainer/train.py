@@ -103,6 +103,7 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
 
     if num_chunk is None:
         num_chunk = math.ceil(motion.length() / chunk_duration)
+    log.info(f'number of chunks: {num_chunk}')
 
     total_length = chunk_duration * num_chunk
     log.info(f"chunk duration: {chunk_duration} s")
@@ -135,4 +136,10 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         if callback:
             callback(chunk_idx, lambda: build_motion(motion, weights, scene.dt))
 
-    return build_motion(motion, weights, scene.dt)
+    trained_motion = build_motion(motion, weights, scene.dt)
+    init_score = evaluate(scene, motion, robot)
+    final_score = evaluate(scene, trained_motion, robot)
+    log.info('Done.')
+    log.info(f'score: {init_score} -> {final_score} ({final_score - init_score:+f})')
+
+    return trained_motion
