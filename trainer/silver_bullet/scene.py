@@ -165,3 +165,9 @@ class Scene:
     def connection_info(self) -> ConnectionInfo:
         result = self.client.getConnectionInfo()
         return ConnectionInfo(bool(result['isConnected']), result['connectionMethod'])
+
+    def is_connected(self) -> bool:
+        return self.connection_info().is_connected
+
+    def is_gui(self) -> bool:
+        return self.connection_info().method == pybullet.GUI
