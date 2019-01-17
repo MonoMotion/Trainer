@@ -157,7 +157,7 @@ def train(motion: flom.Motion, make_scene: Callable[[int], Tuple[Scene, Robot]],
         new_motion.set_effector_weight(name, motion.effector_weight(name))
 
     for i, frame_weight in enumerate(weights):
-        t = i * scene.dt
+        t = i * first_env.scene.dt
         new_frame = motion.frame_at(t)
         new_frame.positions = apply_weights(new_frame.positions, frame_weight)
         new_motion.insert_keyframe(t, new_frame)
