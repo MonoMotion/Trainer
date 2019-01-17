@@ -49,6 +49,9 @@ class Env:
 
     state: Optional[StateWithJoints] = None
 
+    def __post_init__(self):
+        self.save()
+
     def save(self):
         self.state = StateWithJoints.save(self.scene, self.robot)
 
