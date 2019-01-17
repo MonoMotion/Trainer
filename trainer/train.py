@@ -3,6 +3,7 @@ from typing import Dict, Optional
 import dataclasses
 from logging import getLogger
 import math
+from concurrent import futures
 
 from nevergrad.optimization import optimizerlib
 from nevergrad.instrumentation import InstrumentedFunction
@@ -69,8 +70,9 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     weights_param = Gaussian(mean=0, std=stddev, shape=weight_shape)
     inst_step = InstrumentedFunction(step, weights_param)
     optimizer = optimizerlib.registry[algorithm](
-        dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
-    recommendation = optimizer.optimize(inst_step)
+        dimension=inst_step.dimension, budget=num_iteration, num_workers=5)
+    with futures.ThreadPoolExecutor(max_workers=optimizer.num_workers) as executor:
+        recommendation = optimizer.optimize(inst_step, executor=executor)
     weights = np.reshape(recommendation, weight_shape)
 
     reward = step(weights)
