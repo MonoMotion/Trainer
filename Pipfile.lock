@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a48541aee1ef31ea5ec3222be4646e72c83b4fa2fbdbd3a3898bcd144b063b8a"
+            "sha256": "2e5a8884339d3683003fd564c2b79433aae447efb3dfc9454eb6876fc169982f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -79,13 +79,6 @@
                 "sha256:cd7b2d1018258d7247a71425e9f26463dfb444d411c39569972f4ce586b0c9d8"
             ],
             "version": "==0.10.0"
-        },
-        "evostra": {
-            "hashes": [
-                "sha256:868b922f7ee00433d1e8373d64e90c01dbdd046d71eb43045658f3863e760105"
-            ],
-            "index": "pypi",
-            "version": "==2.5.2"
         },
         "fire": {
             "hashes": [
