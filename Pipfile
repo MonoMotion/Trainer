@@ -22,9 +22,9 @@ nevergrad = "*"
 [scripts]
 fix = "autopep8 -ivr ."
 lint = "flake8 ."
-train = "python -m trainer trainer train"
-preview = "python -m trainer trainer preview"
-evaluate = "python -m trainer trainer evaluate"
+train = "python -m trainer train"
+preview = "python -m trainer preview"
+evaluate = "python -m trainer evaluate"
 
 [requires]
 python_version = "3.7"
