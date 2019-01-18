@@ -40,7 +40,7 @@ def configure_logger(raw_level: Union[int, str], log_file: Optional[str] = None)
 
 
 @dataclasses.dataclass
-class Trainer:
+class CLI:
     motion: dataclasses.InitVar[str]
     robot: str
     timestep: float = 0.0165/4
@@ -97,36 +97,3 @@ class Trainer:
         from trainer import evaluation
         score = evaluation.evaluate(self._scene, self._motion, self._robot, **kwargs)
         print(score)
-
-
-# TODO: Move these utilities to the new package
-@dataclasses.dataclass
-class Utility:
-    motion: dataclasses.InitVar[str]
-    output: str
-
-    log_level: dataclasses.InitVar[str] = 'INFO'
-    log_file: dataclasses.InitVar[str] = None
-
-    input_motion: flom.Motion = dataclasses.field(init=False)
-
-    def __post_init__(self, motion, log_level, log_file):
-        configure_logger(log_level, log_file)
-
-        self.input_motion = flom.load(motion)
-
-    def add_noise(self, random=0.1):
-        trainer.utils.add_noise(self.input_motion, random)
-        self.input_motion.dump(self.output)
-
-    def plot(self, fps=0.01, loop=1):
-        from trainer import plot
-        import matplotlib.pyplot as plt
-
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
-
-        plot.plot_frames(self.input_motion, ax, loop, fps)
-
-        ax.legend()
-        plt.savefig(self.output)
