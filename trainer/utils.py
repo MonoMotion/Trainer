@@ -32,17 +32,6 @@ def select_rotation(ty, quat, root_pose):
         assert False  # unreachable
 
 
-def add_noise(motion, randomness):
-    for t, frame in motion.keyframes():
-        new_frame = frame.get()
-        positions = {
-            k: v + random.random() * randomness
-            for k, v in new_frame.positions.items()
-        }
-        new_frame.positions = positions
-        frame.set(new_frame)
-
-
 def try_get_pre_positions(scene: Scene, motion: flom.Motion, start: Optional[float] = None) -> Optional[Dict[str, float]]:
     if start is None:
         start = scene.ts
