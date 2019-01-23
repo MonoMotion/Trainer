@@ -13,6 +13,7 @@ flom = "*"
 fire = "*"
 colorlog = "*"
 nevergrad = "*"
+silverbullet = "*"
 
 [dev-packages]
 "flake8" = "*"

@@ -1,4 +1,4 @@
-from .silver_bullet import Robot
+from silverbullet import Robot
 import pybullet
 
 

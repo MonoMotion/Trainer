@@ -1,6 +1,6 @@
 import flom
 
-from .silver_bullet import Pose, Scene
+from silverbullet import Pose, Scene
 import numpy as np
 
 import random
