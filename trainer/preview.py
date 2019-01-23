@@ -1,6 +1,7 @@
 from .simulation import apply_joints
 from .utils import select_location
-from .silver_bullet import Color
+from silverbullet import Color
+from silverbullet.connection import Mode
 
 import math
 from logging import getLogger
@@ -32,7 +33,7 @@ def create_effector_marker(scene, motion, robot, effectors, pre):
 
 
 def preview(scene, motion, robot):
-    if not scene.is_gui():
+    if scene._conn.mode() != Mode.GUI:
         log.warning('Non-GUI scene is passed to preview()')
 
     effector_marks = None

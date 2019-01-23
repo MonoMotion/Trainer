@@ -10,8 +10,8 @@ from nevergrad.instrumentation.variables import Gaussian
 
 from .simulation import apply_joints
 from .evaluation import calc_reward, evaluate
-from .silver_bullet import Scene, Robot
-from .silver_bullet.scene import SavedState
+from silverbullet import Scene, Robot
+from silverbullet.scene import SavedState
 from .utils import try_get_pre_positions
 
 import flom

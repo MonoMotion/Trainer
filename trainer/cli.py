@@ -3,7 +3,8 @@ import flom
 
 import trainer
 from trainer import simulation
-from .silver_bullet import Scene, Robot
+from silverbullet import Scene, Robot
+from silverbullet.connection import Mode, Connection
 from pybullet_utils.bullet_client import BulletClient
 import pybullet
 import numpy as np
@@ -88,8 +89,8 @@ class CLI:
         trained.dump(output)
 
     def preview(self):
-        gui_client = BulletClient(connection_mode=pybullet.GUI)
-        self._scene = Scene(self.timestep, self.frame_skip, client=gui_client)
+        conn = Connection(mode=Mode.GUI)
+        self._scene = Scene(self.timestep, self.frame_skip, connection=conn)
         self._load_robot()
         trainer.preview(self._scene, self._motion, self._robot)
 
