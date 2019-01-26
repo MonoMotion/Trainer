@@ -23,8 +23,10 @@ def calc_effector_reward(motion, robot, frame, *, ke, wl, wr):
             quat2 = np.quaternion(*pose.quaternion)
             diff += wr * quaternion.rotation_intrinsic_distance(quat1, quat2) ** 2 * weight.rotation
     normalized = ke * diff / len(frame.effectors)
-    return - math.exp(normalized) + 1
-
+    try:
+        return - math.exp(normalized) + 1
+    except OverflowError:
+        return - math.inf;
 
 def calc_stabilization_reward(frame, pre_positions, *, ks):
     if pre_positions is None:
@@ -32,7 +34,10 @@ def calc_stabilization_reward(frame, pre_positions, *, ks):
 
     change_sum = sum((p1 - p2) ** 2 for _, (p1, p2) in dictzip(frame.positions, pre_positions))
     normalized = ks * change_sum / len(frame.positions)
-    return - math.exp(normalized) + 1
+    try:
+        return - math.exp(normalized) + 1
+    except OverflowError:
+        return - math.inf;
 
 
 def calc_reward(motion, robot, frame, pre_positions, *, we=1, ws=0.1, ke=1, ks=1, wl=1, wr=0.005):
