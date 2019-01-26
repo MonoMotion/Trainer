@@ -72,7 +72,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     optimizer = optimizerlib.registry[algorithm](
         dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
     recommendation = optimizer.optimize(inst_step)
-    weights = np.reshape(recommendation, weight_shape)
+    args, _ = inst_step.convert_to_arguments(recommendation)
+    weights = args[0]
 
     score = -step(weights)
 
