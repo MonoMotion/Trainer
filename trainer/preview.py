@@ -4,6 +4,7 @@ from silverbullet import Color
 from silverbullet.connection import Mode
 
 import math
+import time
 from logging import getLogger
 
 EFFECTOR_SPHERE_SIZE_RATIO = 2.5
@@ -32,7 +33,7 @@ def create_effector_marker(scene, motion, robot, effectors, pre):
     return {name: create(name, eff) for name, eff in effectors.items()}
 
 
-def preview(scene, motion, robot):
+def preview(scene, motion, robot, real_time):
     if scene._conn.mode() != Mode.GUI:
         log.warning('Non-GUI scene is passed to preview()')
 
@@ -40,6 +41,8 @@ def preview(scene, motion, robot):
     c = 0
     while True:
         scene.step()
+        if real_time:
+            time.sleep(scene.dt)
 
         frame = motion.frame_at(scene.ts)
         apply_joints(robot, frame.positions)

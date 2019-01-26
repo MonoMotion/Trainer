@@ -88,11 +88,11 @@ class CLI:
         trained = trainer.train(self._scene, self._motion, self._robot, callback=callback, **kwargs)
         trained.dump(output)
 
-    def preview(self):
+    def preview(self, real_time=False):
         conn = Connection(mode=Mode.GUI)
         self._scene = Scene(self.timestep, self.frame_skip, connection=conn)
         self._load_robot()
-        trainer.preview(self._scene, self._motion, self._robot)
+        trainer.preview(self._scene, self._motion, self._robot, real_time)
 
     def evaluate(self, loop=2, **kwargs):
         from trainer import evaluation
