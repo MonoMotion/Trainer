@@ -9,6 +9,7 @@ from .simulation import apply_joints
 
 def calc_effector_reward(motion, robot, frame, *, ke, wl, wr):
     diff = 0
+    c = 0
     for name, effector in frame.effectors.items():
         pose = robot.link_state(name).pose
         root_pose = robot.link_state(robot.root_link).pose
@@ -17,12 +18,14 @@ def calc_effector_reward(motion, robot, frame, *, ke, wl, wr):
         if effector.location:
             target = select_location(ty.location, effector.location.vector, root_pose)
             diff += wl * np.linalg.norm(pose.vector - np.array(target)) ** 2 * weight.location
+            c += 1
         if effector.rotation:
             target = select_rotation(ty.rotation, effector.rotation.quaternion, root_pose)
             quat1 = np.quaternion(*target)
             quat2 = np.quaternion(*pose.quaternion)
             diff += wr * quaternion.rotation_intrinsic_distance(quat1, quat2) ** 2 * weight.rotation
-    normalized = ke * diff / len(frame.effectors)
+            c += 1
+    normalized = ke * diff / c
     try:
         return - math.exp(normalized) + 1
     except OverflowError:
