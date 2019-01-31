@@ -13,6 +13,7 @@ from .evaluation import calc_reward, evaluate
 from silverbullet import Scene, Robot
 from silverbullet.scene import SavedState
 from .utils import try_get_pre_positions
+from .looped_weights import LoopedWeights
 
 import flom
 
@@ -116,7 +117,7 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
 
     num_frames = int(motion.length() / scene.dt)
     num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
-    weights = np.zeros(shape=(num_frames, num_joints))
+    weights = LoopedWeights(num_frames, num_joints)
     log.info(f"shape of weights: {weights.shape}")
     log.debug(f"kwargs: {kwargs}")
 
@@ -129,11 +130,11 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         start_idx = chunk_idx * chunk_length % num_frames
 
         r = range(start_idx, start_idx + chunk_length)
-        in_weights = [weights[i % num_frames] for i in r]
+        in_weights = [weights[i] for i in r]
         log.info(f"[chunk {chunk_idx}] start training ({start}~)")
         score, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, **kwargs)
         for i, w in zip(r, out_weights):
-            weights[i % num_frames] = w
+            weights[i] = w
 
         log.info(f"[chunk {chunk_idx}] score: {score}")
 
