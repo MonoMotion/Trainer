@@ -7,26 +7,21 @@ class LoopedWeights(MutableSequence):
         self.weights = np.zeros(shape=(num_frames - 1, num_joints))
         self.size = num_frames
 
-    def __setitem__(self, key: int, value: np.ndarray):
+    def calc_index(self, key: int) -> int:
         idx: int = key % self.size
         if idx == self.size - 1:
-            self.weights[0] = value
+            return 0
         else:
-            self.weights[idx] = value
+            return idx
+
+    def __setitem__(self, key: int, value: np.ndarray):
+        self.weights[self.calc_index(key)] = value
 
     def __getitem__(self, key: int) -> np.ndarray:
-        idx: int = key % self.size
-        if idx == self.size - 1:
-            return self.weights[0]
-        else:
-            return self.weights[idx]
+        return self.weights[self.calc_index(key)]
 
     def __delitem__(self, key: int):
-        idx: int = key % self.size
-        if idx == self.size - 1:
-            del self.weights[0]
-        else:
-            del self.weights[idx]
+        del self.weights[self.calc_index(key)]
 
     def insert(self, key: int, value: np.ndarray):
         raise NotImplementedError()
