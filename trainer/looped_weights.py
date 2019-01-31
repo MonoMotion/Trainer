@@ -1,4 +1,4 @@
-from collection.abc import MutableSequence
+from collections.abc import MutableSequence
 import numpy as np
 
 
