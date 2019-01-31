@@ -1,5 +1,6 @@
 from collections.abc import MutableSequence
 import numpy as np
+from typing import Union
 
 
 class LoopedWeights(MutableSequence):
@@ -14,11 +15,18 @@ class LoopedWeights(MutableSequence):
         else:
             return idx
 
-    def __setitem__(self, key: int, value: np.ndarray):
-        self.weights[self.calc_index(key)] = value
+    def __setitem__(self, key: Union[int, slice], value: np.ndarray):
+        if isinstance(key, int):
+            self.weights[self.calc_index(key)] = value
+        else:
+            for v, idx in zip(value, range(self.size)[key]):
+                self.weights[self.calc_index(idx)] = v
 
-    def __getitem__(self, key: int) -> np.ndarray:
-        return self.weights[self.calc_index(key)]
+    def __getitem__(self, key: Union[int, slice]) -> np.ndarray:
+        if isinstance(key, int):
+            return self.weights[self.calc_index(key)]
+        else:
+            return [self.weights[self.calc_index(idx)] for idx in range(self.size)[key]]
 
     def __delitem__(self, key: int):
         del self.weights[self.calc_index(key)]
