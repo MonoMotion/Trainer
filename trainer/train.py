@@ -129,12 +129,10 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         start = chunk_idx * chunk_duration
         start_idx = chunk_idx * chunk_length % num_frames
 
-        r = range(start_idx, start_idx + chunk_length)
-        in_weights = [weights[i] for i in r]
+        in_weights = weights[start_idx:start_idx+chunk_length]
         log.info(f"[chunk {chunk_idx}] start training ({start}~)")
         score, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, **kwargs)
-        for i, w in zip(r, out_weights):
-            weights[i] = w
+        weights[start_idx:start_idx+chunk_length] = out_weights
 
         log.info(f"[chunk {chunk_idx}] score: {score}")
 
