@@ -1,6 +1,6 @@
 from collections.abc import MutableSequence
 import numpy as np
-from typing import Union
+from typing import Union, Tuple
 
 
 class LoopedWeights(MutableSequence):
@@ -34,10 +34,10 @@ class LoopedWeights(MutableSequence):
     def insert(self, key: int, value: np.ndarray):
         raise NotImplementedError()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.size
 
     @property
-    def shape(self):
+    def shape(self) -> Tuple[int, ...]:
         shape = self.weights.shape
         return (shape[0] + 1,) + shape[1:]
