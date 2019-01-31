@@ -36,3 +36,8 @@ class LoopedWeights(MutableSequence):
 
     def __len__(self):
         return self.size
+
+    @property
+    def shape(self):
+        shape = self.weights.shape
+        return (shape[0] + 1,) + shape[1:]
