@@ -22,7 +22,8 @@ def calc_effector_reward(motion, robot, frame, *, ke, wl, wr):
         if effector.rotation:
             target = select_rotation(ty.rotation, effector.rotation.quaternion, root_pose)
             quat1 = np.quaternion(*target)
-            quat2 = np.quaternion(*pose.quaternion)
+            q = pose.quaternion
+            quat2 = np.quaternion(q[3], q[0], q[1], q[2])
             diff += wr * quaternion.rotation_intrinsic_distance(quat1, quat2) ** 2 * weight.rotation
             c += 1
     normalized = ke * diff / c
