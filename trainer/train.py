@@ -49,7 +49,7 @@ def randomize_dynamics(robot: Robot, r: float):
 
     for name, params in initial.items():
         randomized = {
-            key: random.uniform(1-r, 1+r)
+            key: value * random.uniform(1-r, 1+r)
             for key, value
             in dataclasses.asdict(params).items()
             if value is not None
