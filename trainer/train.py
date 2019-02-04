@@ -3,6 +3,7 @@ from typing import Dict, Optional, Callable
 import dataclasses
 from logging import getLogger
 import math
+import random
 
 from nevergrad.optimization import optimizerlib
 from nevergrad.instrumentation import InstrumentedFunction
@@ -40,11 +41,35 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
+def randomize_dynamics(robot, r=0.05):
+    initial = {
+        name: robot.dynamics_info(name).to_set_params()
+        for name in robot.links.keys()
+    }
+
+    for name, params in initial.items():
+        randomized = {
+            key: random.uniform(1-r, 1+r)
+            for key, value
+            in dataclasses.asdict(params).items()
+            if value is not None
+        }
+        robot.set_dynamics(name, **randomized)
+
+    def reset():
+        for name, params in initial.items():
+            robot.set_dynamics(name, params)
+
+    return reset
+
+
 def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     weight_shape = np.array(init_weights).shape
 
     def step(weights):
         init_state.restore(scene, robot)
+
+        reset_dyn = randomize_dynamics(robot)
 
         reward_sum = 0
         start_ts = scene.ts
@@ -63,6 +88,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
             reward_sum += calc_reward(motion, robot, frame, pre_positions, **kwargs)
 
             pre_positions = frame.positions
+
+        reset_dyn()
 
         score = reward_sum / len(weights)
         return -score
