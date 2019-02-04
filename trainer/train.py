@@ -41,7 +41,7 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def randomize_dynamics(robot, r=0.05):
+def randomize_dynamics(robot: Robot, r: float = 0.05):
     initial = {
         name: robot.dynamics_info(name).to_set_params()
         for name in robot.links.keys()
