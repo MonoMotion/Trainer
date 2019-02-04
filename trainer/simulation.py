@@ -27,4 +27,4 @@ def reset(scene, path):
 
 def apply_joints(robot, positions):
     for name, pos in positions.items():
-        robot.set_joint_position(name, pos, 0.1, 1.0, 100000)
+        robot.set_joint_position(name, pos)
