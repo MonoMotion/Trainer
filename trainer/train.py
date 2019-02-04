@@ -41,7 +41,7 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def randomize_dynamics(robot: Robot, r: float = 0.05):
+def randomize_dynamics(robot: Robot, r: float):
     initial = {
         name: robot.dynamics_info(name).to_set_params()
         for name in robot.links.keys()
@@ -63,14 +63,14 @@ def randomize_dynamics(robot: Robot, r: float = 0.05):
     return reset
 
 
-def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
+def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, random_rate: float = 0.05, **kwargs):
     weight_shape = np.array(init_weights).shape
 
     def step(weights):
         init_state.restore(scene, robot)
 
-        reset_robot = randomize_dynamics(robot)
-        reset_floor = randomize_dynamics(scene.plane)
+        reset_robot = randomize_dynamics(robot, random_rate)
+        reset_floor = randomize_dynamics(scene.plane, random_rate)
 
         reward_sum = 0
         start_ts = scene.ts
