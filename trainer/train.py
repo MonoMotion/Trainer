@@ -69,7 +69,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
     def step(weights):
         init_state.restore(scene, robot)
 
-        reset_dyn = randomize_dynamics(robot)
+        reset_robot = randomize_dynamics(robot)
+        reset_floor = randomize_dynamics(scene.plane)
 
         reward_sum = 0
         start_ts = scene.ts
@@ -89,7 +90,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
             pre_positions = frame.positions
 
-        reset_dyn()
+        reset_robot()
+        reset_floor()
 
         score = reward_sum / len(weights)
         return -score
