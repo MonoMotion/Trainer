@@ -130,6 +130,8 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
     log.info(f"shape of weights: {weights.shape}")
     log.debug(f"kwargs: {kwargs}")
 
+    out_motion = copy_motion(motion)
+
 
     init_state = StateWithJoints.save(scene, robot)
 
@@ -139,24 +141,22 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         start_idx = chunk_idx * chunk_length % num_frames
 
         r = range(start_idx, start_idx + chunk_length)
-        in_weights = [weights[i % num_frames] for i in r]
+        in_frames = [motion.frame_at(i * scene.dt) for i in r]
         log.info(f"[chunk {chunk_idx}] start training ({start}~)")
-        score, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, **kwargs)
-        for i, w in zip(r, out_weights):
-            weights[i % num_frames] = w
+        score, out_frames, last_state = train_chunk(scene, in_frames, robot, start, last_state, **kwargs)
+        for i, frame in zip(r, out_frames):
+            out_motion.insert_keyframe(i * scene.dt % motion.length(), frame)
 
         log.info(f"[chunk {chunk_idx}] score: {score}")
 
         if callback:
-            callback(chunk_idx, lambda: build_motion(motion, weights, scene.dt))
-
-    trained_motion = build_motion(motion, weights, scene.dt)
+            callback(chunk_idx, lambda: out_motion)
 
     init_state.restore(scene, robot)
     init_score = evaluate(scene, motion, robot)
 
     init_state.restore(scene, robot)
-    final_score = evaluate(scene, trained_motion, robot)
+    final_score = evaluate(scene, out_motion, robot)
 
     improvement = final_score - init_score
     log.info('Done.')
@@ -165,4 +165,4 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
     if improvement <= 0:
         log.error('Failed to train the motion')
 
-    return trained_motion
+    return out_motion
