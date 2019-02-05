@@ -147,6 +147,8 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         if callback:
             callback(chunk_idx, lambda: out_motion)
 
+    assert motion.length() == out_motion.length()
+
     init_state.restore(scene, robot)
     init_score = evaluate(scene, motion, robot)
 
