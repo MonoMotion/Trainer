@@ -40,6 +40,7 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
+# TODO: Delete init_frames (only motion is needed here actually)
 def train_chunk(scene: Scene, motion: flom.Motion, init_frames: List[flom.Frame], robot: Robot, start: float, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     chunk_length = len(init_frames)
     num_joints = len(init_frames[0].positions)
@@ -80,6 +81,7 @@ def train_chunk(scene: Scene, motion: flom.Motion, init_frames: List[flom.Frame]
     state = StateWithJoints.save(scene, robot)
 
     def make_frame(frame, weight):
+        # Use copy ctor after DeepL2/flom-py#23
         new_frame = frame.new_compatible_frame()
         new_frame.positions = apply_weights(frame.positions, weight)
         new_frame.effectors = frame.effectors
