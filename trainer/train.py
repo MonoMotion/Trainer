@@ -134,7 +134,7 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         pre_positions = try_get_pre_positions(scene, out_motion, start=start)
 
         r = range(start_idx, start_idx + chunk_length)
-        in_frames = [motion.frame_at(i * scene.dt) for i in r]
+        in_frames = [out_motion.frame_at(i * scene.dt) for i in r]
         log.info(f"[chunk {chunk_idx}] start training ({start}~)")
         score, out_frames, last_state = train_chunk(scene, in_frames, pre_positions, robot, last_state, **kwargs)
         for i, frame in zip(r, out_frames):
