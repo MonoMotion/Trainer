@@ -124,14 +124,9 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
     if total_length < motion.length():
         log.warning(f"A total length to train is shorter than the length of motion")
 
-    num_frames = int(motion.length() / scene.dt)
-    num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
-    weights = np.zeros(shape=(num_frames, num_joints))
-    log.info(f"shape of weights: {weights.shape}")
     log.debug(f"kwargs: {kwargs}")
 
     out_motion = copy_motion(motion)
-
 
     init_state = StateWithJoints.save(scene, robot)
 
