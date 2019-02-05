@@ -40,7 +40,8 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def train_chunk(scene: Scene, init_frames: List[flom.Frame], pre_positions: Optional[Dict[str, float]], robot: Robot, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
+# TODO: Delete init_frames (only motion is needed here actually)
+def train_chunk(scene: Scene, motion: flom.Motion, init_frames: List[flom.Frame], robot: Robot, start: float, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
     chunk_length = len(init_frames)
     num_joints = len(init_frames[0].positions)
     weight_shape = (chunk_length, num_joints)
@@ -51,7 +52,8 @@ def train_chunk(scene: Scene, init_frames: List[flom.Frame], pre_positions: Opti
         reward_sum = 0
         start_ts = scene.ts
 
-        pre_pos = pre_positions
+        pre_positions = try_get_pre_positions(scene, motion, start=start)
+
         for frame, frame_weight in zip(init_frames, weights):
             positions = apply_weights(
                 frame.positions, frame_weight * weight_factor)
@@ -59,9 +61,9 @@ def train_chunk(scene: Scene, init_frames: List[flom.Frame], pre_positions: Opti
 
             scene.step()
 
-            reward_sum += calc_reward(motion, robot, frame.effectors, positions, pre_pos, **kwargs)
+            reward_sum += calc_reward(motion, robot, frame.effectors, positions, pre_positions, **kwargs)
 
-            pre_pos = positions
+            pre_positions = positions
 
         score = reward_sum / len(weights)
         return -score
@@ -131,12 +133,10 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         start = chunk_idx * chunk_duration
         start_idx = chunk_idx * chunk_length
 
-        pre_positions = try_get_pre_positions(scene, out_motion, start=start)
-
         r = range(start_idx, start_idx + chunk_length)
         in_frames = [out_motion.frame_at(i * scene.dt) for i in r]
         log.info(f"[chunk {chunk_idx}] start training ({start}~)")
-        score, out_frames, last_state = train_chunk(scene, in_frames, pre_positions, robot, last_state, **kwargs)
+        score, out_frames, last_state = train_chunk(scene, out_motion, in_frames, robot, start, last_state, **kwargs)
         for i, frame in zip(r, out_frames):
             out_motion.insert_keyframe(i * scene.dt % motion.length(), frame)
 
