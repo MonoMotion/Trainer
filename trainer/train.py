@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Dict, Optional, Callable
+from typing import Dict, Optional, Callable, Sequence
 import dataclasses
 from logging import getLogger
 import math
@@ -47,9 +47,15 @@ def randomize_dynamics(robot: Robot, r: float):
         for name in robot.links.keys()
     }
 
+    def apply(m, f):
+        if not isinstance(m, Sequence):
+            return f(m)
+
+        return [f(e) for e in m]
+
     for name, params in initial.items():
         randomized = {
-            key: value * random.uniform(1-r, 1+r)
+            key: apply(value, lambda v: v * random.uniform(1-r, 1+r))
             for key, value
             in dataclasses.asdict(params).items()
             if value is not None
