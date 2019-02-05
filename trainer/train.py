@@ -60,7 +60,7 @@ def train_chunk(scene: Scene, init_frames: List[flom.Frame], robot: Robot, start
 
             scene.step()
 
-            reward_sum += calc_reward(motion, robot, positions, pre_positions, **kwargs)
+            reward_sum += calc_reward(motion, robot, frame.effectors, positions, pre_positions, **kwargs)
 
             pre_positions = positions
 
