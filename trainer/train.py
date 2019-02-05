@@ -91,19 +91,15 @@ def train_chunk(scene: Scene, init_frames: List[flom.Frame], robot: Robot, start
     return score, frames, state
 
 
-def build_motion(base: flom.Motion, weights: np.ndarray, dt: float) -> flom.Motion:
+def copy_motion(base: flom.Motion) -> flom.Motion:
     # Use copy ctor after DeepL2/flom-py#23
     types = {n: base.effector_type(n) for n in base.effector_names()}
     new_motion = flom.Motion(set(base.joint_names()), types, base.model_id())
     new_motion.set_loop(base.loop())
     for name in base.effector_names():
         new_motion.set_effector_weight(name, base.effector_weight(name))
-
-    for i, frame_weight in enumerate(weights):
-        t = i * dt
-        new_frame = base.frame_at(t)
-        new_frame.positions = apply_weights(new_frame.positions, frame_weight)
-        new_motion.insert_keyframe(t, new_frame)
+    for t, frame in base.keyframes():
+        new_motion.insert_keyframe(t, frame)
 
     return new_motion
 
