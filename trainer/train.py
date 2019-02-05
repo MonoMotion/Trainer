@@ -40,8 +40,10 @@ class StateWithJoints:
         return StateWithJoints(scene.save_state(), torques)
 
 
-def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
-    weight_shape = np.array(init_weights).shape
+def train_chunk(scene: Scene, init_frames: List[flom.Frame], robot: Robot, start: float, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
+    chunk_length = len(init_frames)
+    num_joints = len(init_frames[0].positions)
+    weight_shape = (chunk_length, num_joints)
 
     def step(weights):
         init_state.restore(scene, robot)
@@ -51,18 +53,16 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         pre_positions = try_get_pre_positions(scene, motion, start=start)
 
-        for init_weight, frame_weight in zip(init_weights, weights):
-            frame = motion.frame_at(start + scene.ts - start_ts)
-
-            frame.positions = apply_weights(
-                frame.positions, init_weight + frame_weight * weight_factor)
-            apply_joints(robot, frame.positions)
+        for frame, frame_weight in zip(init_frames, weights):
+            positions = apply_weights(
+                frame.positions, frame_weight * weight_factor)
+            apply_joints(robot, positions)
 
             scene.step()
 
-            reward_sum += calc_reward(motion, robot, frame, pre_positions, **kwargs)
+            reward_sum += calc_reward(motion, robot, positions, pre_positions, **kwargs)
 
-            pre_positions = frame.positions
+            pre_positions = positions
 
         score = reward_sum / len(weights)
         return -score
@@ -73,12 +73,22 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
         dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
     recommendation = optimizer.optimize(inst_step)
     args, _ = inst_step.convert_to_arguments(recommendation)
-    weights = args[0]
+    raw_weights = args[0]
 
     score = -step(weights)
 
     state = StateWithJoints.save(scene, robot)
-    return score, weights * weight_factor, state
+
+    def make_frame(frame, weight):
+        new_frame = frame.new_compatible_frame()
+        new_frame.positions = apply_weights(frame.positions, weight)
+        new_frame.effectors = frame.effectors
+        return new_frame
+
+    weights = raw_weights * weight_factor
+    frames = [make_frame(frame, weight) for frame, weight in zip(init_frames, weights)]
+
+    return score, frames, state
 
 
 def build_motion(base: flom.Motion, weights: np.ndarray, dt: float) -> flom.Motion:
