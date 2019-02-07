@@ -139,6 +139,7 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
         score, out_frames, last_state = train_chunk(scene, out_motion, in_frames, robot, start, last_state, **kwargs)
         for i, frame in zip(r, out_frames):
             out_motion.insert_keyframe(i * scene.dt % motion.length(), frame)
+        out_motion.insert_keyframe(motion.length(), motion.frame_at(0))
 
         log.info(f"[chunk {chunk_idx}] score: {score}")
 
