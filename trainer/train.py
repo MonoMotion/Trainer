@@ -116,10 +116,8 @@ def train_chunk(scene: Scene, motion: flom.Motion, init_frames: Sequence[flom.Fr
     state = StateWithJoints.save(scene, robot)
 
     def make_frame(frame, weight):
-        # Use copy ctor after DeepL2/flom-py#23
-        new_frame = frame.new_compatible_frame()
+        new_frame = flom.Frame(frame)  # Copy
         new_frame.positions = apply_weights(frame.positions, weight)
-        new_frame.effectors = frame.effectors
         return new_frame
 
     weights = raw_weights * weight_factor
