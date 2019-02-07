@@ -40,7 +40,7 @@ class StateWithJoints:
         torques = {name: robot.joint_state(name).applied_torque for name in robot.joints.keys()}
         return StateWithJoints(scene.save_state(), torques)
 
-
+      
 def randomize_dynamics(robot: Robot, r: float):
     initial = {
         name: robot.dynamics_info(name).to_set_params()
@@ -67,10 +67,13 @@ def randomize_dynamics(robot: Robot, r: float):
             robot.set_dynamics(name, params)
 
     return reset
+  
 
-
-def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, init_weights: np.ndarray, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, random_rate: float = 0.2, **kwargs):
-    weight_shape = np.array(init_weights).shape
+# TODO: Delete init_frames (only motion is needed here actually)
+def train_chunk(scene: Scene, motion: flom.Motion, init_frames: Sequence[flom.Frame], robot: Robot, start: float, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, andom_rate: float = 0.2, **kwargs):
+    chunk_length = len(init_frames)
+    num_joints = len(init_frames[0].positions)
+    weight_shape = (chunk_length, num_joints)
 
     def step(weights):
         init_state.restore(scene, robot)
@@ -83,18 +86,16 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
 
         pre_positions = try_get_pre_positions(scene, motion, start=start)
 
-        for init_weight, frame_weight in zip(init_weights, weights):
-            frame = motion.frame_at(start + scene.ts - start_ts)
-
-            frame.positions = apply_weights(
-                frame.positions, init_weight + frame_weight * weight_factor)
-            apply_joints(robot, frame.positions)
+        for frame, frame_weight in zip(init_frames, weights):
+            positions = apply_weights(
+                frame.positions, frame_weight * weight_factor)
+            apply_joints(robot, positions)
 
             scene.step()
 
-            reward_sum += calc_reward(motion, robot, frame, pre_positions, **kwargs)
+            reward_sum += calc_reward(motion, robot, frame.effectors, positions, pre_positions, **kwargs)
 
-            pre_positions = frame.positions
+            pre_positions = positions
 
         reset_robot()
         reset_floor()
@@ -108,27 +109,34 @@ def train_chunk(scene: Scene, motion: flom.Motion, robot: Robot, start: float, i
         dimension=inst_step.dimension, budget=num_iteration, num_workers=1)
     recommendation = optimizer.optimize(inst_step)
     args, _ = inst_step.convert_to_arguments(recommendation)
-    weights = args[0]
+    raw_weights = args[0]
 
-    score = -step(weights)
+    score = -step(raw_weights)
 
     state = StateWithJoints.save(scene, robot)
-    return score, weights * weight_factor, state
+
+    def make_frame(frame, weight):
+        # Use copy ctor after DeepL2/flom-py#23
+        new_frame = frame.new_compatible_frame()
+        new_frame.positions = apply_weights(frame.positions, weight)
+        new_frame.effectors = frame.effectors
+        return new_frame
+
+    weights = raw_weights * weight_factor
+    frames = [make_frame(frame, weight) for frame, weight in zip(init_frames, weights)]
+
+    return score, frames, state
 
 
-def build_motion(base: flom.Motion, weights: np.ndarray, dt: float) -> flom.Motion:
+def copy_motion(base: flom.Motion) -> flom.Motion:
     # Use copy ctor after DeepL2/flom-py#23
     types = {n: base.effector_type(n) for n in base.effector_names()}
     new_motion = flom.Motion(set(base.joint_names()), types, base.model_id())
     new_motion.set_loop(base.loop())
     for name in base.effector_names():
         new_motion.set_effector_weight(name, base.effector_weight(name))
-
-    for i, frame_weight in enumerate(weights):
-        t = i * dt
-        new_frame = base.frame_at(t)
-        new_frame.positions = apply_weights(new_frame.positions, frame_weight)
-        new_motion.insert_keyframe(t, new_frame)
+    for t, frame in base.keyframes():
+        new_motion.insert_keyframe(t, frame.get())
 
     return new_motion
 
@@ -149,39 +157,39 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
     if total_length < motion.length():
         log.warning(f"A total length to train is shorter than the length of motion")
 
-    num_frames = int(motion.length() / scene.dt)
-    num_joints = len(list(motion.joint_names()))  # TODO: Call len() directly
-    weights = np.zeros(shape=(num_frames, num_joints))
-    log.info(f"shape of weights: {weights.shape}")
     log.debug(f"kwargs: {kwargs}")
 
+    out_motion = copy_motion(motion)
 
     init_state = StateWithJoints.save(scene, robot)
 
     last_state = init_state
     for chunk_idx in range(num_chunk):
         start = chunk_idx * chunk_duration
-        start_idx = chunk_idx * chunk_length % num_frames
+        start_idx = chunk_idx * chunk_length
 
         r = range(start_idx, start_idx + chunk_length)
-        in_weights = [weights[i % num_frames] for i in r]
+        in_frames = [out_motion.frame_at(i * scene.dt) for i in r]
         log.info(f"[chunk {chunk_idx}] start training ({start}~)")
-        score, out_weights, last_state = train_chunk(scene, motion, robot, start, in_weights, last_state, **kwargs)
-        for i, w in zip(r, out_weights):
-            weights[i % num_frames] = w
+        score, out_frames, last_state = train_chunk(scene, out_motion, in_frames, robot, start, last_state, **kwargs)
+        for i, frame in zip(r, out_frames):
+            out_motion.insert_keyframe(i * scene.dt % motion.length(), frame)
+        f = out_motion.frame_at(motion.length())
+        f.positions = motion.frame_at(0).positions
+        out_motion.insert_keyframe(motion.length(), f)
 
         log.info(f"[chunk {chunk_idx}] score: {score}")
 
         if callback:
-            callback(chunk_idx, lambda: build_motion(motion, weights, scene.dt))
+            callback(chunk_idx, lambda: out_motion)
 
-    trained_motion = build_motion(motion, weights, scene.dt)
+    assert motion.length() == out_motion.length()
 
     init_state.restore(scene, robot)
     init_score = evaluate(scene, motion, robot)
 
     init_state.restore(scene, robot)
-    final_score = evaluate(scene, trained_motion, robot)
+    final_score = evaluate(scene, out_motion, robot)
 
     improvement = final_score - init_score
     log.info('Done.')
@@ -190,4 +198,4 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
     if improvement <= 0:
         log.error('Failed to train the motion')
 
-    return trained_motion
+    return out_motion
