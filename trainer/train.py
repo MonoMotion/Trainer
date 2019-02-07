@@ -136,7 +136,7 @@ def copy_motion(base: flom.Motion) -> flom.Motion:
     for name in base.effector_names():
         new_motion.set_effector_weight(name, base.effector_weight(name))
     for t, frame in base.keyframes():
-        new_motion.insert_keyframe(t, frame.get())
+        new_motion.insert_keyframe(t, frame)
 
     return new_motion
 
