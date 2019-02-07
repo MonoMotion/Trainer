@@ -70,7 +70,7 @@ def randomize_dynamics(robot: Robot, r: float):
   
 
 # TODO: Delete init_frames (only motion is needed here actually)
-def train_chunk(scene: Scene, motion: flom.Motion, init_frames: Sequence[flom.Frame], robot: Robot, start: float, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, andom_rate: float = 0.2, **kwargs):
+def train_chunk(scene: Scene, motion: flom.Motion, init_frames: Sequence[flom.Frame], robot: Robot, start: float, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, random_rate: float = 0.2, **kwargs):
     chunk_length = len(init_frames)
     num_joints = len(init_frames[0].positions)
     weight_shape = (chunk_length, num_joints)
