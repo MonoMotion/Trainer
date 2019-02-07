@@ -1,8 +1,9 @@
 import numpy as np
-from typing import Dict, Optional, Callable, List
+from typing import Dict, Optional, Callable, Sequence
 import dataclasses
 from logging import getLogger
 import math
+import random
 
 from nevergrad.optimization import optimizerlib
 from nevergrad.instrumentation import InstrumentedFunction
@@ -39,15 +40,46 @@ class StateWithJoints:
         torques = {name: robot.joint_state(name).applied_torque for name in robot.joints.keys()}
         return StateWithJoints(scene.save_state(), torques)
 
+      
+def randomize_dynamics(robot: Robot, r: float):
+    initial = {
+        name: robot.dynamics_info(name).to_set_params()
+        for name in robot.links.keys()
+    }
+
+    def apply(m, f):
+        if not isinstance(m, Sequence):
+            return f(m)
+
+        return [f(e) for e in m]
+
+    for name, params in initial.items():
+        randomized = {
+            key: apply(value, lambda v: v * random.uniform(1-r, 1+r))
+            for key, value
+            in dataclasses.asdict(params).items()
+            if value is not None
+        }
+        robot.set_dynamics(name, **randomized)
+
+    def reset():
+        for name, params in initial.items():
+            robot.set_dynamics(name, params)
+
+    return reset
+  
 
 # TODO: Delete init_frames (only motion is needed here actually)
-def train_chunk(scene: Scene, motion: flom.Motion, init_frames: List[flom.Frame], robot: Robot, start: float, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, **kwargs):
+def train_chunk(scene: Scene, motion: flom.Motion, init_frames: Sequence[flom.Frame], robot: Robot, start: float, init_state: StateWithJoints, *, algorithm: str = 'OnePlusOne', num_iteration: int = 1000, weight_factor: float = 0.01, stddev: float = 1, andom_rate: float = 0.2, **kwargs):
     chunk_length = len(init_frames)
     num_joints = len(init_frames[0].positions)
     weight_shape = (chunk_length, num_joints)
 
     def step(weights):
         init_state.restore(scene, robot)
+
+        reset_robot = randomize_dynamics(robot, random_rate)
+        reset_floor = randomize_dynamics(scene.plane, random_rate)
 
         reward_sum = 0
         start_ts = scene.ts
@@ -64,6 +96,9 @@ def train_chunk(scene: Scene, motion: flom.Motion, init_frames: List[flom.Frame]
             reward_sum += calc_reward(motion, robot, frame.effectors, positions, pre_positions, **kwargs)
 
             pre_positions = positions
+
+        reset_robot()
+        reset_floor()
 
         score = reward_sum / len(weights)
         return -score
