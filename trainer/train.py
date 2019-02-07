@@ -128,18 +128,6 @@ def train_chunk(scene: Scene, motion: flom.Motion, init_frames: Sequence[flom.Fr
     return score, frames, state
 
 
-def copy_motion(base: flom.Motion) -> flom.Motion:
-    # Use copy ctor after DeepL2/flom-py#23
-    types = {n: base.effector_type(n) for n in base.effector_names()}
-    new_motion = flom.Motion(set(base.joint_names()), types, base.model_id())
-    new_motion.set_loop(base.loop())
-    for name in base.effector_names():
-        new_motion.set_effector_weight(name, base.effector_weight(name))
-    for t, frame in base.keyframes():
-        new_motion.insert_keyframe(t, frame)
-
-    return new_motion
-
 
 Callback = Callable[[int, Callable[[], flom.Motion]], None]
 def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int = 3, num_chunk: Optional[int] = None, callback: Optional[Callback] = None, **kwargs):
@@ -159,7 +147,7 @@ def train(scene: Scene, motion: flom.Motion, robot: Robot, *, chunk_length: int 
 
     log.debug(f"kwargs: {kwargs}")
 
-    out_motion = copy_motion(motion)
+    out_motion = flom.Motion(motion)  # Copy
 
     init_state = StateWithJoints.save(scene, robot)
 
